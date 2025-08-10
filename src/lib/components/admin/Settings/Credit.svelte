@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, getContext } from 'svelte';
 	import { getUsageConfig, setUsageConfig } from '$lib/apis/configs';
+	import { WEBUI_API_BASE_URL } from '$lib/constants';
 
 	import SensitiveInput from '$lib/components/common/SensitiveInput.svelte';
 
@@ -9,9 +10,30 @@
 	export let saveHandler: Function;
 
 	let config = null;
+	let creditConfig = null;
 
 	const submitHandler = async () => {
 		await setUsageConfig(localStorage.token, config);
+
+		// Also save credit configuration
+		if (creditConfig) {
+			try {
+				const response = await fetch(`${WEBUI_API_BASE_URL}/credit/config`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						Authorization: `Bearer ${localStorage.token}`
+					},
+					body: JSON.stringify(creditConfig)
+				});
+
+				if (!response.ok) {
+					console.error('Failed to save credit configuration');
+				}
+			} catch (error) {
+				console.error('Error saving credit configuration:', error);
+			}
+		}
 	};
 
 	onMount(async () => {
@@ -19,6 +41,33 @@
 
 		if (res) {
 			config = res;
+		}
+
+		// Load credit configuration
+		try {
+			const creditResponse = await fetch(`${WEBUI_API_BASE_URL}/credit/config`, {
+				headers: {
+					Authorization: `Bearer ${localStorage.token}`
+				}
+			});
+
+			if (creditResponse.ok) {
+				creditConfig = await creditResponse.json();
+			} else {
+				// Use default config if not found
+				creditConfig = {
+					CREDIT_NAME: '积分',
+					CREDIT_EXCHANGE_RATIO: 1.0,
+					EZFP_PAY_PRIORITY: 'qrcode'
+				};
+			}
+		} catch (error) {
+			console.error('Error loading credit configuration:', error);
+			creditConfig = {
+				CREDIT_NAME: '积分',
+				CREDIT_EXCHANGE_RATIO: 1.0,
+				EZFP_PAY_PRIORITY: 'qrcode'
+			};
 		}
 	});
 </script>
@@ -31,11 +80,28 @@
 	}}
 >
 	<div class=" space-y-3 overflow-y-scroll scrollbar-hidden h-full">
-		{#if config}
+		{#if config && creditConfig}
 			<div>
 				<div class="mb-3">
-					<div class=" mb-2.5 text-base font-medium">{$i18n.t('Credit')}</div>
+					<div class=" mb-2.5 text-base font-medium">积分配置</div>
 					<hr class=" border-gray-100 dark:border-gray-850 my-2" />
+
+					<!-- 自定义积分名称 -->
+					<div class="flex w-full justify-between">
+						<div class=" self-center text-xs font-medium">积分名称</div>
+					</div>
+					<div class="text-xs text-gray-400 dark:text-gray-500 mb-2">
+						设置系统中显示的积分单位名称，将会全局替换所有"v豆"显示
+					</div>
+					<div class="flex mt-2 space-x-2">
+						<input
+							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
+							bind:value={creditConfig.CREDIT_NAME}
+							placeholder="请输入积分名称，如：积分、点数、金币等"
+							required
+						/>
+					</div>
+					<br />
 					<div class="flex w-full justify-between">
 						<div class=" self-center text-xs font-medium">{$i18n.t('No Credit Message')}</div>
 					</div>
@@ -47,17 +113,15 @@
 						/>
 					</div>
 					<div class="flex mt-2 w-full justify-between">
-						<div class=" self-center text-xs font-medium">{$i18n.t('Credit Exchange Ratio')}</div>
+						<div class=" self-center text-xs font-medium">积分兑换比例</div>
 					</div>
 					<div class="text-xs text-gray-400 dark:text-gray-500">
-						{$i18n.t(
-							'The exchange ratio of legal currency to credit. If you need a discount, please set it to be greater than 1'
-						)}
+						法定货币与积分的兑换比例。如需折扣请设置大于1的值
 					</div>
 					<div class="flex mt-2 space-x-2">
 						<input
 							class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-							bind:value={config.CREDIT_EXCHANGE_RATIO}
+							bind:value={creditConfig.CREDIT_EXCHANGE_RATIO}
 							type="number"
 							step="0.0001"
 							required
@@ -177,7 +241,7 @@
 						<div class="flex mt-2 space-x-2">
 							<select
 								class="w-full rounded-lg py-2 px-4 text-sm bg-gray-50 dark:text-gray-300 dark:bg-gray-850 outline-hidden"
-								bind:value={config.EZFP_PAY_PRIORITY}
+								bind:value={creditConfig.EZFP_PAY_PRIORITY}
 							>
 								<option value="qrcode">{$i18n.t('QRCode')}</option>
 								<option value="link">{$i18n.t('Redirect Link')}</option>

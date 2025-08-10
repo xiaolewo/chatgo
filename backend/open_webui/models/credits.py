@@ -219,6 +219,34 @@ class CreditsTable:
             db.commit()
         return self.get_credit_by_user_id(form_data.user_id)
 
+    def update_credit_by_user_id(
+        self, user_id: str, new_credit: Decimal
+    ) -> Optional[CreditModel]:
+        """更新用户积分到指定值"""
+        try:
+            credit_model = self.init_credit_by_user_id(user_id=user_id)
+            log = CreditLogModel(
+                user_id=user_id,
+                credit=new_credit,
+                detail={
+                    "desc": "积分扣除",
+                    "api_path": "/api/v1/video/generate",
+                    "api_params": {},
+                    "usage": {},
+                },
+            )
+            with get_db() as db:
+                db.add(CreditLog(**log.model_dump()))
+                db.query(Credit).filter(Credit.user_id == user_id).update(
+                    {"credit": new_credit, "updated_at": int(time.time())},
+                    synchronize_session=False,
+                )
+                db.commit()
+            return self.get_credit_by_user_id(user_id=user_id)
+        except Exception as e:
+            print(f"更新积分失败: {e}")
+            return None
+
 
 Credits = CreditsTable()
 

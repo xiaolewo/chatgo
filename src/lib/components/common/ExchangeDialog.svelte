@@ -4,6 +4,7 @@
 	import { onMount, getContext, createEventDispatcher, onDestroy } from 'svelte';
 	import * as FocusTrap from 'focus-trap';
 	import { subscriptionPurchase, SubscriptionPayments } from '$lib/apis/setmenu';
+	import { creditName } from '$lib/stores';
 	const i18n = getContext('i18n');
 	const dispatch = createEventDispatcher();
 
@@ -181,8 +182,8 @@
 					<div class="flex flex-col justify-between">
 						<div class="text-lg font-bold mb-2">套餐名称：{menu.name}</div>
 						<div class="text-lg font-bold mb-2">
-							套餐额度： {menu.credits}积分<span class="text-base font-normal text-gray-500"
-								>/天</span
+							套餐额度： {menu.credits}{$creditName}<span
+								class="text-base font-normal text-gray-500">/天</span
 							>
 						</div>
 					</div>

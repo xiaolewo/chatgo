@@ -19,7 +19,7 @@
 	import { getBanners } from '$lib/apis/configs';
 	import { getUserSettings } from '$lib/apis/users';
 
-	import { WEBUI_VERSION } from '$lib/constants';
+	import { WEBUI_VERSION, WEBUI_API_BASE_URL } from '$lib/constants';
 	import { compareVersion } from '$lib/utils';
 
 	import {
@@ -36,7 +36,8 @@
 		showSettings,
 		showChangelog,
 		temporaryChatEnabled,
-		toolServers
+		toolServers,
+		creditName
 	} from '$lib/stores';
 
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
@@ -106,6 +107,26 @@
 			banners.set(await getBanners(localStorage.token));
 			tools.set(await getTools(localStorage.token));
 			toolServers.set(await getToolServersData($i18n, $settings?.toolServers ?? []));
+
+			// Load credit name from backend
+			try {
+				const creditResponse = await fetch(`${WEBUI_API_BASE_URL}/credit/status`, {
+					headers: {
+						Authorization: `Bearer ${localStorage.token}`
+					}
+				});
+
+				if (creditResponse.ok) {
+					const creditData = await creditResponse.json();
+					if (creditData.credit_name) {
+						creditName.set(creditData.credit_name);
+						console.log('Credit name loaded:', creditData.credit_name);
+					}
+				}
+			} catch (error) {
+				console.warn('Failed to load credit name:', error);
+				// Keep default value if failed to load
+			}
 
 			document.addEventListener('keydown', async function (event) {
 				const isCtrlPressed = event.ctrlKey || event.metaKey; // metaKey is for Cmd key on Mac
@@ -254,7 +275,7 @@
 {#if $user}
 	<div class="app relative">
 		<div
-			class=" text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 h-screen max-h-[100dvh] overflow-auto flex flex-row justify-end"
+			class=" text-gray-700 dark:text-gray-100 bg-white dark:bg-gray-900 h-screen max-h-[100dvh] overflow-auto flex flex-row justify-end mobile-flex-start"
 		>
 			{#if !['user', 'admin'].includes($user?.role)}
 				<AccountPending />
@@ -366,5 +387,12 @@
 	pre[class*='language-'] button:hover {
 		cursor: pointer;
 		background-color: #bcbabb;
+	}
+
+	/* Mobile layout fixes */
+	@media (max-width: 768px) {
+		.mobile-flex-start {
+			justify-content: flex-start !important;
+		}
 	}
 </style>

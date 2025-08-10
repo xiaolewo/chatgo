@@ -58,7 +58,7 @@ from open_webui.socket.main import (
     periodic_usage_pool_cleanup,
 )
 from open_webui.routers import (
-    audio,
+    # audio,  # 暂时禁用音频路由
     images,
     ollama,
     openai,
@@ -84,6 +84,11 @@ from open_webui.routers import (
     utils,
     credit,
     subscription,
+    midjourney,
+    seedream,
+    kling,
+    jimeng,
+    ppt,
 )
 
 from open_webui.routers.retrieval import (
@@ -167,6 +172,24 @@ from open_webui.config import (
     IMAGES_OPENAI_API_KEY,
     IMAGES_GEMINI_API_BASE_URL,
     IMAGES_GEMINI_API_KEY,
+    # MidJourney
+    MIDJOURNEY_ENABLED,
+    MIDJOURNEY_API_URL,
+    MIDJOURNEY_API_KEY,
+    MIDJOURNEY_FAST_CREDITS,
+    MIDJOURNEY_RELAX_CREDITS,
+    MIDJOURNEY_TURBO_CREDITS,
+    # Seedream (即梦3.0)
+    SEEDREAM_ENABLED,
+    SEEDREAM_API_URL,
+    SEEDREAM_API_KEY,
+    SEEDREAM_CREDITS,
+    # Kling
+    KLING_ENABLED,
+    KLING_API_URL,
+    KLING_API_KEY,
+    KLING_STD_CREDITS,
+    KLING_PRO_CREDITS,
     # Audio
     AUDIO_STT_ENGINE,
     AUDIO_STT_MODEL,
@@ -373,6 +396,7 @@ from open_webui.config import (
     EZFP_AMOUNT_CONTROL,
     CREDIT_DEFAULT_CREDIT,
     CREDIT_EXCHANGE_RATIO,
+    CREDIT_NAME,
     ENABLE_SIGNUP_VERIFY,
     SIGNUP_EMAIL_DOMAIN_WHITELIST,
     SMTP_HOST,
@@ -513,6 +537,8 @@ async def lifespan(app: FastAPI):
         Payment,
         DailyCreditGrant,
     )
+    from open_webui.models.seedream_tasks import SeedreamTask
+    from open_webui.models.ppt_config import PptConfigTable
     from open_webui.internal.db import Base, engine
 
     # 创建所有表
@@ -906,6 +932,42 @@ app.state.config.IMAGE_STEPS = IMAGE_STEPS
 
 ########################################
 #
+# MIDJOURNEY
+#
+########################################
+
+app.state.config.MIDJOURNEY_ENABLED = MIDJOURNEY_ENABLED
+app.state.config.MIDJOURNEY_API_URL = MIDJOURNEY_API_URL
+app.state.config.MIDJOURNEY_API_KEY = MIDJOURNEY_API_KEY
+app.state.config.MIDJOURNEY_FAST_CREDITS = MIDJOURNEY_FAST_CREDITS
+app.state.config.MIDJOURNEY_RELAX_CREDITS = MIDJOURNEY_RELAX_CREDITS
+app.state.config.MIDJOURNEY_TURBO_CREDITS = MIDJOURNEY_TURBO_CREDITS
+
+########################################
+#
+# SEEDREAM (即梦3.0)
+#
+########################################
+
+app.state.config.SEEDREAM_ENABLED = SEEDREAM_ENABLED
+app.state.config.SEEDREAM_API_URL = SEEDREAM_API_URL
+app.state.config.SEEDREAM_API_KEY = SEEDREAM_API_KEY
+app.state.config.SEEDREAM_CREDITS = SEEDREAM_CREDITS
+
+########################################
+#
+# KLING (可灵视频生成)
+#
+########################################
+
+app.state.config.KLING_ENABLED = KLING_ENABLED
+app.state.config.KLING_API_URL = KLING_API_URL
+app.state.config.KLING_API_KEY = KLING_API_KEY
+app.state.config.KLING_STD_CREDITS = KLING_STD_CREDITS
+app.state.config.KLING_PRO_CREDITS = KLING_PRO_CREDITS
+
+########################################
+#
 # AUDIO
 #
 ########################################
@@ -981,6 +1043,7 @@ app.state.config.AUTOCOMPLETE_GENERATION_INPUT_MAX_LENGTH = (
 app.state.config.CREDIT_NO_CREDIT_MSG = CREDIT_NO_CREDIT_MSG
 app.state.config.CREDIT_EXCHANGE_RATIO = CREDIT_EXCHANGE_RATIO
 app.state.config.CREDIT_DEFAULT_CREDIT = CREDIT_DEFAULT_CREDIT
+app.state.config.CREDIT_NAME = CREDIT_NAME
 app.state.config.USAGE_CALCULATE_MODEL_PREFIX_TO_REMOVE = (
     USAGE_CALCULATE_MODEL_PREFIX_TO_REMOVE
 )
@@ -1125,7 +1188,7 @@ app.include_router(pipelines.router, prefix="/api/v1/pipelines", tags=["pipeline
 app.include_router(tasks.router, prefix="/api/v1/tasks", tags=["tasks"])
 app.include_router(images.router, prefix="/api/v1/images", tags=["images"])
 
-app.include_router(audio.router, prefix="/api/v1/audio", tags=["audio"])
+# app.include_router(audio.router, prefix="/api/v1/audio", tags=["audio"])  # 暂时禁用
 app.include_router(retrieval.router, prefix="/api/v1/retrieval", tags=["retrieval"])
 
 app.include_router(configs.router, prefix="/api/v1/configs", tags=["configs"])
@@ -1137,6 +1200,11 @@ app.include_router(credit.router, prefix="/api/v1/credit", tags=["credit"])
 app.include_router(
     subscription.router, prefix="/api/v1/subscription", tags=["subscription"]
 )
+app.include_router(midjourney.router, prefix="/api/v1/midjourney", tags=["midjourney"])
+app.include_router(seedream.router, prefix="/api/v1/seedream", tags=["seedream"])
+app.include_router(kling.router, prefix="/api/v1/kling", tags=["kling"])
+app.include_router(jimeng.router, prefix="/api/v1/jimeng", tags=["jimeng"])
+app.include_router(ppt.router, prefix="/api/v1/ppt", tags=["ppt"])
 
 app.include_router(channels.router, prefix="/api/v1/channels", tags=["channels"])
 app.include_router(chats.router, prefix="/api/v1/chats", tags=["chats"])

@@ -650,12 +650,14 @@ class WeChatFollowService:
         # 获取新的access_token
         log.info("获取新的access_token")
         token_url = f"https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid={app_id}&secret={app_secret}"
-        log.info(f"token_url: {token_url}")
+        log.info(f"正在请求微信access_token, appid: {app_id}")
         try:
             async with ClientSession() as session:
                 async with session.get(token_url) as response:
                     token_data = await response.json()
-                    log.info(f"微信token接口响应: {token_data}")
+                    log.info(
+                        f"微信token接口响应状态: {response.status}, 包含access_token: {'access_token' in token_data}"
+                    )
 
                     if "access_token" not in token_data:
                         error_msg = token_data.get("errmsg", "未知错误")
@@ -977,7 +979,7 @@ class WeChatFollowService:
         computed_signature = hashlib.sha1(s.encode("utf-8")).hexdigest()
 
         log.info(f"微信签名验证详情:")
-        log.info(f"  - token: {token}")
+        log.info(f"  - token: {token[:4]}***" if token else "  - token: None")
         log.info(f"  - timestamp: {timestamp}")
         log.info(f"  - nonce: {nonce}")
         log.info(f"  - 排序后拼接字符串: {s}")
@@ -1683,7 +1685,9 @@ async def wechat_server_verification(request: Request):
         log.info(f"  - timestamp: {timestamp}")
         log.info(f"  - nonce: {nonce}")
         log.info(f"  - echostr: {echostr}")
-        log.info(f"  - 配置的token: {token}")
+        log.info(
+            f"  - 配置的token: {token[:4]}***" if token else "  - 配置的token: None"
+        )
 
         if not token:
             log.error("微信TOKEN未配置")

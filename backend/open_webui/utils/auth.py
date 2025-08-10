@@ -197,7 +197,7 @@ def get_password_hash(password):
 def create_token(data: dict, expires_delta: Union[timedelta, None] = None) -> str:
     # 复制输入数据作为JWT的payload
     payload = data.copy()
-    print("create_token-data---", data)
+    # 敏感信息已移除日志输出以保护隐私
     # 如果提供了过期时间增量，则计算并添加过期时间
     if expires_delta:
         expire = datetime.now(UTC) + expires_delta

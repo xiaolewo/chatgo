@@ -267,7 +267,11 @@ class AuthsTable:
             return None
 
     def authenticate_user_by_api_key(self, api_key: str) -> Optional[UserModel]:
-        log.info(f"authenticate_user_by_api_key: {api_key}")
+        log.info(
+            f"authenticate_user_by_api_key: {api_key[:8]}{'*' * 8}"
+            if api_key
+            else "authenticate_user_by_api_key: None"
+        )
         # if no api_key, return None
         if not api_key:
             return None
