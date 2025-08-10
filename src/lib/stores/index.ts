@@ -13,6 +13,9 @@ export const WEBUI_NAME = writable(APP_NAME);
 export const config: Writable<Config | undefined> = writable(undefined);
 export const user: Writable<SessionUser | undefined> = writable(undefined);
 
+// Credit system
+export const creditName = writable('积分'); // Default credit name, will be updated from backend
+
 // Electron App
 export const isApp = writable(false);
 export const appInfo = writable(null);

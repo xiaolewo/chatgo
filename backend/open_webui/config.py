@@ -60,7 +60,7 @@ def run_migrations():
         migrations_path = OPEN_WEBUI_DIR / "migrations"
         alembic_cfg.set_main_option("script_location", str(migrations_path))
 
-        command.upgrade(alembic_cfg, "head")
+        command.upgrade(alembic_cfg, "heads")
     except Exception as e:
         log.exception(f"Error running migrations: {e}")
 
@@ -2612,6 +2612,142 @@ IMAGE_GENERATION_MODEL = PersistentConfig(
 )
 
 ####################################
+# MidJourney
+####################################
+
+MIDJOURNEY_ENABLED = PersistentConfig(
+    "MIDJOURNEY_ENABLED",
+    "midjourney.enabled",
+    os.environ.get("MIDJOURNEY_ENABLED", "false").lower() == "true",
+)
+
+MIDJOURNEY_API_URL = PersistentConfig(
+    "MIDJOURNEY_API_URL",
+    "midjourney.api_url",
+    os.getenv("MIDJOURNEY_API_URL", ""),
+)
+
+MIDJOURNEY_API_KEY = PersistentConfig(
+    "MIDJOURNEY_API_KEY",
+    "midjourney.api_key",
+    os.getenv("MIDJOURNEY_API_KEY", ""),
+)
+
+MIDJOURNEY_FAST_CREDITS = PersistentConfig(
+    "MIDJOURNEY_FAST_CREDITS",
+    "midjourney.fast_credits",
+    int(os.getenv("MIDJOURNEY_FAST_CREDITS", 10)),
+)
+
+MIDJOURNEY_RELAX_CREDITS = PersistentConfig(
+    "MIDJOURNEY_RELAX_CREDITS",
+    "midjourney.relax_credits",
+    int(os.getenv("MIDJOURNEY_RELAX_CREDITS", 5)),
+)
+
+MIDJOURNEY_TURBO_CREDITS = PersistentConfig(
+    "MIDJOURNEY_TURBO_CREDITS",
+    "midjourney.turbo_credits",
+    int(os.getenv("MIDJOURNEY_TURBO_CREDITS", 15)),
+)
+
+####################################
+# Seedream (即梦3.0)
+####################################
+
+SEEDREAM_ENABLED = PersistentConfig(
+    "SEEDREAM_ENABLED",
+    "seedream.enabled",
+    os.environ.get("SEEDREAM_ENABLED", "false").lower() == "true",
+)
+
+SEEDREAM_API_URL = PersistentConfig(
+    "SEEDREAM_API_URL",
+    "seedream.api_url",
+    os.getenv("SEEDREAM_API_URL", ""),
+)
+
+SEEDREAM_API_KEY = PersistentConfig(
+    "SEEDREAM_API_KEY",
+    "seedream.api_key",
+    os.getenv("SEEDREAM_API_KEY", ""),
+)
+
+SEEDREAM_CREDITS = PersistentConfig(
+    "SEEDREAM_CREDITS",
+    "seedream.credits_per_generation",
+    int(os.getenv("SEEDREAM_CREDITS", 1)),
+)
+
+####################################
+# Kling (可灵视频生成)
+####################################
+
+KLING_ENABLED = PersistentConfig(
+    "KLING_ENABLED",
+    "kling.enabled",
+    os.environ.get("KLING_ENABLED", "false").lower() == "true",
+)
+
+KLING_API_URL = PersistentConfig(
+    "KLING_API_URL",
+    "kling.api_url",
+    os.getenv("KLING_API_URL", ""),
+)
+
+KLING_API_KEY = PersistentConfig(
+    "KLING_API_KEY",
+    "kling.api_key",
+    os.getenv("KLING_API_KEY", ""),
+)
+
+KLING_STD_CREDITS = PersistentConfig(
+    "KLING_STD_CREDITS",
+    "kling.std_credits",
+    int(os.getenv("KLING_STD_CREDITS", 5)),
+)
+
+KLING_PRO_CREDITS = PersistentConfig(
+    "KLING_PRO_CREDITS",
+    "kling.pro_credits",
+    int(os.getenv("KLING_PRO_CREDITS", 10)),
+)
+
+####################################
+# JiMeng (即梦视频生成)
+####################################
+
+JIMENG_ENABLED = PersistentConfig(
+    "JIMENG_ENABLED",
+    "jimeng.enabled",
+    os.environ.get("JIMENG_ENABLED", "false").lower() == "true",
+)
+
+JIMENG_API_URL = PersistentConfig(
+    "JIMENG_API_URL",
+    "jimeng.api_url",
+    os.getenv("JIMENG_API_URL", ""),
+)
+
+JIMENG_API_KEY = PersistentConfig(
+    "JIMENG_API_KEY",
+    "jimeng.api_key",
+    os.getenv("JIMENG_API_KEY", ""),
+)
+
+JIMENG_CREDITS_5S = PersistentConfig(
+    "JIMENG_CREDITS_5S",
+    "jimeng.credits_5s",
+    int(os.getenv("JIMENG_CREDITS_5S", 5)),
+)
+
+JIMENG_CREDITS_10S = PersistentConfig(
+    "JIMENG_CREDITS_10S",
+    "jimeng.credits_10s",
+    int(os.getenv("JIMENG_CREDITS_10S", 10)),
+)
+
+####################################
 # Audio
 ####################################
 
@@ -2854,6 +2990,11 @@ CREDIT_DEFAULT_CREDIT = PersistentConfig(
     "CREDIT_DEFAULT_CREDIT",
     "credit.default_credit",
     os.environ.get("CREDIT_DEFAULT_CREDIT", "0"),
+)
+CREDIT_NAME = PersistentConfig(
+    "CREDIT_NAME",
+    "credit.name",
+    os.environ.get("CREDIT_NAME", "积分"),
 )
 
 USAGE_CALCULATE_MODEL_PREFIX_TO_REMOVE = PersistentConfig(

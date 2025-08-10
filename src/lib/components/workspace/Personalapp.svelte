@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	import { marked } from 'marked';
 
 	import { toast } from 'svelte-sonner';
@@ -38,7 +38,7 @@
 	let shiftKey = false;
 
 	let importFiles;
-	let modelsImportInputElement: HTMLInputElement;
+	let modelsImportInputElement;
 	let loaded = false;
 
 	let models = [];
@@ -49,14 +49,53 @@
 	let showModelDeleteConfirm = false;
 
 	let group_ids = [];
-
-	$: if (models) {
-		filteredModels = models.filter(
-			(m) => searchValue === '' || m.name.toLowerCase().includes(searchValue.toLowerCase())
-		);
-	}
-
 	let searchValue = '';
+	let sortBy = '最新';
+
+	// 模拟评分数据（我的应用通常评分会稍低一些）
+	const getModelRating = (modelId) => {
+		const ratings = {
+			'default': 4.5,
+		};
+		return ratings[modelId] || (3.5 + Math.random() * 1.5).toFixed(1);
+	};
+
+	const getModelUsageCount = (modelId) => {
+		// 我的应用使用量通常较少
+		return `${Math.floor(Math.random() * 500 + 50)}`;
+	};
+
+	const getModelStatus = (model) => {
+		return model.is_active ? '已启用' : '已禁用';
+	};
+
+	$: {
+		let filtered = models.filter((m) => {
+			// 搜索过滤
+			if (searchValue.trim() !== '') {
+				const searchLower = searchValue.toLowerCase();
+				const nameMatch = m.name?.toLowerCase().includes(searchLower);
+				const descMatch = m?.meta?.description?.toLowerCase().includes(searchLower);
+				if (!nameMatch && !descMatch) return false;
+			}
+			return true;
+		});
+
+		// 排序
+		if (sortBy === '评分') {
+			filtered = filtered.sort((a, b) => parseFloat(getModelRating(b.name)) - parseFloat(getModelRating(a.name)));
+		} else if (sortBy === '使用量') {
+			filtered = filtered.sort((a, b) => {
+				const aCount = parseInt(getModelUsageCount(a.name));
+				const bCount = parseInt(getModelUsageCount(b.name));
+				return bCount - aCount;
+			});
+		} else if (sortBy === '状态') {
+			filtered = filtered.sort((a, b) => (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0));
+		}
+		
+		filteredModels = filtered;
+	}
 
 	const deleteModelHandler = async (model) => {
 		const res = await deleteModelById(localStorage.token, model.id).catch((e) => {
@@ -83,7 +122,7 @@
 			id: `${model.id}-clone`,
 			name: `${model.name} (Clone)`
 		});
-		goto('/workspace/models/create');
+		goto('/personalapp/create');
 	};
 
 	const shareModelHandler = async (model) => {
@@ -208,138 +247,177 @@
 		}}
 	/>
 
-	<div class="flex flex-col gap-1 my-1.5">
-		<div class="flex justify-between items-center">
-			<div class="flex items-center md:self-center text-xl font-medium px-0.5">
-				我的应用
-				<div class="flex self-center w-[1px] h-6 mx-2.5 bg-gray-50 dark:bg-gray-850" />
-				<span class="text-lg font-medium text-gray-500 dark:text-gray-300"
-					>{filteredModels.length}</span
-				>
+	<!-- 搜索和筛选栏 -->
+	<div class="flex flex-col gap-4 my-4">
+		<!-- 标题和统计 -->
+		<div class="flex items-center justify-between">
+			<div class="flex items-center gap-3">
+				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">我的应用</h2>
+				<span class="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+					{filteredModels.length} 个应用
+				</span>
 			</div>
+			
+			<!-- 创建按钮 -->
+			<a
+				href="/personalapp/create"
+				class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors font-medium"
+			>
+				<Plus className="size-4" />
+				创建应用
+			</a>
 		</div>
 
-		<div class=" flex flex-1 items-center w-full space-x-2">
-			<div class="flex flex-1 items-center">
-				<div class=" self-center ml-1 mr-3">
-					<Search className="size-3.5" />
+		<!-- 搜索栏 -->
+		<div class="flex items-center gap-4">
+			<div class="flex-1 relative">
+				<div class="absolute left-3 top-1/2 transform -translate-y-1/2">
+					<Search className="size-4 text-gray-400" />
 				</div>
 				<input
-					class=" w-full text-sm py-1 rounded-r-xl outline-hidden bg-transparent"
+					class="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
 					bind:value={searchValue}
-					placeholder={$i18n.t('Search Models')}
+					placeholder="搜索我的应用..."
 				/>
 			</div>
-
-			<div>
-				<a
-					class=" px-2 py-2 rounded-xl hover:bg-gray-700/10 dark:hover:bg-gray-100/10 dark:text-gray-300 dark:hover:text-white transition font-medium text-sm flex items-center space-x-1"
-					href="/workspace/models/create"
+			
+			<!-- 筛选按钮 -->
+			<div class="relative">
+				<select 
+					bind:value={sortBy}
+					class="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer"
 				>
-					<Plus className="size-3.5" />
-				</a>
+					<option value="最新">最新</option>
+					<option value="评分">评分</option>
+					<option value="使用量">使用量</option>
+					<option value="状态">状态</option>
+				</select>
 			</div>
 		</div>
 	</div>
-	<div class=" my-2 mb-5 gap-2 grid lg:grid-cols-2 xl:grid-cols-3" id="model-list">
+	<!-- 卡片网格 -->
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8" id="model-list">
 		{#each filteredModels as model}
 			<div
-				class=" flex flex-col cursor-pointer w-full px-3 py-2 dark:hover:bg-white/5 hover:bg-black/5 rounded-xl transition"
+				class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 {model.is_active ? '' : 'opacity-75'}"
 				id="model-item-{model.id}"
 			>
-				<div class="flex gap-4 mt-0.5 mb-0.5">
-					<div class=" w-[44px]">
-						<div
-							class=" rounded-full object-cover {model.is_active
-								? ''
-								: 'opacity-50 dark:opacity-50'} "
-						>
-							<img
-								src={model?.meta?.profile_image_url ?? '/static/favicon.png'}
-								alt="modelfile profile"
-								class=" rounded-full w-full h-auto object-cover"
-							/>
+				<!-- 图标和标题 -->
+				<div class="flex items-start gap-3 mb-4">
+					<div class="flex-shrink-0">
+						<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 flex items-center justify-center text-2xl">
+							{#if model?.meta?.profile_image_url}
+								<img
+									src={model.meta.profile_image_url}
+									alt="应用头像"
+									class="w-full h-full rounded-xl object-cover"
+								/>
+							{:else}
+								🤖
+							{/if}
 						</div>
 					</div>
-
-					<a
-						class=" flex flex-1 cursor-pointer w-full"
-						href={`/?models=${encodeURIComponent(model.id)}`}
-					>
-						<div class=" flex-1 self-center {model.is_active ? '' : 'text-gray-500'}">
-							<Tooltip
-								content={marked.parse(model?.meta?.description ?? model.id)}
-								className=" w-fit"
-								placement="top-start"
-							>
-								<div class=" font-semibold line-clamp-1">{model.name}</div>
-							</Tooltip>
-
-							<div class="flex gap-1 text-xs overflow-hidden">
-								<div class="line-clamp-1">
-									{#if (model?.meta?.description ?? '').trim()}
-										{model?.meta?.description}
-									{:else}
-										{model.id}
-									{/if}
-								</div>
+					
+					<div class="flex-1 min-w-0">
+						<a 
+							href={`/?models=${encodeURIComponent(model.id)}`}
+							class="block group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+						>
+							<h3 class="font-semibold text-gray-900 dark:text-white text-base line-clamp-1">
+								{model.name}
+							</h3>
+						</a>
+						
+						<!-- 评分和使用量 -->
+						<div class="flex items-center gap-3 mt-1">
+							<div class="flex items-center gap-1">
+								<span class="text-yellow-400">⭐</span>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-300">{getModelRating(model.name)}</span>
+							</div>
+							<div class="text-xs text-gray-500 dark:text-gray-400">
+								{getModelUsageCount(model.name)}使用
 							</div>
 						</div>
-					</a>
+					</div>
 				</div>
 
-				<div class="flex justify-between items-center -mb-0.5 px-0.5">
-					<div class=" text-xs mt-0.5">
-						<Tooltip
-							content={model?.user?.email ?? $i18n.t('Deleted User')}
-							className="flex shrink-0"
-							placement="top-start"
-						>
-							<div class="shrink-0 text-gray-500">
-								{$i18n.t('By {{name}}', {
-									name: capitalizeFirstLetter(
-										model?.user?.name ?? model?.user?.email ?? $i18n.t('Deleted User')
-									)
-								})}
-							</div>
-						</Tooltip>
-					</div>
+				<!-- 描述 -->
+				<div class="mb-4">
+					<p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed">
+						{#if (model?.meta?.description ?? '').trim()}
+							{model.meta.description}
+						{:else}
+							{model.id}
+						{/if}
+					</p>
+				</div>
 
-					<div class="flex flex-row gap-0.5 items-center">
+				<!-- 状态和操作 -->
+				<div class="flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<span class="px-2 py-1 text-xs font-medium rounded-md {model.is_active 
+							? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' 
+							: 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}">
+							{getModelStatus(model)}
+						</span>
+						
+						<!-- 开关 -->
+						<div class="ml-1">
+							<Tooltip content={model.is_active ? '点击禁用' : '点击启用'}>
+								<Switch
+									bind:state={model.is_active}
+									on:change={async (e) => {
+										toggleModelById(localStorage.token, model.id);
+										_models.set(
+											await getModels(
+												localStorage.token,
+												$config?.features?.enable_direct_connections &&
+													($settings?.directConnections ?? null)
+											)
+										);
+									}}
+								/>
+							</Tooltip>
+						</div>
+					</div>
+					
+					<!-- 操作按钮 -->
+					<div class="flex items-center gap-1">
 						{#if shiftKey}
-							<Tooltip content={$i18n.t('Delete')}>
+							<Tooltip content="删除">
 								<button
-									class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
+									class="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
 									type="button"
 									on:click={() => {
 										deleteModelHandler(model);
 									}}
 								>
-									<GarbageBin />
+									<GarbageBin className="size-4" />
 								</button>
 							</Tooltip>
 						{:else}
 							{#if $user?.role === 'admin' || model.user_id === $user?.id || model.access_control.write.group_ids.some( (wg) => group_ids.includes(wg) )}
-								<a
-									class="self-center w-fit text-sm px-2 py-2 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-									type="button"
-									href={`/workspace/models/edit?id=${encodeURIComponent(model.id)}`}
-								>
-									<svg
-										xmlns="http://www.w3.org/2000/svg"
-										fill="none"
-										viewBox="0 0 24 24"
-										stroke-width="1.5"
-										stroke="currentColor"
-										class="w-4 h-4"
+								<Tooltip content="编辑">
+									<a
+										class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+										href={`/personalapp/edit?id=${encodeURIComponent(model.id)}`}
 									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
-										/>
-									</svg>
-								</a>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke-width="1.5"
+											stroke="currentColor"
+											class="w-4 h-4"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+											/>
+										</svg>
+									</a>
+								</Tooltip>
 							{/if}
 
 							<ModelMenu
@@ -363,37 +441,37 @@
 								}}
 								onClose={() => {}}
 							>
-								<button
-									class="self-center w-fit text-sm p-1.5 dark:text-gray-300 dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/5 rounded-xl"
-									type="button"
-								>
-									<EllipsisHorizontal className="size-5" />
-								</button>
-							</ModelMenu>
-
-							<div class="ml-1">
-								<Tooltip content={model.is_active ? $i18n.t('Enabled') : $i18n.t('Disabled')}>
-									<Switch
-										bind:state={model.is_active}
-										on:change={async (e) => {
-											toggleModelById(localStorage.token, model.id);
-											_models.set(
-												await getModels(
-													localStorage.token,
-													$config?.features?.enable_direct_connections &&
-														($settings?.directConnections ?? null)
-												)
-											);
-										}}
-									/>
+								<Tooltip content="更多操作">
+									<button
+										class="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors"
+										type="button"
+									>
+										<EllipsisHorizontal className="size-4" />
+									</button>
 								</Tooltip>
-							</div>
+							</ModelMenu>
 						{/if}
 					</div>
 				</div>
 			</div>
 		{/each}
 	</div>
+
+	<!-- 空状态 -->
+	{#if filteredModels.length === 0}
+		<div class="text-center py-12">
+			<div class="text-6xl mb-4">📱</div>
+			<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">还没有创建应用</h3>
+			<p class="text-gray-500 dark:text-gray-400 mb-4">开始创建你的第一个AI助手应用吧</p>
+			<a
+				href="/personalapp/create"
+				class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors font-medium"
+			>
+				<Plus className="size-4" />
+				创建应用
+			</a>
+		</div>
+	{/if}
 
 	{#if $user?.role === 'admin'}
 		<div class=" flex justify-end w-full mb-3">

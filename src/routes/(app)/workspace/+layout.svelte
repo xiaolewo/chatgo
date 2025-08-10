@@ -76,7 +76,8 @@
 					<div
 						class="flex gap-1 scrollbar-none overflow-x-auto w-fit text-center text-sm font-medium rounded-full bg-transparent py-1 touch-auto pointer-events-auto"
 					>
-						{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models}
+						<!-- 应用广场已独立为 /personalapp 页面 -->
+						<!-- {#if $user?.role === 'admin' || $user?.permissions?.workspace?.models}
 							<a
 								class="min-w-fit rounded-full p-1.5 {$page.url.pathname.includes(
 									'/workspace/models'
@@ -85,9 +86,10 @@
 									: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
 								href="/workspace/models">{$i18n.t('Models')}</a
 							>
-						{/if}
+						{/if} -->
 
-						{#if $user?.role === 'admin' || $user?.permissions?.workspace?.knowledge}
+						<!-- 知识库已独立为 /knowledge 页面 -->
+						<!-- {#if $user?.role === 'admin' || $user?.permissions?.workspace?.knowledge}
 							<a
 								class="min-w-fit rounded-full p-1.5 {$page.url.pathname.includes(
 									'/workspace/knowledge'
@@ -98,7 +100,7 @@
 							>
 								{$i18n.t('Knowledge')}
 							</a>
-						{/if}
+						{/if} -->
 
 						{#if $user?.role === 'admin' || $user?.permissions?.workspace?.prompts}
 							<a

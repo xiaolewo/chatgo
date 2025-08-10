@@ -1,0 +1,1301 @@
+<script>
+	import { onMount, getContext } from 'svelte';
+	import { toast } from 'svelte-sonner';
+	import { user } from '$lib/stores';
+	import Spinner from '$lib/components/common/Spinner.svelte';
+	import Plus from '$lib/components/icons/Plus.svelte';
+	import Search from '$lib/components/icons/Search.svelte';
+	import { 
+		generateImageWithPolling, 
+		getUserTasks, 
+		getMidJourneyConfig,
+		getUserCredits,
+		executeActionWithPolling,
+		fileToBase64,
+		GENERATION_MODE,
+		TASK_STATUS,
+		ASPECT_RATIOS,
+		MJ_VERSIONS,
+		REFERENCE_TYPES,
+		ACTION_TYPES
+	} from '$lib/apis/midjourney.js';
+
+	const i18n = getContext('i18n');
+
+	let loaded = false;
+	let query = '';
+	let generating = false;
+	let prompt = '';
+	let negativePrompt = '';
+	let selectedModel = 'midjourney';
+	let selectedMode = 'fast';
+	let imageSize = '1:1';
+	let generatedImages = [];
+	let userCredits = 0; // 用户v豆余额
+	let midJourneyConfig = null;
+	let currentTask = null;
+	
+	// 高级参数
+	let showAdvancedOptions = false;
+	let chaos = null;
+	let stylize = null;
+	let seed = null;
+	let selectedVersion = null;
+	let quality = 1.0;
+	let weird = null;
+	let tileMode = false;
+	
+	// 参考图片
+	let referenceImages = [];
+	let styleReferenceImages = [];
+	let fileInputRef;
+	let styleFileInputRef;
+	
+	// 动作按钮状态
+	let executingAction = false;
+	let selectedImageForAction = null;
+	
+	// 图片预览状态
+	let showImageModal = false;
+	let previewImage = null;
+
+	// 图像生成历史 - 只显示真实生成的图片
+	let imageHistory = [];
+
+	let filteredImages = imageHistory;
+
+	$: {
+		filteredImages = query 
+			? imageHistory.filter(img => 
+				img.prompt.toLowerCase().includes(query.toLowerCase()) ||
+				img.model.toLowerCase().includes(query.toLowerCase())
+			)
+			: imageHistory;
+	}
+
+	// 加载MidJourney配置
+	const loadMidJourneyConfig = async () => {
+		if (!$user?.token) return;
+		
+		try {
+			midJourneyConfig = await getMidJourneyConfig($user.token);
+			console.log('MidJourney配置加载成功, 服务状态:', midJourneyConfig?.enabled ? '已启用' : '未启用');
+		} catch (error) {
+			console.error('加载MidJourney配置失败:', error);
+		}
+	};
+
+	// 加载用户v豆余额
+	const loadUserCredits = async () => {
+		if (!$user?.token) return;
+		
+		try {
+			const creditsData = await getUserCredits($user.token);
+			userCredits = creditsData.credits || 0;
+			console.log('用户v豆余额加载成功:', userCredits);
+		} catch (error) {
+			console.error('加载用户v豆余额失败:', error);
+			// 如果无法获取余额，设置为0避免误导
+			userCredits = 0;
+		}
+	};
+
+	// 加载用户任务历史
+	const loadUserTasks = async () => {
+		if (!$user?.token) return;
+		
+		try {
+			const response = await getUserTasks($user.token);
+			const tasks = response.tasks || [];
+			
+			// 将已完成的任务转换为图像历史
+			const completedTasks = tasks
+				.filter(task => task.status === TASK_STATUS.COMPLETED && task.image_url)
+				.map(task => ({
+					id: task.task_id,
+					prompt: task.prompt,
+					image: task.image_url,
+					timestamp: task.completed_at ? new Date(task.completed_at * 1000) : new Date(),
+					model: `MidJourney (${task.mode})`,
+					task_id: task.task_id,
+					actions: task.actions || [],
+					seed: task.seed,
+					final_prompt: task.final_prompt,
+					aspect_ratio: task.aspect_ratio || '1:1',
+					status: 'completed', // 已完成任务的状态
+					progress: 100,
+					message: '图像生成完成'
+				}));
+			
+			imageHistory = [...completedTasks, ...imageHistory];
+			if (completedTasks.length > 0) {
+				console.log('加载了', completedTasks.length, '个历史任务');
+			} else {
+				console.log('没有找到历史任务 - 可能是首次使用或后端已重启');
+			}
+		} catch (error) {
+			console.error('加载用户任务失败:', error);
+		}
+	};
+
+	// 生成图像（真实API调用）
+	const generateImage = async () => {
+		if (!prompt.trim()) {
+			toast.error('请输入图像描述');
+			return;
+		}
+
+		if (!$user?.token) {
+			toast.error('请先登录');
+			return;
+		}
+
+		// 检查MidJourney是否启用
+		if (!midJourneyConfig?.enabled) {
+			toast.error('MidJourney服务未启用，请联系管理员配置');
+			return;
+		}
+
+		// 检查积分
+		let requiredCredits;
+		if (selectedMode === 'fast') {
+			requiredCredits = midJourneyConfig?.fast_credits || 10;
+		} else if (selectedMode === 'relax') {
+			requiredCredits = midJourneyConfig?.relax_credits || 5;
+		} else if (selectedMode === 'turbo') {
+			requiredCredits = midJourneyConfig?.turbo_credits || 15;
+		} else {
+			requiredCredits = 10; // 默认fast模式积分
+		}
+			
+		if (userCredits < requiredCredits) {
+			toast.error(`v豆余额不足，需要${requiredCredits}v豆，当前余额：${userCredits.toFixed(2)}v豆`);
+			return;
+		}
+
+		generating = true;
+		currentTask = null;
+		
+		// 生成临时任务ID用于前端显示
+		const tempTaskId = 'temp_' + Date.now();
+		
+		try {
+			// 构建请求
+			const request = {
+				prompt: prompt.trim(),
+				mode: selectedMode,
+				aspect_ratio: imageSize,
+				negative_prompt: negativePrompt?.trim() || null,
+				reference_images: [...referenceImages, ...styleReferenceImages],
+				advanced_params: {
+					chaos: chaos !== null && chaos !== '' ? parseInt(chaos) : null,
+					stylize: stylize !== null && stylize !== '' ? parseInt(stylize) : null,
+					seed: seed !== null && seed !== '' ? parseInt(seed) : null,
+					version: selectedVersion || null,
+					quality: quality !== 1.0 ? quality : null,
+					weird: weird !== null && weird !== '' ? parseInt(weird) : null,
+					tile: tileMode
+				}
+			};
+
+			toast.success(`任务提交成功！消耗${requiredCredits}积分`);
+			userCredits -= requiredCredits;
+			
+			// 立即在历史中添加正在进行的任务
+			const pendingImage = {
+				id: tempTaskId,
+				prompt: prompt.trim(),
+				image: null, // 暂无图片
+				timestamp: new Date(),
+				model: `MidJourney (${selectedMode})`,
+				task_id: null, // 后端任务ID稍后更新
+				actions: [],
+				seed: null,
+				final_prompt: null,
+				aspect_ratio: imageSize,
+				// 进行中状态
+				status: 'processing',
+				progress: 0,
+				message: '任务已提交，等待处理'
+			};
+			
+			// 添加到历史列表顶部
+			imageHistory = [pendingImage, ...imageHistory];
+
+			// 调用MidJourney API
+			const result = await generateImageWithPolling($user.token, request, (status) => {
+				// 实时更新任务状态
+				currentTask = status;
+				console.log('任务状态更新:', status);
+				
+				// 同时更新历史记录中的任务状态
+				imageHistory = imageHistory.map(img => {
+					if (img.id === tempTaskId) {
+						return {
+							...img,
+							task_id: status.task_id,
+							status: status.status,
+							progress: status.progress || 0,
+							message: status.message || '正在生成中...',
+							image: status.image_url || null // 如果有中间图片就显示
+						};
+					}
+					return img;
+				});
+				
+				if (status.message) {
+					toast.info(status.message);
+				}
+			});
+
+			// 生成完成 - 更新历史记录中的任务
+			imageHistory = imageHistory.map(img => {
+				if (img.id === tempTaskId) {
+					return {
+						...img,
+						id: result.task_id, // 更新为真实的任务ID
+						task_id: result.task_id,
+						image: result.image_url,
+						actions: result.actions || [],
+						seed: result.seed,
+						final_prompt: result.final_prompt,
+						status: 'completed',
+						progress: 100,
+						message: '图像生成完成'
+					};
+				}
+				return img;
+			});
+			
+			// 添加到生成列表
+			const completedImage = imageHistory.find(img => img.task_id === result.task_id);
+			if (completedImage) {
+				generatedImages = [completedImage, ...generatedImages];
+			}
+			
+			toast.success('图像生成完成！');
+			
+			// 清空输入
+			prompt = '';
+			negativePrompt = '';
+			currentTask = null;
+			// 保留高级参数和参考图片（用户可能想要重复使用）
+			
+		} catch (error) {
+			console.error('图像生成失败:', error);
+			toast.error('图像生成失败: ' + error.message);
+			
+			// 更新历史记录中的任务为失败状态
+			imageHistory = imageHistory.map(img => {
+				if (img.id === tempTaskId) {
+					return {
+						...img,
+						status: 'failed',
+						progress: 0,
+						message: '图像生成失败: ' + error.message
+					};
+				}
+				return img;
+			});
+			
+			// 失败时退还积分
+			userCredits += requiredCredits;
+			currentTask = null;
+		} finally {
+			generating = false;
+		}
+	};
+
+	const deleteImage = (id) => {
+		imageHistory = imageHistory.filter(img => img.id !== id);
+		generatedImages = generatedImages.filter(img => img.id !== id);
+		toast.success('图像已删除');
+	};
+
+	const downloadImage = (imageUrl, prompt) => {
+		const link = document.createElement('a');
+		link.href = imageUrl;
+		link.download = `generated-image-${Date.now()}.jpg`;
+		document.body.appendChild(link);
+		link.click();
+		document.body.removeChild(link);
+		toast.success('图像下载开始');
+	};
+
+	// 处理参考图片上传
+	const handleReferenceImageUpload = async (event, type = 'reference') => {
+		const files = event.target.files;
+		if (!files || files.length === 0) return;
+
+		try {
+			for (const file of files) {
+				// 验证文件类型
+				if (!file.type.startsWith('image/')) {
+					toast.error('只能上传图片文件');
+					continue;
+				}
+
+				// 验证文件大小 (5MB限制)
+				if (file.size > 5 * 1024 * 1024) {
+					toast.error('图片文件不能超过5MB');
+					continue;
+				}
+
+				// 转换为Base64
+				const base64 = await fileToBase64(file);
+				
+				const imageData = {
+					base64: base64,
+					weight: 1.0,
+					type: type,
+					filename: file.name,
+					preview: URL.createObjectURL(file)
+				};
+
+				if (type === 'reference') {
+					if (referenceImages.length >= 3) {
+						toast.error('最多只能上传3张普通参考图');
+						break;
+					}
+					referenceImages = [...referenceImages, imageData];
+				} else {
+					if (styleReferenceImages.length >= 2) {
+						toast.error('最多只能上传2张风格参考图');
+						break;
+					}
+					styleReferenceImages = [...styleReferenceImages, imageData];
+				}
+			}
+			
+			toast.success(`${type === 'reference' ? '普通参考图' : '风格参考图'}上传成功`);
+		} catch (error) {
+			console.error('图片上传失败:', error);
+			toast.error('图片上传失败: ' + error.message);
+		}
+
+		// 清空input
+		event.target.value = '';
+	};
+
+	// 移除参考图片
+	const removeReferenceImage = (index, type = 'reference') => {
+		if (type === 'reference') {
+			// 释放预览URL
+			URL.revokeObjectURL(referenceImages[index].preview);
+			referenceImages = referenceImages.filter((_, i) => i !== index);
+		} else {
+			URL.revokeObjectURL(styleReferenceImages[index].preview);
+			styleReferenceImages = styleReferenceImages.filter((_, i) => i !== index);
+		}
+		toast.success('参考图片已移除');
+	};
+
+	// 更新参考图片权重
+	const updateImageWeight = (index, weight, type = 'reference') => {
+		const numWeight = parseFloat(weight);
+		if (isNaN(numWeight) || numWeight < 0.1 || numWeight > 3.0) {
+			toast.error('权重值必须在0.1-3.0之间');
+			return;
+		}
+
+		if (type === 'reference') {
+			referenceImages[index].weight = numWeight;
+			referenceImages = [...referenceImages];
+		} else {
+			styleReferenceImages[index].weight = numWeight;
+			styleReferenceImages = [...styleReferenceImages];
+		}
+	};
+
+	// 执行MidJourney动作 (U1-U4, V1-V4等)
+	const executeAction = async (image, action) => {
+		if (!$user?.token) {
+			toast.error('请先登录');
+			return;
+		}
+
+		if (!image.task_id) {
+			toast.error('此图像不支持动作操作');
+			return;
+		}
+
+		executingAction = true;
+		selectedImageForAction = image.id;
+
+		// 生成临时任务ID用于前端显示
+		const tempActionTaskId = 'temp_action_' + Date.now();
+
+		try {
+			toast.info(`正在执行${action.label}操作...`);
+			
+			// 立即在历史中添加正在进行的动作任务
+			const pendingActionImage = {
+				id: tempActionTaskId,
+				prompt: image.prompt + ` (${action.label})`,
+				image: null, // 暂无图片
+				timestamp: new Date(),
+				model: image.model + ` - ${action.label}`,
+				task_id: null, // 后端任务ID稍后更新
+				parent_task_id: image.task_id,
+				actions: [],
+				aspect_ratio: image.aspect_ratio || '1:1',
+				// 进行中状态
+				status: 'processing',
+				progress: 0,
+				message: `正在执行${action.label}操作`
+			};
+			
+			// 添加到历史列表顶部
+			imageHistory = [pendingActionImage, ...imageHistory];
+			
+			const result = await executeActionWithPolling($user.token, image.task_id, action, (status) => {
+				console.log('动作执行状态更新:', status);
+				
+				// 同时更新历史记录中的动作任务状态
+				imageHistory = imageHistory.map(img => {
+					if (img.id === tempActionTaskId) {
+						return {
+							...img,
+							task_id: status.task_id,
+							status: status.status,
+							progress: status.progress || 0,
+							message: status.message || `正在执行${action.label}操作`,
+							image: status.image_url || null // 如果有中间图片就显示
+						};
+					}
+					return img;
+				});
+				
+				if (status.message) {
+					toast.info(status.message);
+				}
+			});
+
+			// 动作完成 - 更新历史记录中的任务
+			imageHistory = imageHistory.map(img => {
+				if (img.id === tempActionTaskId) {
+					return {
+						...img,
+						id: result.task_id, // 更新为真实的任务ID
+						task_id: result.task_id,
+						image: result.image_url,
+						actions: result.actions || [],
+						status: 'completed',
+						progress: 100,
+						message: `${action.label}操作完成`
+					};
+				}
+				return img;
+			});
+			
+			// 添加到生成列表
+			const completedActionImage = imageHistory.find(img => img.task_id === result.task_id);
+			if (completedActionImage) {
+				generatedImages = [completedActionImage, ...generatedImages];
+			}
+			
+			toast.success(`${action.label}操作完成！`);
+			
+			// 动作成功后重新加载用户v豆余额
+			await loadUserCredits();
+
+		} catch (error) {
+			console.error('动作执行失败:', error);
+			toast.error('动作执行失败: ' + error.message);
+			
+			// 更新历史记录中的动作任务为失败状态
+			imageHistory = imageHistory.map(img => {
+				if (img.id === tempActionTaskId) {
+					return {
+						...img,
+						status: 'failed',
+						progress: 0,
+						message: `${action.label}操作失败: ` + error.message
+					};
+				}
+				return img;
+			});
+			
+			// 动作失败后也重新加载用户v豆余额（后端会自动退款）
+			await loadUserCredits();
+		} finally {
+			executingAction = false;
+			selectedImageForAction = null;
+		}
+	};
+
+	// 生成随机种子
+	const generateRandomSeed = () => {
+		seed = Math.floor(Math.random() * 4294967295);
+	};
+
+	// 获取图片的宽高比
+	const getImageAspectRatio = (image) => {
+		// 从图片的aspect_ratio字段获取比例，如果没有则默认为1:1
+		const aspectRatio = image.aspect_ratio || image.imageSize || '1:1';
+		
+		// 将比例字符串转换为CSS aspect-ratio值
+		const [width, height] = aspectRatio.split(':').map(Number);
+		return `${width}/${height}`;
+	};
+
+	// 打开图片预览
+	const openImagePreview = (image) => {
+		previewImage = image;
+		showImageModal = true;
+	};
+
+	// 关闭图片预览
+	const closeImagePreview = () => {
+		showImageModal = false;
+		previewImage = null;
+	};
+
+	// 处理键盘事件
+	const handleKeyDown = (event) => {
+		if (event.key === 'Escape' && showImageModal) {
+			closeImagePreview();
+		}
+	};
+
+	onMount(async () => {
+		// 加载MidJourney配置、用户v豆余额和任务历史
+		await loadMidJourneyConfig();
+		await loadUserCredits();
+		await loadUserTasks();
+		loaded = true;
+	});
+</script>
+
+{#if loaded}
+	<div class="p-6 max-w-7xl mx-auto">
+		<!-- 图像生成面板 -->
+		<div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 mb-6">
+			<div class="flex items-center gap-3 mb-6">
+				<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center">
+					<svg class="size-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+					</svg>
+				</div>
+				<div class="flex-1">
+					<h2 class="text-xl font-semibold text-gray-900 dark:text-white">AI图像生成</h2>
+					<p class="text-sm text-gray-600 dark:text-gray-400">使用AI模型根据文字描述生成精美图像</p>
+				</div>
+				
+				<!-- 积分显示 -->
+				<div class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+					<svg class="size-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+					</svg>
+					<span class="text-sm font-medium text-blue-700 dark:text-blue-300">
+						v豆余额: {userCredits.toFixed(2)}
+					</span>
+				</div>
+			</div>
+
+			<!-- 生成参数 -->
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+				<!-- 左侧：提示词输入 -->
+				<div class="space-y-4">
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							图像描述 *
+						</label>
+						<textarea
+							bind:value={prompt}
+							class="w-full h-32 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none"
+							placeholder="请描述你想要生成的图像，例如：一只可爱的小猫坐在花园里，数字艺术风格..."
+							disabled={generating}
+						></textarea>
+					</div>
+
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							负面提示词（可选）
+						</label>
+						<textarea
+							bind:value={negativePrompt}
+							class="w-full h-20 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all resize-none"
+							placeholder="描述你不希望出现在图像中的内容..."
+							disabled={generating}
+						></textarea>
+					</div>
+
+					<!-- 普通参考图片上传 -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							普通参考图 (最多3张)
+						</label>
+						<div class="space-y-3">
+							<!-- 上传按钮 -->
+							<div class="flex items-center gap-2">
+								<input
+									type="file"
+									bind:this={fileInputRef}
+									on:change={(e) => handleReferenceImageUpload(e, 'reference')}
+									accept="image/*"
+									multiple
+									class="hidden"
+									disabled={generating || referenceImages.length >= 3}
+								/>
+								<button
+									type="button"
+									on:click={() => fileInputRef?.click()}
+									disabled={generating || referenceImages.length >= 3}
+									class="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+									</svg>
+									添加参考图
+								</button>
+								<span class="text-xs text-gray-500">
+									{referenceImages.length}/3
+								</span>
+							</div>
+
+							<!-- 参考图片列表 -->
+							{#if referenceImages.length > 0}
+								<div class="grid grid-cols-3 gap-2">
+									{#each referenceImages as img, index}
+										<div class="relative group">
+											<img
+												src={img.preview}
+												alt="参考图 {index + 1}"
+												class="w-full h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+											/>
+											<button
+												type="button"
+												on:click={() => removeReferenceImage(index, 'reference')}
+												class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+											>
+												<svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+												</svg>
+											</button>
+											<!-- 权重输入 -->
+											<div class="mt-1">
+												<input
+													type="number"
+													value={img.weight}
+													on:change={(e) => updateImageWeight(index, e.target.value, 'reference')}
+													min="0.1"
+													max="3.0"
+													step="0.1"
+													class="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+													placeholder="权重"
+												/>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					</div>
+
+					<!-- 风格参考图片上传 -->
+					<div>
+						<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+							风格参考图 (最多2张)
+						</label>
+						<div class="space-y-3">
+							<!-- 上传按钮 -->
+							<div class="flex items-center gap-2">
+								<input
+									type="file"
+									bind:this={styleFileInputRef}
+									on:change={(e) => handleReferenceImageUpload(e, 'style')}
+									accept="image/*"
+									multiple
+									class="hidden"
+									disabled={generating || styleReferenceImages.length >= 2}
+								/>
+								<button
+									type="button"
+									on:click={() => styleFileInputRef?.click()}
+									disabled={generating || styleReferenceImages.length >= 2}
+									class="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-200 dark:border-purple-700 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								>
+									<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"/>
+									</svg>
+									添加风格图
+								</button>
+								<span class="text-xs text-gray-500">
+									{styleReferenceImages.length}/2
+								</span>
+							</div>
+
+							<!-- 风格参考图片列表 -->
+							{#if styleReferenceImages.length > 0}
+								<div class="grid grid-cols-2 gap-2">
+									{#each styleReferenceImages as img, index}
+										<div class="relative group">
+											<img
+												src={img.preview}
+												alt="风格图 {index + 1}"
+												class="w-full h-20 object-cover rounded-lg border border-gray-200 dark:border-gray-600"
+											/>
+											<button
+												type="button"
+												on:click={() => removeReferenceImage(index, 'style')}
+												class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+											>
+												<svg class="size-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+												</svg>
+											</button>
+											<!-- 权重输入 -->
+											<div class="mt-1">
+												<input
+													type="number"
+													value={img.weight}
+													on:change={(e) => updateImageWeight(index, e.target.value, 'style')}
+													min="0.1"
+													max="3.0"
+													step="0.1"
+													class="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-800"
+													placeholder="权重"
+												/>
+											</div>
+										</div>
+									{/each}
+								</div>
+							{/if}
+						</div>
+					</div>
+				</div>
+
+				<!-- 右侧：生成参数 -->
+				<div class="space-y-4">
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								AI模型
+							</label>
+							<select
+								bind:value={selectedModel}
+								class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+								disabled={generating}
+							>
+								<option value="midjourney">Midjourney</option>
+							</select>
+						</div>
+
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								生成模式
+							</label>
+							<select
+								bind:value={selectedMode}
+								class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+								disabled={generating}
+							>
+								<option value="fast">Fast模式 (10v豆/张)</option>
+								<option value="relax">Relax模式 (5v豆/张)</option>
+								<option value="turbo">Turbo模式 (15v豆/张)</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="grid grid-cols-2 gap-4">
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								图像比例
+							</label>
+							<select
+								bind:value={imageSize}
+								class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+								disabled={generating}
+							>
+								{#each Object.entries(ASPECT_RATIOS) as [key, value]}
+									<option value={key}>{key} {key === '1:1' ? '(正方形)' : key === '16:9' ? '(宽屏)' : key === '9:16' ? '(竖屏)' : ''}</option>
+								{/each}
+							</select>
+						</div>
+
+						<div>
+							<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+								模型版本
+							</label>
+							<select
+								bind:value={selectedVersion}
+								class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+								disabled={generating}
+							>
+								<option value={null}>默认版本</option>
+								<optgroup label="🎯 MidJourney (写实风格)">
+									<option value="5.2">v5.2</option>
+									<option value="6">v6</option>
+									<option value="6.1">v6.1 (推荐)</option>
+									<option value="7">v7 (最新)</option>
+								</optgroup>
+								<optgroup label="🎨 Niji (动漫风格)">
+									<option value="niji 5">Niji v5</option>
+									<option value="niji 6">Niji v6</option>
+								</optgroup>
+							</select>
+						</div>
+					</div>
+
+					<!-- 高级选项切换按钮 -->
+					<div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-xl">
+						<div class="flex items-center gap-2">
+							<svg class="size-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+							</svg>
+							<span class="text-sm font-medium text-gray-700 dark:text-gray-300">高级参数</span>
+						</div>
+						<button
+							type="button"
+							on:click={() => showAdvancedOptions = !showAdvancedOptions}
+							class="px-3 py-1 text-xs bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-550 transition-colors"
+						>
+							{showAdvancedOptions ? '收起' : '展开'}
+						</button>
+					</div>
+
+					<!-- 高级参数面板 -->
+					{#if showAdvancedOptions}
+						<div class="space-y-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+							<div class="grid grid-cols-2 gap-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										混乱程度 (0-100)
+									</label>
+									<input
+										type="number"
+										bind:value={chaos}
+										min="0"
+										max="100"
+										class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+										placeholder="默认"
+										disabled={generating}
+									/>
+								</div>
+								<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										风格化程度 (0-1000)
+									</label>
+									<input
+										type="number"
+										bind:value={stylize}
+										min="0"
+										max="1000"
+										class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+										placeholder="默认"
+										disabled={generating}
+									/>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-2 gap-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										种子值 (Seed)
+									</label>
+									<div class="flex gap-2">
+										<input
+											type="number"
+											bind:value={seed}
+											min="0"
+											max="4294967295"
+											class="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+											placeholder="随机"
+											disabled={generating}
+										/>
+										<button
+											type="button"
+											on:click={generateRandomSeed}
+											class="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-xs"
+											disabled={generating}
+										>
+											🎲
+										</button>
+									</div>
+								</div>
+								<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										图像质量
+									</label>
+									<select
+										bind:value={quality}
+										class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+										disabled={generating}
+									>
+										<option value={0.25}>一般 (--q 0.25)</option>
+										<option value={0.5}>清晰 (--q 0.5)</option>
+										<option value={1}>高清 (--q 1)</option>
+										<option value={2}>超高清 (--q 2)</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="grid grid-cols-2 gap-4">
+								<div>
+									<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+										奇异程度 (0-3000)
+									</label>
+									<input
+										type="number"
+										bind:value={weird}
+										min="0"
+										max="3000"
+										class="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-pink-500"
+										placeholder="默认"
+										disabled={generating}
+									/>
+								</div>
+								<div class="flex items-end">
+									<label class="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+										<input
+											type="checkbox"
+											bind:checked={tileMode}
+											class="rounded border-gray-300 dark:border-gray-600 text-pink-500 focus:ring-pink-500"
+											disabled={generating}
+										/>
+										平铺模式 (Tile)
+									</label>
+								</div>
+							</div>
+						</div>
+					{/if}
+
+
+					<!-- 任务进度显示 -->
+					{#if currentTask && generating}
+						<div class="w-full p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-700 mb-4">
+							<div class="flex items-center justify-between mb-2">
+								<span class="text-sm font-medium text-blue-700 dark:text-blue-300">
+									{currentTask.message || '处理中...'}
+								</span>
+								<span class="text-xs text-blue-600 dark:text-blue-400">
+									{currentTask.progress || 0}%
+								</span>
+							</div>
+							<div class="w-full bg-blue-100 dark:bg-blue-800 rounded-full h-2">
+								<div 
+									class="bg-blue-500 h-2 rounded-full transition-all duration-300"
+									style="width: {currentTask.progress || 0}%"
+								></div>
+							</div>
+							<div class="mt-2 text-xs text-blue-600 dark:text-blue-400">
+								任务ID: {currentTask.task_id}
+							</div>
+						</div>
+					{/if}
+
+					<!-- 生成按钮 -->
+					<button
+						class="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-xl transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+						on:click={generateImage}
+						disabled={generating || !prompt.trim()}
+					>
+						{#if generating}
+							<Spinner className="size-4" />
+							{currentTask?.message || '生成中...'}
+						{:else}
+							<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+							</svg>
+							生成图像
+						{/if}
+					</button>
+				</div>
+			</div>
+		</div>
+
+
+		<!-- 图像历史区域 -->
+		<div class="flex items-center justify-between mb-6">
+			<div class="flex items-center gap-3">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">生成历史</h3>
+				<span class="px-3 py-1 text-sm font-medium bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full">
+					{filteredImages.length} 张图像
+				</span>
+			</div>
+
+			<!-- 搜索框 -->
+			<div class="relative">
+				<div class="absolute left-3 top-1/2 transform -translate-y-1/2">
+					<Search className="size-4 text-gray-400" />
+				</div>
+				<input
+					class="pl-10 pr-4 py-2 w-64 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+					bind:value={query}
+					placeholder="搜索图像..."
+				/>
+			</div>
+		</div>
+
+		<!-- 图像网格 -->
+		{#if filteredImages.length > 0}
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+				{#each filteredImages as image (image.id)}
+					<div class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200">
+						<!-- 图像 -->
+						<div class="relative overflow-hidden" style="aspect-ratio: {getImageAspectRatio(image)};">
+							{#if image.image}
+								<!-- 已生成的图像 -->
+								<img
+									src={image.image}
+									alt={image.prompt}
+									class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+									loading="lazy"
+								/>
+								
+								<!-- 悬停操作 -->
+								<div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
+									<div class="flex gap-2">
+										<button
+											class="p-2 bg-blue-500/90 hover:bg-blue-500 text-white rounded-lg transition-colors"
+											on:click={() => openImagePreview(image)}
+											title="放大查看"
+										>
+											<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
+											</svg>
+										</button>
+										<button
+											class="p-2 bg-white/90 hover:bg-white rounded-lg transition-colors"
+											on:click={() => downloadImage(image.image, image.prompt)}
+											title="下载图像"
+										>
+											<svg class="size-4 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+											</svg>
+										</button>
+										<button
+											class="p-2 bg-red-500/90 hover:bg-red-500 text-white rounded-lg transition-colors"
+											on:click={() => deleteImage(image.id)}
+											title="删除图像"
+										>
+											<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+											</svg>
+										</button>
+									</div>
+								</div>
+							{:else}
+								<!-- 正在生成中的占位符 -->
+								<div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex flex-col items-center justify-center">
+									{#if image.status === 'processing'}
+										<!-- 生成中动画 -->
+										<div class="mb-4">
+											<Spinner className="size-8 text-pink-500" />
+										</div>
+										<div class="text-center px-4">
+											<div class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+												正在生成中...
+											</div>
+											<div class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+												{image.message || '处理中'}
+											</div>
+											<!-- 进度条 -->
+											<div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-2">
+												<div 
+													class="bg-gradient-to-r from-pink-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+													style="width: {image.progress || 0}%"
+												></div>
+											</div>
+											<div class="text-xs text-gray-500 dark:text-gray-400">
+												{image.progress || 0}%
+											</div>
+										</div>
+									{:else if image.status === 'failed'}
+										<!-- 失败状态 -->
+										<div class="text-center px-4">
+											<div class="mb-3">
+												<svg class="size-8 text-red-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+												</svg>
+											</div>
+											<div class="text-sm font-medium text-red-600 dark:text-red-400 mb-2">
+												生成失败
+											</div>
+											<div class="text-xs text-gray-500 dark:text-gray-400">
+												{image.message || '未知错误'}
+											</div>
+										</div>
+									{:else}
+										<!-- 其他状态 -->
+										<div class="text-center px-4">
+											<div class="text-sm text-gray-500 dark:text-gray-400">
+												{image.message || '等待中...'}
+											</div>
+										</div>
+									{/if}
+								</div>
+							{/if}
+						</div>
+
+						<!-- 图像信息 -->
+						<div class="p-4">
+							<p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-3 leading-relaxed">
+								{image.prompt}
+							</p>
+							
+							<!-- 任务状态显示 -->
+							{#if image.status && image.status !== 'completed'}
+								<div class="mb-3 p-2 rounded-lg {image.status === 'processing' ? 'bg-blue-50 dark:bg-blue-900/20' : image.status === 'failed' ? 'bg-red-50 dark:bg-red-900/20' : 'bg-gray-50 dark:bg-gray-700'}">
+									<div class="flex items-center justify-between text-xs">
+										<span class="font-medium {image.status === 'processing' ? 'text-blue-600 dark:text-blue-400' : image.status === 'failed' ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'}">
+											{image.status === 'processing' ? '正在生成中' : image.status === 'failed' ? '生成失败' : '任务状态'}
+										</span>
+										{#if image.status === 'processing' && image.progress}
+											<span class="text-{image.status === 'processing' ? 'blue' : 'gray'}-500">
+												{image.progress}%
+											</span>
+										{/if}
+									</div>
+									{#if image.message}
+										<div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+											{image.message}
+										</div>
+									{/if}
+								</div>
+							{/if}
+
+							<!-- MidJourney动作按钮 - 只在任务完成且有动作按钮时显示 -->
+							{#if image.actions && image.actions.length > 0 && (image.status === 'completed' || !image.status)}
+								<div class="mb-3">
+									<div class="text-xs text-gray-500 dark:text-gray-400 mb-2">MidJourney 操作:</div>
+									<div class="flex flex-wrap gap-1">
+										{#each image.actions as action}
+											<button
+												type="button"
+												on:click={() => executeAction(image, action)}
+												disabled={executingAction && selectedImageForAction === image.id}
+												class="px-2 py-1 text-xs bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-700 rounded hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/30 dark:hover:to-indigo-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+												title={action.type}
+											>
+												{#if action.emoji}
+													<span>{action.emoji}</span>
+												{/if}
+												{action.label}
+												{#if executingAction && selectedImageForAction === image.id}
+													<svg class="size-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+													</svg>
+												{/if}
+											</button>
+										{/each}
+									</div>
+								</div>
+							{/if}
+							
+							<!-- 种子值显示 -->
+							{#if image.seed}
+								<div class="mb-2 text-xs text-gray-500 dark:text-gray-400">
+									<span class="font-medium">种子:</span> {image.seed}
+								</div>
+							{/if}
+							
+							<div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+								<span class="px-2 py-1 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 text-pink-600 dark:text-pink-400 rounded-md font-medium">
+									{image.model}
+								</span>
+								<span>
+									{image.timestamp.toLocaleString('zh-CN', { 
+										month: 'short', 
+										day: 'numeric', 
+										hour: '2-digit', 
+										minute: '2-digit' 
+									})}
+								</span>
+							</div>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<!-- 空状态 -->
+			<div class="text-center py-12">
+				<div class="text-6xl mb-4">🎨</div>
+				<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">还没有生成图像</h3>
+				<p class="text-gray-500 dark:text-gray-400 mb-4">开始输入描述来生成你的第一张AI图像</p>
+			</div>
+		{/if}
+
+		<!-- 使用提示 -->
+		<div class="text-center text-gray-500 text-xs mt-8 mb-2">
+			💡 提示：详细的描述能帮助生成更精准的图像。尝试包含风格、色彩、构图等关键词
+		</div>
+	</div>
+{:else}
+	<div class="w-full h-full flex justify-center items-center">
+		<Spinner />
+	</div>
+{/if}
+
+<!-- 图片预览模态框 -->
+{#if showImageModal && previewImage}
+	<div 
+		class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+		on:click={closeImagePreview}
+		on:keydown={handleKeyDown}
+		tabindex="-1"
+	>
+		<div 
+			class="relative max-w-[90vw] max-h-[90vh] bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-2xl"
+			on:click|stopPropagation
+		>
+			<!-- 关闭按钮 -->
+			<button
+				class="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+				on:click={closeImagePreview}
+				title="关闭 (ESC)"
+			>
+				<svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+				</svg>
+			</button>
+			
+			<!-- 图片容器 -->
+			<div class="relative">
+				<img
+					src={previewImage.image}
+					alt={previewImage.prompt}
+					class="max-w-full max-h-[80vh] object-contain"
+					loading="lazy"
+				/>
+			</div>
+			
+			<!-- 图片信息 -->
+			<div class="p-6 border-t border-gray-200 dark:border-gray-700">
+				<h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">图片详情</h3>
+				<p class="text-sm text-gray-600 dark:text-gray-400 mb-3 leading-relaxed">
+					{previewImage.prompt}
+				</p>
+				<div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+					<span class="px-2 py-1 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 text-pink-600 dark:text-pink-400 rounded-md font-medium">
+						{previewImage.model}
+					</span>
+					<span>
+						{previewImage.timestamp.toLocaleString('zh-CN', { 
+							year: 'numeric',
+							month: 'short', 
+							day: 'numeric', 
+							hour: '2-digit', 
+							minute: '2-digit' 
+						})}
+					</span>
+				</div>
+				{#if previewImage.aspect_ratio}
+					<div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+						宽高比: {previewImage.aspect_ratio}
+					</div>
+				{/if}
+				{#if previewImage.seed}
+					<div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+						种子: {previewImage.seed}
+					</div>
+				{/if}
+			</div>
+		</div>
+	</div>
+{/if}
+
+<!-- 键盘事件监听 -->
+<svelte:window on:keydown={handleKeyDown} />

@@ -100,7 +100,7 @@
 			console.error(err);
 		}
 	};
-	import { showSidebar } from '$lib/stores';
+	import { showSidebar, creditName } from '$lib/stores';
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
 </script>
 
@@ -265,7 +265,7 @@
 										<span class="text-base font-normal text-gray-500">/ {menu.duration}天</span>
 									</div>
 									<div class="text-xl font-bold mb-2 text-black">
-										{menu.credits * menu.duration}V豆<span
+										{menu.credits * menu.duration}{$creditName}<span
 											class="text-base font-normal text-gray-500"
 										></span>
 									</div>

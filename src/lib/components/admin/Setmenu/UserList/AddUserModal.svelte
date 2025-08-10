@@ -3,6 +3,7 @@
 	import { createEventDispatcher } from 'svelte';
 	import { onMount, getContext } from 'svelte';
 	import { addUser } from '$lib/apis/setmenu';
+	import { creditName } from '$lib/stores';
 
 	import { WEBUI_BASE_URL } from '$lib/constants';
 	import Switch from '$lib/components/common/Switch.svelte';
@@ -249,7 +250,7 @@
 
 									<span class="flex-1 text-sm text-gray-500"
 										>×{_user.duration ?? $i18n.t('menuduration')} = {_user.credits * _user.duration}
-										{$i18n.t('Credit')}</span
+										{$creditName}</span
 									>
 								</div>
 							</div>
