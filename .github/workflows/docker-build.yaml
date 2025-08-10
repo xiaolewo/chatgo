@@ -1,4 +1,4 @@
-name: Create and publish Docker images with specific build args
+name: Create and publish Docker images with specific build args (AMD64 only)
 
 on:
   workflow_dispatch:
@@ -16,7 +16,7 @@ env:
 
 jobs:
   build-main-image:
-    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -25,7 +25,6 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-          - linux/arm64
 
     steps:
       # GitHub Packages requires the entire repository name to be in lowercase
@@ -146,7 +145,7 @@ jobs:
           retention-days: 1
 
   build-cuda-image:
-    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -155,7 +154,6 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-          - linux/arm64
 
     steps:
       # GitHub Packages requires the entire repository name to be in lowercase
@@ -277,7 +275,7 @@ jobs:
           retention-days: 1
 
   build-ollama-image:
-    runs-on: ${{ matrix.platform == 'linux/arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -286,7 +284,6 @@ jobs:
       matrix:
         platform:
           - linux/amd64
-          - linux/arm64
 
     steps:
       # GitHub Packages requires the entire repository name to be in lowercase
