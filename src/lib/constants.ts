@@ -5,7 +5,7 @@ export const APP_NAME = 'ViVi';
 
 export const WEBUI_HOSTNAME = browser ? (dev ? `${location.hostname}:8080` : ``) : '';
 export const WEBUI_BASE_URL = browser ? (dev ? `http://${WEBUI_HOSTNAME}` : ``) : ``;
-// export const WEBUI_HOSTNAME = 'http://yb748266.natre.cc';
+// export const WEBUI_HOSTNAME = 'http://yb748266.natre111.cc';
 // export const WEBUI_HOSTNAME = 'vivi.xjrwith.cn';
 // export const WEBUI_BASE_URL = browser ? (dev ? `https://${WEBUI_HOSTNAME}` : ``) : ``;
 export const WEBUI_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1`;
