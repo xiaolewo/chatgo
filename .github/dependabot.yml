@@ -1,0 +1,63 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: '/'
+    schedule:
+      interval: monthly
+    target-branch: 'release'
+    open-pull-requests-limit: 3
+    versioning-strategy: increase
+    labels:
+      - 'dependencies'
+      - 'uv'
+      - 'python'
+
+  - package-ecosystem: pip
+    directory: '/backend'
+    schedule:
+      interval: monthly
+    target-branch: 'release'
+    open-pull-requests-limit: 3
+    versioning-strategy: increase
+    labels:
+      - 'dependencies'
+      - 'python'
+      - 'backend'
+    reviewers:
+      - 'xiaolewo'
+
+  - package-ecosystem: npm
+    directory: '/'
+    schedule:
+      interval: monthly
+    target-branch: 'release'
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    labels:
+      - 'dependencies'
+      - 'javascript'
+      - 'frontend'
+    reviewers:
+      - 'xiaolewo'
+    # 只忽略已知有严重问题的特定版本
+    ignore:
+      # 暂时忽略这些包的早期问题版本
+      - dependency-name: "vitest"
+        versions: ["3.0.0", "3.1.0"]  # 内存问题版本
+      - dependency-name: "echarts"  
+        versions: ["6.0.0"]           # 初始6.x版本可能不稳定
+    # 允许 @sveltejs/kit 更新，让CI决定是否通过
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: monthly
+    target-branch: 'release'
+    open-pull-requests-limit: 2
+    versioning-strategy: increase
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+      - 'ci-cd'
+    reviewers:
+      - 'xiaolewo'
