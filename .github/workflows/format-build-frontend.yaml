@@ -25,7 +25,7 @@ jobs:
     name: 'Format & Build Frontend'
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: --max-old-space-size=8192 --no-lazy
+      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run i18next
         env:
-          NODE_OPTIONS: --max-old-space-size=8192 --no-lazy
+          NODE_OPTIONS: --max-old-space-size=8192
         run: npm run i18n:parse
 
       - name: Check for Changes After Format
@@ -59,14 +59,14 @@ jobs:
 
       - name: Build Frontend
         env:
-          NODE_OPTIONS: --max-old-space-size=16384 --no-lazy --gc-interval=100
+          NODE_OPTIONS: --max-old-space-size=16384
         run: npm run build
 
   test-frontend:
     name: 'Frontend Unit Tests'
     runs-on: ubuntu-latest
     env:
-      NODE_OPTIONS: --max-old-space-size=8192 --no-lazy
+      NODE_OPTIONS: --max-old-space-size=8192
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -82,5 +82,5 @@ jobs:
 
       - name: Run vitest
         env:
-          NODE_OPTIONS: --max-old-space-size=12288 --no-lazy --gc-interval=100
+          NODE_OPTIONS: --max-old-space-size=12288
         run: npm run test:frontend
