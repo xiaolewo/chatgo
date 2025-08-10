@@ -5,7 +5,7 @@ on:
     branches:
       - main
       - dev
-      - credit
+      - release
     paths-ignore:
       - 'backend/**'
       - 'pyproject.toml'
