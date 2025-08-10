@@ -1,8 +1,8 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	export let field = {};
 	export let value = '';
 	export let error = '';
@@ -26,7 +26,7 @@
 	// 键盘导航
 	const handleKeydown = (event, optionValue) => {
 		if (readonly) return;
-		
+
 		if (event.key === ' ' || event.key === 'Enter') {
 			event.preventDefault();
 			handleChange(optionValue);
@@ -38,15 +38,15 @@
 
 	// 方向键导航
 	const navigateOptions = (direction) => {
-		const enabledOptions = options.filter(opt => !opt.disabled);
+		const enabledOptions = options.filter((opt) => !opt.disabled);
 		if (enabledOptions.length === 0) return;
-		
-		const currentIndex = enabledOptions.findIndex(opt => opt.value === value);
+
+		const currentIndex = enabledOptions.findIndex((opt) => opt.value === value);
 		let nextIndex = currentIndex + direction;
-		
+
 		if (nextIndex < 0) nextIndex = enabledOptions.length - 1;
 		if (nextIndex >= enabledOptions.length) nextIndex = 0;
-		
+
 		handleChange(enabledOptions[nextIndex].value);
 	};
 
@@ -71,7 +71,7 @@
 		<p class="field-description">{field.description}</p>
 	{/if}
 
-	<div 
+	<div
 		class="radio-list {layout}"
 		class:readonly
 		style={layout === 'grid' ? `--columns: ${columns}` : ''}
@@ -79,8 +79,8 @@
 		aria-labelledby="field-{field.id}"
 	>
 		{#each options as option, index}
-			<label 
-				class="radio-item" 
+			<label
+				class="radio-item"
 				class:disabled={option.disabled}
 				class:readonly
 				class:selected={value === option.value}

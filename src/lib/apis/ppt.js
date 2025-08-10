@@ -11,27 +11,27 @@ const PPT_API_BASE = '/api/v1/ppt';
 // 任务状态常量
 export const TASK_STATUS = {
 	PENDING: 'pending',
-	PROCESSING: 'processing', 
+	PROCESSING: 'processing',
 	COMPLETED: 'completed',
 	FAILED: 'failed'
 };
 
 // 生成类型常量
 export const GENERATION_TYPES = {
-	TOPIC: 1,        // 智能生成（主题、要求）
-	FILE: 2,         // 上传文件生成
-	MINDMAP: 3,      // 上传思维导图生成
-	WORD: 4,         // 通过word精准转ppt
-	URL: 5,          // 通过网页链接生成
-	TEXT: 6,         // 粘贴文本内容生成
-	MARKDOWN: 7      // Markdown大纲生成
+	TOPIC: 1, // 智能生成（主题、要求）
+	FILE: 2, // 上传文件生成
+	MINDMAP: 3, // 上传思维导图生成
+	WORD: 4, // 通过word精准转ppt
+	URL: 5, // 通过网页链接生成
+	TEXT: 6, // 粘贴文本内容生成
+	MARKDOWN: 7 // Markdown大纲生成
 };
 
 // 篇幅长度
 export const LENGTHS = {
-	SHORT: 'short',   // 10-15页
+	SHORT: 'short', // 10-15页
 	MEDIUM: 'medium', // 20-30页
-	LONG: 'long'      // 25-35页
+	LONG: 'long' // 25-35页
 };
 
 /**
@@ -50,13 +50,15 @@ export const getPptConfig = async (token) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -65,7 +67,7 @@ export const getPptConfig = async (token) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -99,13 +101,15 @@ export const updatePptConfig = async (token, config) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -114,7 +118,7 @@ export const updatePptConfig = async (token, config) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -147,13 +151,15 @@ export const getTemplateOptions = async (token) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -162,7 +168,7 @@ export const getTemplateOptions = async (token) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -209,13 +215,15 @@ export const getTemplates = async (token, params = {}) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -224,7 +232,7 @@ export const getTemplates = async (token, params = {}) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -247,7 +255,7 @@ export const getTemplates = async (token, params = {}) => {
 export const createPptTask = async (token, type, content = '', files = []) => {
 	const formData = new FormData();
 	formData.append('type', type);
-	
+
 	if (content) {
 		formData.append('content', content);
 	}
@@ -271,13 +279,15 @@ export const createPptTask = async (token, type, content = '', files = []) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -286,7 +296,7 @@ export const createPptTask = async (token, type, content = '', files = []) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -325,13 +335,15 @@ export const getGenerationOptions = async (token) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -340,7 +352,7 @@ export const getGenerationOptions = async (token) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -370,10 +382,10 @@ export const generateContent = async (token, taskId, options = {}) => {
 		prompt: null
 	};
 
-	const requestOptions = { 
-		id: taskId, 
-		...defaultOptions, 
-		...options 
+	const requestOptions = {
+		id: taskId,
+		...defaultOptions,
+		...options
 	};
 
 	console.log('generateContent请求参数:', requestOptions);
@@ -393,17 +405,19 @@ export const generateContent = async (token, taskId, options = {}) => {
 				statusText: res.statusText,
 				ok: res.ok
 			});
-			
+
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('generateContent HTTP错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -412,7 +426,7 @@ export const generateContent = async (token, taskId, options = {}) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -464,17 +478,19 @@ export const generatePpt = async (token, taskId, templateId, markdown) => {
 				statusText: res.statusText,
 				ok: res.ok
 			});
-			
+
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('generatePpt HTTP错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -483,7 +499,7 @@ export const generatePpt = async (token, taskId, templateId, markdown) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				console.error('处理后的错误消息:', errorMessage);
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
@@ -535,13 +551,15 @@ export const getUserPpts = async (token, page = 1, size = 10) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -550,7 +568,7 @@ export const getUserPpts = async (token, page = 1, size = 10) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -583,13 +601,15 @@ export const loadPpt = async (token, pptId) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -598,7 +618,7 @@ export const loadPpt = async (token, pptId) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -639,13 +659,15 @@ export const updateContent = async (token, taskId, markdown, question = null, st
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -654,7 +676,7 @@ export const updateContent = async (token, taskId, markdown, question = null, st
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -690,13 +712,15 @@ export const loadPptMarkdown = async (token, pptId, format = 'tree') => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -705,7 +729,7 @@ export const loadPptMarkdown = async (token, pptId, format = 'tree') => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -727,14 +751,17 @@ export const loadPptMarkdown = async (token, pptId, format = 'tree') => {
  */
 export const downloadPptWithAnimation = async (token, pptId, animationType = 1) => {
 	let error = null;
-	
+
 	try {
-		const response = await fetch(`${WEBUI_API_BASE_URL}/ppt/downloadWithAnimation?type=${animationType}&id=${pptId}`, {
-			method: 'GET',
-			headers: {
-				Authorization: `Bearer ${token}`
+		const response = await fetch(
+			`${WEBUI_API_BASE_URL}/ppt/downloadWithAnimation?type=${animationType}&id=${pptId}`,
+			{
+				method: 'GET',
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
 			}
-		});
+		);
 
 		if (!response.ok) {
 			throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -779,13 +806,15 @@ export const downloadPpt = async (token, pptId, refresh = false) => {
 			if (!res.ok) {
 				const errorData = await res.json();
 				console.error('API错误响应:', errorData);
-				
+
 				// 处理不同格式的错误信息
 				let errorMessage;
 				if (errorData.detail) {
 					if (Array.isArray(errorData.detail)) {
 						// FastAPI validation error format
-						errorMessage = errorData.detail.map(err => `${err.loc?.join('.')}: ${err.msg}`).join(', ');
+						errorMessage = errorData.detail
+							.map((err) => `${err.loc?.join('.')}: ${err.msg}`)
+							.join(', ');
 					} else {
 						errorMessage = errorData.detail;
 					}
@@ -794,7 +823,7 @@ export const downloadPpt = async (token, pptId, refresh = false) => {
 				} else {
 					errorMessage = JSON.stringify(errorData);
 				}
-				
+
 				throw new Error(errorMessage || `HTTP ${res.status}`);
 			}
 			return res.json();
@@ -826,7 +855,7 @@ export const downloadPpt = async (token, pptId, refresh = false) => {
  */
 export const verifyPptConnection = async (apiUrl, apiKey) => {
 	let error = null;
-	
+
 	// 这里可以调用一个简单的API来测试连接
 	const res = await fetch(`${apiUrl}/api/ppt/v2/options`, {
 		method: 'GET',

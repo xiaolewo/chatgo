@@ -219,7 +219,9 @@ class CreditsTable:
             db.commit()
         return self.get_credit_by_user_id(form_data.user_id)
 
-    def update_credit_by_user_id(self, user_id: str, new_credit: Decimal) -> Optional[CreditModel]:
+    def update_credit_by_user_id(
+        self, user_id: str, new_credit: Decimal
+    ) -> Optional[CreditModel]:
         """更新用户积分到指定值"""
         try:
             credit_model = self.init_credit_by_user_id(user_id=user_id)
@@ -228,10 +230,10 @@ class CreditsTable:
                 credit=new_credit,
                 detail={
                     "desc": "积分扣除",
-                    "api_path": "/api/v1/video/generate", 
+                    "api_path": "/api/v1/video/generate",
                     "api_params": {},
-                    "usage": {}
-                }
+                    "usage": {},
+                },
             )
             with get_db() as db:
                 db.add(CreditLog(**log.model_dump()))

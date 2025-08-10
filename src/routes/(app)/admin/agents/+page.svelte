@@ -38,9 +38,7 @@
 			<div class="unauthorized-icon">🚫</div>
 			<h1>访问被拒绝</h1>
 			<p>您需要管理员权限才能访问智能体管理页面。</p>
-			<button class="btn-primary" on:click={() => goto('/')}>
-				返回首页
-			</button>
+			<button class="btn-primary" on:click={() => goto('/')}> 返回首页 </button>
 		</div>
 	</div>
 {:else}
@@ -121,7 +119,11 @@
 	}
 
 	@keyframes spin {
-		from { transform: rotate(0deg); }
-		to { transform: rotate(360deg); }
+		from {
+			transform: rotate(0deg);
+		}
+		to {
+			transform: rotate(360deg);
+		}
 	}
 </style>

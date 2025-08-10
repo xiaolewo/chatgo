@@ -12,7 +12,7 @@
 	let saving = false;
 	let verifying = false;
 	let connectionStatus = null; // null, 'success', 'failed'
-	
+
 	let config = {
 		enabled: false,
 		api_url: '',
@@ -24,7 +24,7 @@
 	// 加载配置
 	const loadConfig = async () => {
 		if (!$user?.token) return;
-		
+
 		loading = true;
 		try {
 			const response = await getJimengConfig($user.token);
@@ -72,11 +72,11 @@
 
 		verifying = true;
 		connectionStatus = null;
-		
+
 		try {
 			const response = await verifyJimengConnection($user.token);
 			connectionStatus = response.status === 'success' ? 'success' : 'failed';
-			
+
 			if (connectionStatus === 'success') {
 				toast.success('连接验证成功');
 			} else {
@@ -101,12 +101,8 @@
 		<!-- 启用状态 -->
 		<div class="flex items-center justify-between">
 			<div>
-				<h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-					启用即梦视频服务
-				</h3>
-				<p class="text-sm text-gray-500 dark:text-gray-400">
-					启用后用户可以使用即梦生成视频
-				</p>
+				<h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">启用即梦视频服务</h3>
+				<p class="text-sm text-gray-500 dark:text-gray-400">启用后用户可以使用即梦生成视频</p>
 			</div>
 			<Switch bind:state={config.enabled} />
 		</div>
@@ -114,10 +110,8 @@
 		{#if config.enabled}
 			<!-- API配置 -->
 			<div class="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-				<h4 class="font-medium text-gray-900 dark:text-gray-100">
-					API配置
-				</h4>
-				
+				<h4 class="font-medium text-gray-900 dark:text-gray-100">API配置</h4>
+
 				<!-- API URL -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -145,9 +139,7 @@
 						placeholder="Bearer token"
 						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
 					/>
-					<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-						用于验证API请求的Bearer token
-					</p>
+					<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">用于验证API请求的Bearer token</p>
 				</div>
 
 				<!-- 验证连接按钮 -->
@@ -159,9 +151,25 @@
 					>
 						{#if verifying}
 							<span class="flex items-center">
-								<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-									<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								<svg
+									class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+									xmlns="http://www.w3.org/2000/svg"
+									fill="none"
+									viewBox="0 0 24 24"
+								>
+									<circle
+										class="opacity-25"
+										cx="12"
+										cy="12"
+										r="10"
+										stroke="currentColor"
+										stroke-width="4"
+									></circle>
+									<path
+										class="opacity-75"
+										fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+									></path>
 								</svg>
 								验证中...
 							</span>
@@ -169,7 +177,7 @@
 							验证连接
 						{/if}
 					</button>
-					
+
 					{#if connectionStatus === 'success'}
 						<span class="ml-3 text-green-600">✓ 连接成功</span>
 					{:else if connectionStatus === 'failed'}
@@ -180,10 +188,8 @@
 
 			<!-- 积分配置 -->
 			<div class="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-				<h4 class="font-medium text-gray-900 dark:text-gray-100">
-					积分消耗配置
-				</h4>
-				
+				<h4 class="font-medium text-gray-900 dark:text-gray-100">积分消耗配置</h4>
+
 				<!-- 5秒视频积分 -->
 				<div>
 					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -196,9 +202,7 @@
 						max="100"
 						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
 					/>
-					<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-						生成5秒视频所需的积分数量
-					</p>
+					<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">生成5秒视频所需的积分数量</p>
 				</div>
 
 				<!-- 10秒视频积分 -->
@@ -213,9 +217,7 @@
 						max="100"
 						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
 					/>
-					<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-						生成10秒视频所需的积分数量
-					</p>
+					<p class="mt-1 text-xs text-gray-500 dark:text-gray-400">生成10秒视频所需的积分数量</p>
 				</div>
 			</div>
 		{/if}
@@ -229,9 +231,25 @@
 			>
 				{#if saving}
 					<span class="flex items-center">
-						<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-							<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-							<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						<svg
+							class="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<circle
+								class="opacity-25"
+								cx="12"
+								cy="12"
+								r="10"
+								stroke="currentColor"
+								stroke-width="4"
+							></circle>
+							<path
+								class="opacity-75"
+								fill="currentColor"
+								d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+							></path>
 						</svg>
 						保存中...
 					</span>

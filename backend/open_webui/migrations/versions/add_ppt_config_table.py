@@ -26,7 +26,9 @@ def upgrade() -> None:
         "ppt_config",
         sa.Column("id", sa.String(), nullable=False),
         sa.Column("enabled", sa.Boolean(), default=False, nullable=False),
-        sa.Column("api_url", sa.String(), default="https://open.docmee.cn", nullable=False),
+        sa.Column(
+            "api_url", sa.String(), default="https://open.docmee.cn", nullable=False
+        ),
         sa.Column("api_key", sa.String(), default="", nullable=False),
         sa.Column("credits_per_ppt", sa.Integer(), default=10, nullable=False),
         sa.Column("updated_at", sa.BigInteger(), nullable=True),

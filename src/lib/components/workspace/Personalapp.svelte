@@ -55,7 +55,7 @@
 	// 模拟评分数据（我的应用通常评分会稍低一些）
 	const getModelRating = (modelId) => {
 		const ratings = {
-			'default': 4.5,
+			default: 4.5
 		};
 		return ratings[modelId] || (3.5 + Math.random() * 1.5).toFixed(1);
 	};
@@ -83,7 +83,9 @@
 
 		// 排序
 		if (sortBy === '评分') {
-			filtered = filtered.sort((a, b) => parseFloat(getModelRating(b.name)) - parseFloat(getModelRating(a.name)));
+			filtered = filtered.sort(
+				(a, b) => parseFloat(getModelRating(b.name)) - parseFloat(getModelRating(a.name))
+			);
 		} else if (sortBy === '使用量') {
 			filtered = filtered.sort((a, b) => {
 				const aCount = parseInt(getModelUsageCount(a.name));
@@ -93,7 +95,7 @@
 		} else if (sortBy === '状态') {
 			filtered = filtered.sort((a, b) => (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0));
 		}
-		
+
 		filteredModels = filtered;
 	}
 
@@ -253,11 +255,13 @@
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-3">
 				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">我的应用</h2>
-				<span class="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full">
+				<span
+					class="px-3 py-1 text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full"
+				>
 					{filteredModels.length} 个应用
 				</span>
 			</div>
-			
+
 			<!-- 创建按钮 -->
 			<a
 				href="/personalapp/create"
@@ -280,10 +284,10 @@
 					placeholder="搜索我的应用..."
 				/>
 			</div>
-			
+
 			<!-- 筛选按钮 -->
 			<div class="relative">
-				<select 
+				<select
 					bind:value={sortBy}
 					class="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer"
 				>
@@ -296,16 +300,23 @@
 		</div>
 	</div>
 	<!-- 卡片网格 -->
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8" id="model-list">
+	<div
+		class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8"
+		id="model-list"
+	>
 		{#each filteredModels as model}
 			<div
-				class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 {model.is_active ? '' : 'opacity-75'}"
+				class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 {model.is_active
+					? ''
+					: 'opacity-75'}"
 				id="model-item-{model.id}"
 			>
 				<!-- 图标和标题 -->
 				<div class="flex items-start gap-3 mb-4">
 					<div class="flex-shrink-0">
-						<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 flex items-center justify-center text-2xl">
+						<div
+							class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 flex items-center justify-center text-2xl"
+						>
 							{#if model?.meta?.profile_image_url}
 								<img
 									src={model.meta.profile_image_url}
@@ -317,9 +328,9 @@
 							{/if}
 						</div>
 					</div>
-					
+
 					<div class="flex-1 min-w-0">
-						<a 
+						<a
 							href={`/?models=${encodeURIComponent(model.id)}`}
 							class="block group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
 						>
@@ -327,12 +338,14 @@
 								{model.name}
 							</h3>
 						</a>
-						
+
 						<!-- 评分和使用量 -->
 						<div class="flex items-center gap-3 mt-1">
 							<div class="flex items-center gap-1">
 								<span class="text-yellow-400">⭐</span>
-								<span class="text-sm font-medium text-gray-700 dark:text-gray-300">{getModelRating(model.name)}</span>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+									>{getModelRating(model.name)}</span
+								>
 							</div>
 							<div class="text-xs text-gray-500 dark:text-gray-400">
 								{getModelUsageCount(model.name)}使用
@@ -355,12 +368,14 @@
 				<!-- 状态和操作 -->
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
-						<span class="px-2 py-1 text-xs font-medium rounded-md {model.is_active 
-							? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400' 
-							: 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}">
+						<span
+							class="px-2 py-1 text-xs font-medium rounded-md {model.is_active
+								? 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+								: 'bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400'}"
+						>
 							{getModelStatus(model)}
 						</span>
-						
+
 						<!-- 开关 -->
 						<div class="ml-1">
 							<Tooltip content={model.is_active ? '点击禁用' : '点击启用'}>
@@ -380,7 +395,7 @@
 							</Tooltip>
 						</div>
 					</div>
-					
+
 					<!-- 操作按钮 -->
 					<div class="flex items-center gap-1">
 						{#if shiftKey}

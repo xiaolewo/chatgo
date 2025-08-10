@@ -7,52 +7,53 @@ import requests
 import json
 from datetime import datetime
 
+
 def debug_api_calls():
     """调试API调用"""
-    
+
     print("🔍 API调用调试")
     print("=" * 50)
     print(f"时间: {datetime.now()}")
-    
+
     # OpenWebUI基础URL
     base_url = "http://localhost:8080"
-    
+
     print(f"\n使用基础URL: {base_url}")
-    
+
     # 1. 测试健康检查
     print(f"\n1️⃣ 测试基础连接...")
     try:
         health_response = requests.get(f"{base_url}/health", timeout=5)
         print(f"健康检查: {health_response.status_code}")
-        
+
         if health_response.status_code != 200:
             print("❌ 基础服务不可用")
             return
-            
+
     except Exception as e:
         print(f"❌ 连接失败: {str(e)}")
         return
-    
+
     # 2. 测试MidJourney路由可用性
     print(f"\n2️⃣ 测试MidJourney路由...")
-    
+
     routes_to_test = [
         ("/api/v1/midjourney/config", "GET"),
         ("/api/v1/midjourney/generate", "POST"),
     ]
-    
+
     for route, method in routes_to_test:
         url = f"{base_url}{route}"
         print(f"\n测试: {method} {url}")
-        
+
         try:
             if method == "GET":
                 response = requests.get(url, timeout=5)
             elif method == "POST":
                 response = requests.post(url, json={"test": "data"}, timeout=5)
-            
+
             print(f"状态码: {response.status_code}")
-            
+
             if response.status_code == 403:
                 print("✅ 路由存在，需要认证")
             elif response.status_code == 404:
@@ -65,30 +66,30 @@ def debug_api_calls():
                 print("❌ 服务器内部错误")
                 try:
                     error_detail = response.json()
-                    print(f"错误详情: {json.dumps(error_detail, indent=2, ensure_ascii=False)}")
+                    print(
+                        f"错误详情: {json.dumps(error_detail, indent=2, ensure_ascii=False)}"
+                    )
                 except:
                     print(f"错误内容: {response.text}")
             else:
                 print(f"其他状态: {response.status_code}")
                 try:
                     content = response.json()
-                    print(f"响应内容: {json.dumps(content, indent=2, ensure_ascii=False)}")
+                    print(
+                        f"响应内容: {json.dumps(content, indent=2, ensure_ascii=False)}"
+                    )
                 except:
                     print(f"响应文本: {response.text}")
-                    
+
         except Exception as e:
             print(f"❌ 请求异常: {str(e)}")
-    
+
     # 3. 检查是否是后端重启问题
     print(f"\n3️⃣ 检查后端状态...")
-    
+
     # 尝试访问其他已知端点
-    other_endpoints = [
-        "/api/v1/models",
-        "/api/v1/chats", 
-        "/api/config"
-    ]
-    
+    other_endpoints = ["/api/v1/models", "/api/v1/chats", "/api/config"]
+
     print("测试其他端点以确认后端服务状态:")
     for endpoint in other_endpoints:
         try:
@@ -97,7 +98,7 @@ def debug_api_calls():
             print(f"   {endpoint}: {response.status_code} ({status_text})")
         except:
             print(f"   {endpoint}: 连接失败")
-    
+
     # 4. 给出具体指导
     print(f"\n4️⃣ 下一步调试指导")
     print()
@@ -124,6 +125,7 @@ def debug_api_calls():
     print("⚠️  重要提醒:")
     print("   如果任何MidJourney路由返回404，说明后端修改没有生效")
     print("   这通常意味着需要完全重启后端服务")
+
 
 if __name__ == "__main__":
     debug_api_calls()

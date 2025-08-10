@@ -1,6 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	export let app;
 	export let isFavorited = false;
 	export let size = 'normal'; // normal, compact
@@ -22,7 +22,7 @@
 			const now = new Date();
 			const diffInMs = now - date;
 			const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-			
+
 			if (diffInDays === 0) return '今天创建';
 			if (diffInDays === 1) return '昨天创建';
 			if (diffInDays < 7) return `${diffInDays}天前创建`;
@@ -36,10 +36,10 @@
 	// 获取分类显示信息
 	const getCategoryInfo = (category) => {
 		const categoryMap = {
-			'general': { name: '通用', color: '#6b7280', bg: '#f3f4f6' },
-			'productivity': { name: '效率', color: '#059669', bg: '#d1fae5' },
-			'creative': { name: '创意', color: '#dc2626', bg: '#fee2e2' },
-			'analysis': { name: '分析', color: '#2563eb', bg: '#dbeafe' }
+			general: { name: '通用', color: '#6b7280', bg: '#f3f4f6' },
+			productivity: { name: '效率', color: '#059669', bg: '#d1fae5' },
+			creative: { name: '创意', color: '#dc2626', bg: '#fee2e2' },
+			analysis: { name: '分析', color: '#2563eb', bg: '#dbeafe' }
 		};
 		return categoryMap[category] || { name: category, color: '#6b7280', bg: '#f3f4f6' };
 	};
@@ -47,7 +47,13 @@
 	$: categoryInfo = getCategoryInfo(app.category);
 </script>
 
-<div class="agent-card {size}" on:click={handleUse} on:keydown={handleUse} role="button" tabindex="0">
+<div
+	class="agent-card {size}"
+	on:click={handleUse}
+	on:keydown={handleUse}
+	role="button"
+	tabindex="0"
+>
 	<div class="card-main">
 		<!-- 左侧图标 -->
 		<div class="app-icon">
@@ -76,7 +82,10 @@
 			</div>
 
 			<!-- 分类标签 -->
-			<div class="app-category" style="color: {categoryInfo.color}; background-color: {categoryInfo.bg};">
+			<div
+				class="app-category"
+				style="color: {categoryInfo.color}; background-color: {categoryInfo.bg};"
+			>
 				{categoryInfo.name}
 			</div>
 
@@ -330,51 +339,51 @@
 			overflow: hidden !important;
 			box-sizing: border-box !important;
 		}
-		
+
 		.card-main {
 			padding: 0.625rem;
 			gap: 0.625rem;
 			max-width: 100% !important;
 			overflow: hidden !important;
 		}
-		
+
 		.app-icon {
 			width: 2.5rem;
 			height: 2.5rem;
 			font-size: 1.75rem;
 			flex-shrink: 0 !important;
 		}
-		
+
 		.app-content {
 			min-width: 0 !important;
 			overflow: hidden !important;
 		}
-		
+
 		.app-title {
 			font-size: 0.8rem;
 			overflow: hidden !important;
 		}
-		
+
 		.app-description {
 			font-size: 0.7rem;
 			overflow: hidden !important;
 		}
-		
+
 		.app-stats {
 			flex-wrap: wrap !important;
 			overflow: hidden !important;
 		}
-		
+
 		.stat-item {
 			font-size: 0.6rem;
 			white-space: nowrap !important;
 		}
-		
+
 		.created-text {
 			font-size: 0.55rem;
 			white-space: nowrap !important;
 		}
-		
+
 		.use-btn {
 			padding: 0.4rem 0.6rem;
 			font-size: 0.7rem;

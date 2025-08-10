@@ -19,24 +19,24 @@ const handleApiError = async (response) => {
 // 构建请求头
 const getHeaders = (token) => ({
 	'Content-Type': 'application/json',
-	'Authorization': `Bearer ${token}`
+	Authorization: `Bearer ${token}`
 });
 
 // 获取智能体应用列表
 export const getAgentApps = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.category) queryParams.append('category', params.category);
 	if (params.search) queryParams.append('search', params.search);
 	if (params.page) queryParams.append('page', params.page);
 	if (params.limit) queryParams.append('limit', params.limit);
 	if (params.status) queryParams.append('status', params.status);
-	
+
 	const response = await fetch(`${API_BASE_URL}?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -46,7 +46,7 @@ export const getAgentAppById = async (token, appId) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -57,7 +57,7 @@ export const createAgentApp = async (token, appData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify(appData)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -68,7 +68,7 @@ export const updateAgentApp = async (token, appId, appData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify(appData)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -78,7 +78,7 @@ export const deleteAgentApp = async (token, appId) => {
 		method: 'DELETE',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -86,22 +86,22 @@ export const deleteAgentApp = async (token, appId) => {
 export const submitAgentForm = async (token, appId, formData, files = null) => {
 	const formDataObj = new FormData();
 	formDataObj.append('form_data', JSON.stringify(formData));
-	
+
 	if (files && files.length > 0) {
 		files.forEach((file, index) => {
 			formDataObj.append(`files`, file);
 		});
 	}
-	
+
 	const response = await fetch(`${API_BASE_URL}/${appId}/submit`, {
 		method: 'POST',
 		headers: {
-			'Authorization': `Bearer ${token}`
+			Authorization: `Bearer ${token}`
 			// 不设置Content-Type，让浏览器自动设置multipart/form-data
 		},
 		body: formDataObj
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -111,7 +111,7 @@ export const getAgentAppStats = async (token, appId) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -121,7 +121,7 @@ export const toggleFavoriteApp = async (token, appId) => {
 		method: 'POST',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -131,7 +131,7 @@ export const getUserFavoriteApps = async (token) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -141,7 +141,7 @@ export const getAppCategories = async (token) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -152,7 +152,7 @@ export const createAppCategory = async (token, categoryData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify(categoryData)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -163,7 +163,7 @@ export const updateAppCategory = async (token, categoryId, categoryData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify(categoryData)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -173,25 +173,25 @@ export const deleteAppCategory = async (token, categoryId) => {
 		method: 'DELETE',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
 // 获取提交记录列表
 export const getSubmissions = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.app_id) queryParams.append('app_id', params.app_id);
 	if (params.user_id) queryParams.append('user_id', params.user_id);
 	if (params.status) queryParams.append('status', params.status);
 	if (params.page) queryParams.append('page', params.page);
 	if (params.limit) queryParams.append('limit', params.limit);
-	
+
 	const response = await fetch(`${API_BASE_URL}/submissions?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -201,7 +201,7 @@ export const getSubmissionById = async (token, submissionId) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -211,25 +211,25 @@ export const deleteSubmission = async (token, submissionId) => {
 		method: 'DELETE',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
 // 获取应用模板列表
 export const getAppTemplates = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.category) queryParams.append('category', params.category);
 	if (params.search) queryParams.append('search', params.search);
 	if (params.public_only) queryParams.append('public_only', params.public_only);
 	if (params.page) queryParams.append('page', params.page);
 	if (params.limit) queryParams.append('limit', params.limit);
-	
+
 	const response = await fetch(`${API_BASE_URL}/templates?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -239,7 +239,7 @@ export const getAppTemplateById = async (token, templateId) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -250,7 +250,7 @@ export const createAppTemplate = async (token, templateData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify(templateData)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -261,7 +261,7 @@ export const createAppFromTemplate = async (token, templateId, appData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify(appData)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -270,35 +270,35 @@ export const uploadFile = async (token, file, category = 'agent_files') => {
 	const formData = new FormData();
 	formData.append('file', file);
 	formData.append('category', category);
-	
+
 	const response = await fetch('/api/v1/files/upload', {
 		method: 'POST',
 		headers: {
-			'Authorization': `Bearer ${token}`
+			Authorization: `Bearer ${token}`
 		},
 		body: formData
 	});
-	
+
 	return handleApiError(response);
 };
 
 // 批量上传文件
 export const uploadFiles = async (token, files, category = 'agent_files') => {
 	const formData = new FormData();
-	
+
 	files.forEach((file, index) => {
 		formData.append(`files`, file);
 	});
 	formData.append('category', category);
-	
+
 	const response = await fetch('/api/v1/files/upload/batch', {
 		method: 'POST',
 		headers: {
-			'Authorization': `Bearer ${token}`
+			Authorization: `Bearer ${token}`
 		},
 		body: formData
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -308,7 +308,7 @@ export const deleteFile = async (token, fileId) => {
 		method: 'DELETE',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -319,7 +319,7 @@ export const validateFormData = async (token, appId, formData) => {
 		headers: getHeaders(token),
 		body: JSON.stringify({ form_data: formData })
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -329,7 +329,7 @@ export const executeAgent = async (token, appId, formData) => {
 		// 导入所需的API函数
 		const { chatCompletion } = await import('./openai/index.ts');
 		const { getModels } = await import('./models/index.ts');
-		
+
 		// 获取系统可用模型
 		let availableModels = [];
 		try {
@@ -346,43 +346,46 @@ export const executeAgent = async (token, appId, formData) => {
 				console.warn('No models available, using fallback response');
 				return null; // 使用null标记没有可用模型
 			}
-			
+
 			// 优先选择GPT-4相关模型
-			let preferredModel = availableModels.find(m => 
-				m.id.toLowerCase().includes('gpt-4') || 
-				m.name?.toLowerCase().includes('gpt-4')
+			let preferredModel = availableModels.find(
+				(m) => m.id.toLowerCase().includes('gpt-4') || m.name?.toLowerCase().includes('gpt-4')
 			);
-			
+
 			// 如果没有GPT-4，选择GPT-3.5相关模型
 			if (!preferredModel) {
-				preferredModel = availableModels.find(m => 
-					m.id.toLowerCase().includes('gpt-3.5') ||
-					m.id.toLowerCase().includes('gpt3.5') ||
-					m.name?.toLowerCase().includes('gpt-3.5')
+				preferredModel = availableModels.find(
+					(m) =>
+						m.id.toLowerCase().includes('gpt-3.5') ||
+						m.id.toLowerCase().includes('gpt3.5') ||
+						m.name?.toLowerCase().includes('gpt-3.5')
 				);
 			}
-			
+
 			// 如果都没有，选择第一个可用模型
 			if (!preferredModel) {
 				preferredModel = availableModels[0];
 			}
-			
+
 			return preferredModel.id || preferredModel.name || preferredModel;
 		};
-		
+
 		// 获取智能体配置
 		const selectedModel = getAvailableModel();
 		console.log('Selected model for agent:', selectedModel);
-		
+
 		// 如果没有可用模型，返回友好的提示消息
 		if (!selectedModel) {
 			const fallbackResponses = {
-				'app-1': '抱歉，当前系统尚未配置AI模型。请联系系统管理员在OpenWebUI管理界面中配置OpenAI或其他AI模型后再试。\n\n配置步骤：\n1. 进入管理员设置\n2. 配置OpenAI API或其他AI服务\n3. 确认模型可用后重新尝试',
-				'app-2': '抱歉，创意写作功能需要AI模型支持。请联系系统管理员配置AI模型。\n\n建议配置GPT-4或其他大语言模型以获得最佳创作效果。',
+				'app-1':
+					'抱歉，当前系统尚未配置AI模型。请联系系统管理员在OpenWebUI管理界面中配置OpenAI或其他AI模型后再试。\n\n配置步骤：\n1. 进入管理员设置\n2. 配置OpenAI API或其他AI服务\n3. 确认模型可用后重新尝试',
+				'app-2':
+					'抱歉，创意写作功能需要AI模型支持。请联系系统管理员配置AI模型。\n\n建议配置GPT-4或其他大语言模型以获得最佳创作效果。',
 				'app-3': '抱歉，数据分析功能需要AI模型支持。请联系系统管理员在系统中配置相应的AI模型。',
-				'app-4': '抱歉，教案生成功能需要AI模型支持。请联系系统管理员配置AI模型。\n\n推荐使用GPT-4或Claude等高性能模型以确保教案质量。'
+				'app-4':
+					'抱歉，教案生成功能需要AI模型支持。请联系系统管理员配置AI模型。\n\n推荐使用GPT-4或Claude等高性能模型以确保教案质量。'
 			};
-			
+
 			return {
 				success: true,
 				data: {
@@ -393,23 +396,26 @@ export const executeAgent = async (token, appId, formData) => {
 				}
 			};
 		}
-		
+
 		const agentConfigs = {
 			'app-1': {
 				model: selectedModel,
-				system_prompt: '你是一个专业的文档总结助手，擅长快速提取文档的关键信息。请根据用户上传的文档内容，提供准确、简洁的总结。',
+				system_prompt:
+					'你是一个专业的文档总结助手，擅长快速提取文档的关键信息。请根据用户上传的文档内容，提供准确、简洁的总结。',
 				temperature: 0.7,
 				max_tokens: 2000
 			},
 			'app-2': {
 				model: selectedModel,
-				system_prompt: '你是一个富有创意的写作助手，能够根据用户的要求创作小说、诗歌等文学作品。请发挥想象力，创作优美、生动的内容。',
+				system_prompt:
+					'你是一个富有创意的写作助手，能够根据用户的要求创作小说、诗歌等文学作品。请发挥想象力，创作优美、生动的内容。',
 				temperature: 0.8,
 				max_tokens: 3000
 			},
 			'app-3': {
 				model: selectedModel,
-				system_prompt: '你是一个专业的数据分析师，能够分析数据趋势并生成深度分析报告。请提供准确、专业的数据分析结果。',
+				system_prompt:
+					'你是一个专业的数据分析师，能够分析数据趋势并生成深度分析报告。请提供准确、专业的数据分析结果。',
 				temperature: 0.3,
 				max_tokens: 4000
 			},
@@ -469,12 +475,13 @@ export const executeAgent = async (token, appId, formData) => {
 
 		// 构建用户输入消息
 		let userMessage = '请根据以下信息生成内容：\n\n';
-		
+
 		// 根据不同智能体构建不同的消息格式
-		if (appId === 'app-4') { // 教案生成助手
+		if (appId === 'app-4') {
+			// 教案生成助手
 			const subjectLabels = {
 				chinese: '语文',
-				math: '数学', 
+				math: '数学',
 				english: '英语'
 			};
 			const stageLabels = {
@@ -488,14 +495,14 @@ export const executeAgent = async (token, appId, formData) => {
 				beijing_normal: '北师大版',
 				xishi: '西师版'
 			};
-			
+
 			userMessage += `学科：${subjectLabels[formData.subject] || formData.subject}\n`;
 			userMessage += `阶段：${stageLabels[formData.stage] || formData.stage}\n`;
 			userMessage += `教材：${textbookLabels[formData.textbook] || formData.textbook}\n`;
 			userMessage += `册别：${formData.volume}\n`;
 			userMessage += `课题：${formData.topic}\n`;
 			userMessage += `总课时：${formData.hours}课时\n`;
-			
+
 			if (formData.template) {
 				userMessage += `\n已上传教案模板文件，请参考模板结构进行设计。\n`;
 			}
@@ -518,7 +525,7 @@ export const executeAgent = async (token, appId, formData) => {
 				content: config.system_prompt
 			},
 			{
-				role: 'user', 
+				role: 'user',
 				content: userMessage
 			}
 		];
@@ -529,12 +536,12 @@ export const executeAgent = async (token, appId, formData) => {
 			messages: messages,
 			temperature: config.temperature,
 			max_tokens: config.max_tokens,
-			stream: true  // 启用流式输出
+			stream: true // 启用流式输出
 		};
 
 		// 调用 OpenAI API (使用默认URL) - 流式响应
 		const [response, controller] = await chatCompletion(token, requestBody);
-		
+
 		if (!response || !response.ok) {
 			let errorMessage = 'AI服务暂时不可用，请稍后重试';
 			try {
@@ -556,10 +563,9 @@ export const executeAgent = async (token, appId, formData) => {
 			model: config.model,
 			created_at: new Date().toISOString()
 		};
-
 	} catch (error) {
 		console.error('Execute agent error:', error);
-		
+
 		// 返回错误信息
 		return {
 			success: false,
@@ -573,21 +579,21 @@ export const previewAgentResponse = async (token, appId, formData, files = null)
 	const formDataObj = new FormData();
 	formDataObj.append('form_data', JSON.stringify(formData));
 	formDataObj.append('preview_mode', 'true');
-	
+
 	if (files && files.length > 0) {
 		files.forEach((file, index) => {
 			formDataObj.append(`files`, file);
 		});
 	}
-	
+
 	const response = await fetch(`${API_BASE_URL}/${appId}/preview`, {
 		method: 'POST',
 		headers: {
-			'Authorization': `Bearer ${token}`
+			Authorization: `Bearer ${token}`
 		},
 		body: formDataObj
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -595,7 +601,7 @@ export const previewAgentResponse = async (token, appId, formData, files = null)
 export const searchApps = async (token, query, filters = {}) => {
 	const queryParams = new URLSearchParams();
 	queryParams.append('q', query);
-	
+
 	if (filters.category) queryParams.append('category', filters.category);
 	if (filters.tags) queryParams.append('tags', filters.tags.join(','));
 	if (filters.min_rating) queryParams.append('min_rating', filters.min_rating);
@@ -603,60 +609,60 @@ export const searchApps = async (token, query, filters = {}) => {
 	if (filters.sort_order) queryParams.append('sort_order', filters.sort_order);
 	if (filters.page) queryParams.append('page', filters.page);
 	if (filters.limit) queryParams.append('limit', filters.limit);
-	
+
 	const response = await fetch(`${API_BASE_URL}/search?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
 // 获取推荐应用
 export const getRecommendedApps = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.based_on) queryParams.append('based_on', params.based_on); // usage, favorites, similar
 	if (params.limit) queryParams.append('limit', params.limit);
 	if (params.exclude) queryParams.append('exclude', params.exclude.join(','));
-	
+
 	const response = await fetch(`${API_BASE_URL}/recommendations?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
 // 获取热门应用
 export const getPopularApps = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.time_range) queryParams.append('time_range', params.time_range); // day, week, month, all
 	if (params.category) queryParams.append('category', params.category);
 	if (params.limit) queryParams.append('limit', params.limit);
-	
+
 	const response = await fetch(`${API_BASE_URL}/popular?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
 // 获取用户的使用历史
 export const getUserAppHistory = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.page) queryParams.append('page', params.page);
 	if (params.limit) queryParams.append('limit', params.limit);
 	if (params.app_id) queryParams.append('app_id', params.app_id);
-	
+
 	const response = await fetch(`${API_BASE_URL}/history?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -666,11 +672,11 @@ export const exportAppConfig = async (token, appId) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	if (!response.ok) {
 		throw new Error(`HTTP ${response.status}`);
 	}
-	
+
 	return response.blob();
 };
 
@@ -678,15 +684,15 @@ export const exportAppConfig = async (token, appId) => {
 export const importAppConfig = async (token, configFile) => {
 	const formData = new FormData();
 	formData.append('config_file', configFile);
-	
+
 	const response = await fetch(`${API_BASE_URL}/import`, {
 		method: 'POST',
 		headers: {
-			'Authorization': `Bearer ${token}`
+			Authorization: `Bearer ${token}`
 		},
 		body: formData
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -697,21 +703,21 @@ export const rateApp = async (token, appId, rating, comment = '') => {
 		headers: getHeaders(token),
 		body: JSON.stringify({ rating, comment })
 	});
-	
+
 	return handleApiError(response);
 };
 
 export const getAppRatings = async (token, appId, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.page) queryParams.append('page', params.page);
 	if (params.limit) queryParams.append('limit', params.limit);
-	
+
 	const response = await fetch(`${API_BASE_URL}/${appId}/ratings?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -721,13 +727,13 @@ export const getAdminStats = async (token) => {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
 export const getAdminAppList = async (token, params = {}) => {
 	const queryParams = new URLSearchParams();
-	
+
 	if (params.status) queryParams.append('status', params.status);
 	if (params.category) queryParams.append('category', params.category);
 	if (params.search) queryParams.append('search', params.search);
@@ -735,12 +741,12 @@ export const getAdminAppList = async (token, params = {}) => {
 	if (params.sort_order) queryParams.append('sort_order', params.sort_order);
 	if (params.page) queryParams.append('page', params.page);
 	if (params.limit) queryParams.append('limit', params.limit);
-	
+
 	const response = await fetch(`${API_BASE_URL}/admin/apps?${queryParams}`, {
 		method: 'GET',
 		headers: getHeaders(token)
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -750,7 +756,7 @@ export const batchUpdateAppStatus = async (token, appIds, status) => {
 		headers: getHeaders(token),
 		body: JSON.stringify({ app_ids: appIds, status })
 	});
-	
+
 	return handleApiError(response);
 };
 
@@ -781,61 +787,61 @@ export default {
 	createAgentApp,
 	updateAgentApp,
 	deleteAgentApp,
-	
+
 	// 表单和提交
 	submitAgentForm,
 	validateFormData,
 	previewAgentResponse,
-	
+
 	// 统计和收藏
 	getAgentAppStats,
 	toggleFavoriteApp,
 	getUserFavoriteApps,
-	
+
 	// 分类管理
 	getAppCategories,
 	createAppCategory,
 	updateAppCategory,
 	deleteAppCategory,
-	
+
 	// 提交记录
 	getSubmissions,
 	getSubmissionById,
 	deleteSubmission,
-	
+
 	// 模板系统
 	getAppTemplates,
 	getAppTemplateById,
 	createAppTemplate,
 	createAppFromTemplate,
-	
+
 	// 文件处理
 	uploadFile,
 	uploadFiles,
 	deleteFile,
-	
+
 	// 搜索和推荐
 	searchApps,
 	getRecommendedApps,
 	getPopularApps,
 	getUserAppHistory,
-	
+
 	// 导入导出
 	exportAppConfig,
 	importAppConfig,
-	
+
 	// 评价系统
 	rateApp,
 	getAppRatings,
-	
+
 	// 管理员功能
 	getAdminStats,
 	getAdminAppList,
 	batchUpdateAppStatus,
-	
+
 	// 智能体执行
 	executeAgent,
-	
+
 	// 工具函数
 	formatFileSize,
 	validateFileType,

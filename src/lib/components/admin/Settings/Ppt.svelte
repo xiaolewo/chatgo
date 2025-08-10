@@ -12,7 +12,7 @@
 	let saving = false;
 	let verifying = false;
 	let connectionStatus = null; // null, 'success', 'failed'
-	
+
 	let config = {
 		enabled: false,
 		api_url: 'https://open.docmee.cn',
@@ -23,7 +23,7 @@
 	// 加载配置
 	const loadConfig = async () => {
 		if (!$user?.token) return;
-		
+
 		loading = true;
 		try {
 			const response = await getPptConfig($user.token);
@@ -48,10 +48,10 @@
 		try {
 			const response = await updatePptConfig($user.token, config);
 			console.log('PPT配置保存成功:', config);
-			
+
 			// 保存成功后重新加载配置确保状态一致
 			await loadConfig();
-			
+
 			// 显示成功消息
 			toast.success(`PPT功能已${config.enabled ? '启用' : '禁用'}，配置已保存`);
 			dispatch('save');
@@ -93,7 +93,11 @@
 		<div class="flex items-center justify-between">
 			<div class="flex items-center space-x-3">
 				<div class="text-xl font-semibold">PPT生成配置</div>
-				<div class="text-sm px-2 py-1 rounded-full {config.enabled ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}">
+				<div
+					class="text-sm px-2 py-1 rounded-full {config.enabled
+						? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+						: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'}"
+				>
 					{config.enabled ? '已启用' : '未启用'}
 				</div>
 			</div>
@@ -123,9 +127,7 @@
 					class="w-full rounded-lg px-3 py-2.5 text-sm bg-gray-50 dark:bg-gray-850 border border-gray-200 dark:border-gray-700 focus:outline-none focus:border-primary-500"
 					required
 				/>
-				<div class="text-xs text-gray-500 mt-1">
-					从文多多开放平台获取API密钥
-				</div>
+				<div class="text-xs text-gray-500 mt-1">从文多多开放平台获取API密钥</div>
 			</div>
 
 			<div>
@@ -150,8 +152,20 @@
 			>
 				{#if verifying}
 					<svg class="w-3 h-3 animate-spin" viewBox="0 0 24 24">
-						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-						<path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						<circle
+							class="opacity-25"
+							cx="12"
+							cy="12"
+							r="10"
+							stroke="currentColor"
+							stroke-width="4"
+							fill="none"
+						></circle>
+						<path
+							class="opacity-75"
+							fill="currentColor"
+							d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+						></path>
 					</svg>
 					验证中...
 				{:else}
@@ -162,14 +176,22 @@
 			{#if connectionStatus === 'success'}
 				<div class="flex items-center gap-1 text-green-600">
 					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+						<path
+							fill-rule="evenodd"
+							d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+							clip-rule="evenodd"
+						/>
 					</svg>
 					连接成功
 				</div>
 			{:else if connectionStatus === 'failed'}
 				<div class="flex items-center gap-1 text-red-600">
 					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-						<path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+						<path
+							fill-rule="evenodd"
+							d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+							clip-rule="evenodd"
+						/>
 					</svg>
 					连接失败
 				</div>
@@ -192,7 +214,9 @@
 
 		{#if loading}
 			<div class="flex justify-center items-center py-4">
-				<div class="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full"></div>
+				<div
+					class="animate-spin w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full"
+				></div>
 			</div>
 		{/if}
 	</div>

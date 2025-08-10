@@ -1,8 +1,8 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	export let field = {};
 	export let value = [];
 	export let error = '';
@@ -11,17 +11,17 @@
 	// 处理选项变化
 	const handleChange = (optionValue, checked) => {
 		if (readonly) return;
-		
+
 		let newValue = Array.isArray(value) ? [...value] : [];
-		
+
 		if (checked) {
 			if (!newValue.includes(optionValue)) {
 				newValue.push(optionValue);
 			}
 		} else {
-			newValue = newValue.filter(v => v !== optionValue);
+			newValue = newValue.filter((v) => v !== optionValue);
 		}
-		
+
 		value = newValue;
 		dispatch('change', newValue);
 	};
@@ -37,16 +37,16 @@
 	// 全选/取消全选
 	const handleSelectAll = () => {
 		if (readonly) return;
-		
-		const allValues = options.filter(opt => !opt.disabled).map(opt => opt.value);
-		const isAllSelected = allValues.every(val => value.includes(val));
-		
+
+		const allValues = options.filter((opt) => !opt.disabled).map((opt) => opt.value);
+		const isAllSelected = allValues.every((val) => value.includes(val));
+
 		if (isAllSelected) {
-			value = value.filter(val => !allValues.includes(val));
+			value = value.filter((val) => !allValues.includes(val));
 		} else {
 			value = [...new Set([...value, ...allValues])];
 		}
-		
+
 		dispatch('change', value);
 	};
 
@@ -64,13 +64,13 @@
 	}
 
 	// 验证选择数量
-	$: isValid = (!minSelected || value.length >= minSelected) && 
-		(!maxSelected || value.length <= maxSelected);
+	$: isValid =
+		(!minSelected || value.length >= minSelected) && (!maxSelected || value.length <= maxSelected);
 
 	// 检查是否全选
-	$: availableOptions = options.filter(opt => !opt.disabled);
-	$: isAllSelected = availableOptions.length > 0 && 
-		availableOptions.every(opt => value.includes(opt.value));
+	$: availableOptions = options.filter((opt) => !opt.disabled);
+	$: isAllSelected =
+		availableOptions.length > 0 && availableOptions.every((opt) => value.includes(opt.value));
 	$: isIndeterminate = value.length > 0 && !isAllSelected;
 </script>
 
@@ -84,11 +84,7 @@
 		</label>
 
 		{#if showSelectAll && !readonly && options.length > 1}
-			<button
-				type="button"
-				class="select-all-btn"
-				on:click={handleSelectAll}
-			>
+			<button type="button" class="select-all-btn" on:click={handleSelectAll}>
 				{isAllSelected ? '取消全选' : '全选'}
 			</button>
 		{/if}
@@ -98,7 +94,7 @@
 		<p class="field-description">{field.description}</p>
 	{/if}
 
-	<div 
+	<div
 		class="checkbox-list {layout}"
 		class:readonly
 		style={layout === 'grid' ? `--columns: ${columns}` : ''}
@@ -121,11 +117,7 @@
 		{/if}
 
 		{#each options as option}
-			<label 
-				class="checkbox-item" 
-				class:disabled={option.disabled}
-				class:readonly
-			>
+			<label class="checkbox-item" class:disabled={option.disabled} class:readonly>
 				<input
 					type="checkbox"
 					class="checkbox-input"

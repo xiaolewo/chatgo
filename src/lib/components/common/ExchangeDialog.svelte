@@ -182,8 +182,8 @@
 					<div class="flex flex-col justify-between">
 						<div class="text-lg font-bold mb-2">套餐名称：{menu.name}</div>
 						<div class="text-lg font-bold mb-2">
-							套餐额度： {menu.credits}{$creditName}<span class="text-base font-normal text-gray-500"
-								>/天</span
+							套餐额度： {menu.credits}{$creditName}<span
+								class="text-base font-normal text-gray-500">/天</span
 							>
 						</div>
 					</div>

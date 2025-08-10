@@ -107,15 +107,15 @@
 			banners.set(await getBanners(localStorage.token));
 			tools.set(await getTools(localStorage.token));
 			toolServers.set(await getToolServersData($i18n, $settings?.toolServers ?? []));
-			
+
 			// Load credit name from backend
 			try {
 				const creditResponse = await fetch(`${WEBUI_API_BASE_URL}/credit/status`, {
 					headers: {
-						'Authorization': `Bearer ${localStorage.token}`
+						Authorization: `Bearer ${localStorage.token}`
 					}
 				});
-				
+
 				if (creditResponse.ok) {
 					const creditData = await creditResponse.json();
 					if (creditData.credit_name) {

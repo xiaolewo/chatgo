@@ -1,12 +1,12 @@
 <script>
 	import { onMount, getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { 
-		getAdminAppList, 
-		createAgentApp, 
-		updateAgentApp, 
+	import {
+		getAdminAppList,
+		createAgentApp,
+		updateAgentApp,
 		deleteAgentApp,
-		getAdminStats 
+		getAdminStats
 	} from '$lib/apis/agents';
 	import { getModels } from '$lib/apis/models';
 	import { user, models } from '$lib/stores';
@@ -86,7 +86,7 @@
 			if ($models && $models.length > 0) {
 				return;
 			}
-			
+
 			// 否则从API加载模型
 			const systemModels = await getModels(localStorage.token);
 			if (systemModels && systemModels.data) {
@@ -131,7 +131,7 @@
 		}
 
 		// 检查是否已存在相同的值
-		if (categories.some(cat => cat.value === newCategoryValue)) {
+		if (categories.some((cat) => cat.value === newCategoryValue)) {
 			toast.error('该分类值已存在');
 			return;
 		}
@@ -151,19 +151,23 @@
 			return;
 		}
 
-		categories = categories.filter(cat => cat.value !== categoryValue);
+		categories = categories.filter((cat) => cat.value !== categoryValue);
 		saveCategories();
 		toast.success('分类删除成功');
 	}
 
 	// 根据选择的模型自动计算费用
 	function updateCostFromModel() {
-		const selectedModel = $models.find(model => model.id === formData.ai_config.model);
+		const selectedModel = $models.find((model) => model.id === formData.ai_config.model);
 		if (selectedModel) {
 			// 如果模型有费用配置，使用模型的费用
 			if (selectedModel.cost_per_use) {
 				formData.cost_per_use = selectedModel.cost_per_use;
-			} else if (selectedModel.info && selectedModel.info.meta && selectedModel.info.meta.cost_per_use) {
+			} else if (
+				selectedModel.info &&
+				selectedModel.info.meta &&
+				selectedModel.info.meta.cost_per_use
+			) {
 				formData.cost_per_use = selectedModel.info.meta.cost_per_use;
 			} else {
 				// 根据模型ID估算费用
@@ -199,7 +203,7 @@
 
 	const loadApps = async () => {
 		loading = true;
-		
+
 		try {
 			// 尝试从localStorage加载保存的数据
 			const savedApps = localStorage.getItem('agent_apps_data');
@@ -212,7 +216,7 @@
 					console.warn('Failed to parse saved apps data:', e);
 				}
 			}
-			
+
 			// 使用模拟应用数据
 			const mockApps = [
 				{
@@ -229,9 +233,7 @@
 					form_config: {
 						title: '文档总结',
 						description: '上传文档进行AI总结',
-						fields: [
-							{ type: 'file', name: 'document', label: '上传文档', required: true }
-						]
+						fields: [{ type: 'file', name: 'document', label: '上传文档', required: true }]
 					},
 					ai_config: {
 						model: 'gpt-3.5-turbo',
@@ -256,10 +258,16 @@
 						title: '创意写作',
 						description: 'AI辅助创意写作',
 						fields: [
-							{ type: 'select', name: 'type', label: '写作类型', required: true, options: [
-								{ value: 'novel', label: '小说' },
-								{ value: 'poetry', label: '诗歌' }
-							]}
+							{
+								type: 'select',
+								name: 'type',
+								label: '写作类型',
+								required: true,
+								options: [
+									{ value: 'novel', label: '小说' },
+									{ value: 'poetry', label: '诗歌' }
+								]
+							}
 						]
 					},
 					ai_config: {
@@ -284,9 +292,7 @@
 					form_config: {
 						title: '数据分析',
 						description: '上传数据文件进行分析',
-						fields: [
-							{ type: 'file', name: 'data', label: '数据文件', required: true }
-						]
+						fields: [{ type: 'file', name: 'data', label: '数据文件', required: true }]
 					},
 					ai_config: {
 						model: 'gpt-4',
@@ -482,13 +488,15 @@
 			];
 
 			// 应用过滤条件
-			let filteredApps = mockApps.filter(app => {
+			let filteredApps = mockApps.filter((app) => {
 				if (selectedStatus && app.status !== selectedStatus) return false;
 				if (selectedCategory && app.category !== selectedCategory) return false;
 				if (searchQuery) {
 					const query = searchQuery.toLowerCase();
-					return app.display_name.toLowerCase().includes(query) ||
-						   app.description.toLowerCase().includes(query);
+					return (
+						app.display_name.toLowerCase().includes(query) ||
+						app.description.toLowerCase().includes(query)
+					);
 				}
 				return true;
 			});
@@ -496,10 +504,9 @@
 			// 模拟分页
 			const startIndex = (currentPage - 1) * pageSize;
 			const endIndex = startIndex + pageSize;
-			
+
 			apps = filteredApps.slice(startIndex, endIndex);
 			totalApps = filteredApps.length;
-			
 		} catch (error) {
 			console.error('Failed to load apps:', error);
 			toast.error('加载应用列表失败');
@@ -521,7 +528,7 @@
 	const openCreateModal = () => {
 		// 使用第一个可用模型作为默认值
 		const defaultModel = $models && $models.length > 0 ? $models[0].id : '';
-		
+
 		formData = {
 			name: '',
 			display_name: '',
@@ -622,9 +629,9 @@
 
 			// 模拟更新应用 - 更新内存中的数据
 			console.log('Updating app:', selectedApp.id, 'with data:', updateData);
-			
+
 			// 找到并更新应用数据
-			const appIndex = apps.findIndex(app => app.id === selectedApp.id);
+			const appIndex = apps.findIndex((app) => app.id === selectedApp.id);
 			if (appIndex >= 0) {
 				apps[appIndex] = {
 					...apps[appIndex],
@@ -634,7 +641,7 @@
 				// 触发响应式更新
 				apps = apps;
 			}
-			
+
 			toast.success('应用更新成功');
 			showEditModal = false;
 			selectedApp = null;
@@ -763,28 +770,24 @@
 				bind:value={searchQuery}
 				on:keydown={(e) => e.key === 'Enter' && handleSearch()}
 			/>
-			
+
 			<select class="filter-select" bind:value={selectedStatus} on:change={handleSearch}>
 				{#each statusOptions as option}
 					<option value={option.value}>{option.label}</option>
 				{/each}
 			</select>
-			
+
 			<select class="filter-select" bind:value={selectedCategory} on:change={handleSearch}>
 				<option value="">全部分类</option>
 				{#each categories as category}
 					<option value={category.value}>{category.label}</option>
 				{/each}
 			</select>
-			
-			<button class="btn btn-secondary" on:click={handleSearch}>
-				搜索
-			</button>
+
+			<button class="btn btn-secondary" on:click={handleSearch}> 搜索 </button>
 		</div>
 
-		<button class="btn btn-primary" on:click={openCreateModal}>
-			新建应用
-		</button>
+		<button class="btn btn-primary" on:click={openCreateModal}> 新建应用 </button>
 	</div>
 
 	<!-- 应用列表 -->
@@ -827,7 +830,7 @@
 								</td>
 								<td>
 									<span class="category-tag">
-										{categories.find(c => c.value === app.category)?.label || app.category}
+										{categories.find((c) => c.value === app.category)?.label || app.category}
 									</span>
 								</td>
 								<td>
@@ -849,16 +852,10 @@
 								</td>
 								<td>
 									<div class="action-buttons">
-										<button
-											class="btn btn-sm btn-outline"
-											on:click={() => openEditModal(app)}
-										>
+										<button class="btn btn-sm btn-outline" on:click={() => openEditModal(app)}>
 											编辑
 										</button>
-										<button
-											class="btn btn-sm btn-danger"
-											on:click={() => openDeleteModal(app)}
-										>
+										<button class="btn btn-sm btn-danger" on:click={() => openDeleteModal(app)}>
 											删除
 										</button>
 									</div>
@@ -879,11 +876,11 @@
 					>
 						上一页
 					</button>
-					
+
 					<span class="page-info">
 						第 {currentPage} 页，共 {totalPages} 页
 					</span>
-					
+
 					<button
 						class="btn btn-sm"
 						disabled={currentPage === totalPages}
@@ -899,25 +896,25 @@
 
 <!-- 创建应用模态框 -->
 {#if showCreateModal}
-	<Modal on:close={() => showCreateModal = false} size="lg">
+	<Modal on:close={() => (showCreateModal = false)} size="lg">
 		<div class="modal-content">
 			<h2>新建智能体应用</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label>应用名称 *</label>
 					<input type="text" bind:value={formData.name} placeholder="app_name" tabindex="1" />
 				</div>
-				
+
 				<div class="form-group">
 					<label>显示名称 *</label>
 					<input type="text" bind:value={formData.display_name} placeholder="应用显示名称" />
 				</div>
-				
+
 				<div class="form-group">
 					<div class="form-label-with-action">
 						<label>分类</label>
-						<button type="button" class="btn-link" on:click={() => showCategoryModal = true}>
+						<button type="button" class="btn-link" on:click={() => (showCategoryModal = true)}>
 							管理分类
 						</button>
 					</div>
@@ -927,17 +924,17 @@
 						{/each}
 					</select>
 				</div>
-				
+
 				<div class="form-group">
 					<label>图标</label>
 					<input type="text" bind:value={formData.icon} placeholder="🤖" />
 				</div>
-				
+
 				<div class="form-group full-width">
 					<label>应用描述</label>
 					<textarea bind:value={formData.description} placeholder="描述应用的功能和用途"></textarea>
 				</div>
-				
+
 				<div class="form-group">
 					<label>每次使用积分</label>
 					<input type="number" bind:value={formData.cost_per_use} min="1" />
@@ -956,25 +953,37 @@
 					<label>表单描述</label>
 					<textarea bind:value={formData.form_config.description}></textarea>
 				</div>
-				
+
 				<div class="fields-section">
 					<div class="fields-header">
 						<h4>表单字段</h4>
 						<div class="field-buttons">
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('text')}>+ 文本</button>
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('select')}>+ 选择</button>
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('switch')}>+ 开关</button>
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('file')}>+ 文件</button>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('text')}
+								>+ 文本</button
+							>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('select')}
+								>+ 选择</button
+							>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('switch')}
+								>+ 开关</button
+							>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('file')}
+								>+ 文件</button
+							>
 						</div>
 					</div>
-					
+
 					{#each formData.form_config.fields as field, index}
 						<div class="field-item">
 							<div class="field-info">
 								<span class="field-type">{field.type}</span>
 								<span class="field-label">{field.label}</span>
 							</div>
-							<button type="button" class="btn btn-sm btn-danger" on:click={() => removeField(index)}>删除</button>
+							<button
+								type="button"
+								class="btn btn-sm btn-danger"
+								on:click={() => removeField(index)}>删除</button
+							>
 						</div>
 					{/each}
 				</div>
@@ -995,13 +1004,22 @@
 				</div>
 				<div class="form-group">
 					<label>系统提示</label>
-					<textarea bind:value={formData.ai_config.system_prompt} placeholder="定义AI的角色和行为规则，例如：你是一个专业的文档总结助手，能够帮助用户快速提取文档的关键信息..."></textarea>
+					<textarea
+						bind:value={formData.ai_config.system_prompt}
+						placeholder="定义AI的角色和行为规则，例如：你是一个专业的文档总结助手，能够帮助用户快速提取文档的关键信息..."
+					></textarea>
 					<div class="form-help">定义AI的角色、行为规则和回复风格</div>
 				</div>
 				<div class="form-grid">
 					<div class="form-group">
 						<label>Temperature</label>
-						<input type="number" bind:value={formData.ai_config.temperature} min="0" max="2" step="0.1" />
+						<input
+							type="number"
+							bind:value={formData.ai_config.temperature}
+							min="0"
+							max="2"
+							step="0.1"
+						/>
 						<div class="form-help">控制回复的随机性 (0.0-2.0)</div>
 					</div>
 					<div class="form-group">
@@ -1011,14 +1029,10 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="modal-actions">
-				<button class="btn btn-secondary" on:click={() => showCreateModal = false}>
-					取消
-				</button>
-				<button class="btn btn-primary" on:click={handleCreate}>
-					创建应用
-				</button>
+				<button class="btn btn-secondary" on:click={() => (showCreateModal = false)}> 取消 </button>
+				<button class="btn btn-primary" on:click={handleCreate}> 创建应用 </button>
 			</div>
 		</div>
 	</Modal>
@@ -1026,26 +1040,26 @@
 
 <!-- 编辑应用模态框 -->
 {#if showEditModal && selectedApp}
-	<Modal on:close={() => showEditModal = false} size="lg">
+	<Modal on:close={() => (showEditModal = false)} size="lg">
 		<div class="modal-content">
 			<h2>编辑应用 - {selectedApp.display_name}</h2>
-			
+
 			<div class="form-grid">
 				<div class="form-group">
 					<label>应用名称 *</label>
 					<input type="text" bind:value={formData.name} readonly class="readonly" />
 					<div class="form-help">应用名称创建后不可修改</div>
 				</div>
-				
+
 				<div class="form-group">
 					<label>显示名称 *</label>
 					<input type="text" bind:value={formData.display_name} placeholder="应用显示名称" />
 				</div>
-				
+
 				<div class="form-group">
 					<div class="form-label-with-action">
 						<label>分类</label>
-						<button type="button" class="btn-link" on:click={() => showCategoryModal = true}>
+						<button type="button" class="btn-link" on:click={() => (showCategoryModal = true)}>
 							管理分类
 						</button>
 					</div>
@@ -1055,17 +1069,17 @@
 						{/each}
 					</select>
 				</div>
-				
+
 				<div class="form-group">
 					<label>图标</label>
 					<input type="text" bind:value={formData.icon} placeholder="🤖" />
 				</div>
-				
+
 				<div class="form-group full-width">
 					<label>应用描述</label>
 					<textarea bind:value={formData.description} placeholder="描述应用的功能和用途"></textarea>
 				</div>
-				
+
 				<div class="form-group">
 					<label>每次使用积分</label>
 					<input type="number" bind:value={formData.cost_per_use} min="1" />
@@ -1084,25 +1098,37 @@
 					<label>表单描述</label>
 					<textarea bind:value={formData.form_config.description}></textarea>
 				</div>
-				
+
 				<div class="fields-section">
 					<div class="fields-header">
 						<h4>表单字段</h4>
 						<div class="field-buttons">
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('text')}>+ 文本</button>
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('select')}>+ 选择</button>
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('switch')}>+ 开关</button>
-							<button type="button" class="btn btn-sm" on:click={() => addSampleField('file')}>+ 文件</button>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('text')}
+								>+ 文本</button
+							>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('select')}
+								>+ 选择</button
+							>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('switch')}
+								>+ 开关</button
+							>
+							<button type="button" class="btn btn-sm" on:click={() => addSampleField('file')}
+								>+ 文件</button
+							>
 						</div>
 					</div>
-					
+
 					{#each formData.form_config.fields as field, index}
 						<div class="field-item">
 							<div class="field-info">
 								<span class="field-type">{field.type}</span>
 								<span class="field-label">{field.label}</span>
 							</div>
-							<button type="button" class="btn btn-sm btn-danger" on:click={() => removeField(index)}>删除</button>
+							<button
+								type="button"
+								class="btn btn-sm btn-danger"
+								on:click={() => removeField(index)}>删除</button
+							>
 						</div>
 					{/each}
 				</div>
@@ -1123,13 +1149,22 @@
 				</div>
 				<div class="form-group">
 					<label>系统提示</label>
-					<textarea bind:value={formData.ai_config.system_prompt} placeholder="定义AI的角色和行为规则，例如：你是一个专业的文档总结助手，能够帮助用户快速提取文档的关键信息..."></textarea>
+					<textarea
+						bind:value={formData.ai_config.system_prompt}
+						placeholder="定义AI的角色和行为规则，例如：你是一个专业的文档总结助手，能够帮助用户快速提取文档的关键信息..."
+					></textarea>
 					<div class="form-help">定义AI的角色、行为规则和回复风格</div>
 				</div>
 				<div class="form-grid">
 					<div class="form-group">
 						<label>Temperature</label>
-						<input type="number" bind:value={formData.ai_config.temperature} min="0" max="2" step="0.1" />
+						<input
+							type="number"
+							bind:value={formData.ai_config.temperature}
+							min="0"
+							max="2"
+							step="0.1"
+						/>
 						<div class="form-help">控制回复的随机性 (0.0-2.0)</div>
 					</div>
 					<div class="form-group">
@@ -1139,14 +1174,10 @@
 					</div>
 				</div>
 			</div>
-			
+
 			<div class="modal-actions">
-				<button class="btn btn-secondary" on:click={() => showEditModal = false}>
-					取消
-				</button>
-				<button class="btn btn-primary" on:click={handleUpdate}>
-					保存更改
-				</button>
+				<button class="btn btn-secondary" on:click={() => (showEditModal = false)}> 取消 </button>
+				<button class="btn btn-primary" on:click={handleUpdate}> 保存更改 </button>
 			</div>
 		</div>
 	</Modal>
@@ -1154,18 +1185,14 @@
 
 <!-- 删除确认模态框 -->
 {#if showDeleteModal && selectedApp}
-	<Modal on:close={() => showDeleteModal = false}>
+	<Modal on:close={() => (showDeleteModal = false)}>
 		<div class="modal-content">
 			<h2>确认删除</h2>
 			<p>确定要删除应用 "{selectedApp.display_name}" 吗？此操作不可撤销。</p>
-			
+
 			<div class="modal-actions">
-				<button class="btn btn-secondary" on:click={() => showDeleteModal = false}>
-					取消
-				</button>
-				<button class="btn btn-danger" on:click={handleDelete}>
-					确认删除
-				</button>
+				<button class="btn btn-secondary" on:click={() => (showDeleteModal = false)}> 取消 </button>
+				<button class="btn btn-danger" on:click={handleDelete}> 确认删除 </button>
 			</div>
 		</div>
 	</Modal>
@@ -1173,10 +1200,10 @@
 
 <!-- 分类管理模态框 -->
 {#if showCategoryModal}
-	<Modal on:close={() => showCategoryModal = false}>
+	<Modal on:close={() => (showCategoryModal = false)}>
 		<div class="modal-content">
 			<h2>智能体分类管理</h2>
-			
+
 			<div class="category-section">
 				<h3>添加新分类</h3>
 				<div class="form-grid">
@@ -1189,9 +1216,7 @@
 						<input type="text" bind:value={newCategoryValue} placeholder="例如：marketing" />
 					</div>
 				</div>
-				<button class="btn btn-primary" on:click={addCategory}>
-					添加分类
-				</button>
+				<button class="btn btn-primary" on:click={addCategory}> 添加分类 </button>
 			</div>
 
 			<div class="category-section">
@@ -1204,7 +1229,10 @@
 								<span class="category-value">({category.value})</span>
 							</div>
 							{#if !['general', 'productivity', 'creative', 'analysis'].includes(category.value)}
-								<button class="btn btn-sm btn-danger" on:click={() => removeCategory(category.value)}>
+								<button
+									class="btn btn-sm btn-danger"
+									on:click={() => removeCategory(category.value)}
+								>
 									删除
 								</button>
 							{:else}
@@ -1214,11 +1242,9 @@
 					{/each}
 				</div>
 			</div>
-			
+
 			<div class="modal-actions">
-				<button class="btn btn-primary" on:click={() => showCategoryModal = false}>
-					完成
-				</button>
+				<button class="btn btn-primary" on:click={() => (showCategoryModal = false)}> 完成 </button>
 			</div>
 		</div>
 	</Modal>

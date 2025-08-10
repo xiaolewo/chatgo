@@ -29,9 +29,9 @@
 
 	const loadApps = async (page = 1, append = false) => {
 		if (loading) return;
-		
+
 		loading = true;
-		
+
 		try {
 			// 临时模拟数据，替换为真实API调用
 			const mockApps = [
@@ -83,15 +83,19 @@
 
 			// 模拟API响应
 			const response = {
-				apps: mockApps.filter(app => {
-					if (selectedCategory !== 'all' && app.category !== selectedCategory) return false;
-					if (searchQuery) {
-						const query = searchQuery.toLowerCase();
-						return app.display_name.toLowerCase().includes(query) || 
-							   app.description.toLowerCase().includes(query);
-					}
-					return true;
-				}).slice((page - 1) * pageSize, page * pageSize),
+				apps: mockApps
+					.filter((app) => {
+						if (selectedCategory !== 'all' && app.category !== selectedCategory) return false;
+						if (searchQuery) {
+							const query = searchQuery.toLowerCase();
+							return (
+								app.display_name.toLowerCase().includes(query) ||
+								app.description.toLowerCase().includes(query)
+							);
+						}
+						return true;
+					})
+					.slice((page - 1) * pageSize, page * pageSize),
 				user_favorites: ['app-2'], // 模拟用户收藏
 				total: mockApps.length,
 				page: page,
@@ -104,11 +108,11 @@
 				} else {
 					apps = response.apps;
 				}
-				
+
 				favoriteApps = new Set(response.user_favorites || []);
 				hasMore = false; // 模拟数据没有更多页面
 				currentPage = page;
-				
+
 				filterApps();
 			}
 		} catch (error) {
@@ -120,7 +124,7 @@
 	};
 
 	const filterApps = () => {
-		filteredApps = apps.filter(app => {
+		filteredApps = apps.filter((app) => {
 			if (selectedCategory !== 'all' && app.category !== selectedCategory) {
 				return false;
 			}
@@ -152,7 +156,7 @@
 		try {
 			// 模拟切换收藏状态
 			const isFavorited = favoriteApps.has(app.id);
-			
+
 			if (isFavorited) {
 				favoriteApps.delete(app.id);
 				toast.success('已移除收藏');
@@ -160,17 +164,16 @@
 				favoriteApps.add(app.id);
 				toast.success('已添加到收藏');
 			}
-			
+
 			// 触发响应式更新
 			favoriteApps = favoriteApps;
-			
+
 			// 更新应用的收藏数
-			const appIndex = apps.findIndex(a => a.id === app.id);
+			const appIndex = apps.findIndex((a) => a.id === app.id);
 			if (appIndex >= 0) {
 				apps[appIndex].favorite_count += isFavorited ? -1 : 1;
 				apps = apps;
 			}
-			
 		} catch (error) {
 			console.error('Failed to toggle favorite:', error);
 			toast.error('收藏状态更新失败');
@@ -196,11 +199,11 @@
 	// 分类显示名称映射
 	const getCategoryName = (category) => {
 		const names = {
-			'all': '全部',
-			'general': '通用',
-			'productivity': '效率',
-			'creative': '创意',
-			'analysis': '分析'
+			all: '全部',
+			general: '通用',
+			productivity: '效率',
+			creative: '创意',
+			analysis: '分析'
 		};
 		return names[category] || category;
 	};
@@ -208,11 +211,11 @@
 	// 获取分类图标
 	const getCategoryIcon = (category) => {
 		const icons = {
-			'all': '🏪',
-			'general': '🤖',
-			'productivity': '⚡',
-			'creative': '🎨',
-			'analysis': '📊'
+			all: '🏪',
+			general: '🤖',
+			productivity: '⚡',
+			creative: '🎨',
+			analysis: '📊'
 		};
 		return icons[category] || '📱';
 	};
@@ -220,8 +223,12 @@
 
 <div class="w-full h-screen flex flex-col overflow-hidden">
 	<!-- 页面头部 -->
-	<div class="sticky top-0 z-10 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-		<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 lg:p-6">
+	<div
+		class="sticky top-0 z-10 bg-white dark:bg-gray-950 border-b border-gray-200 dark:border-gray-700 flex-shrink-0"
+	>
+		<div
+			class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 p-4 lg:p-6"
+		>
 			<div class="flex items-start gap-4 flex-1 min-w-0">
 				<!-- 汉堡菜单按钮 (移动端显示) -->
 				<div class="{$showSidebar ? 'md:hidden' : ''} flex items-center">
@@ -245,7 +252,7 @@
 					</p>
 				</div>
 			</div>
-			
+
 			<div class="w-full lg:w-80 flex-shrink-0">
 				<SearchInput
 					placeholder="搜索应用..."
@@ -263,9 +270,8 @@
 					<button
 						class="flex items-center gap-2 px-4 py-2 rounded-lg whitespace-nowrap transition-all
 							{selectedCategory === category
-								? 'bg-blue-600 text-white shadow-lg'
-								: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-							}"
+							? 'bg-blue-600 text-white shadow-lg'
+							: 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}"
 						on:click={() => handleCategoryChange(category)}
 					>
 						<span class="text-lg">{getCategoryIcon(category)}</span>
@@ -297,7 +303,9 @@
 					</p>
 				</div>
 			{:else}
-				<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6">
+				<div
+					class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 lg:gap-6"
+				>
 					{#each filteredApps as app (app.id)}
 						<AgentCard
 							{app}
@@ -348,14 +356,14 @@
 			max-width: 100vw !important;
 			width: 100vw !important;
 		}
-		
+
 		.flex-1.overflow-y-auto {
 			-webkit-overflow-scrolling: touch;
 			scroll-behavior: smooth;
 			overflow-x: hidden !important;
 			max-width: 100vw !important;
 		}
-		
+
 		/* 移动端单列布局 */
 		.grid {
 			grid-template-columns: 1fr !important;
@@ -363,23 +371,25 @@
 			max-width: 100% !important;
 			overflow-x: hidden !important;
 		}
-		
+
 		/* 统一间距，防止超出 */
-		.p-4, .lg\\:p-6 {
+		.p-4,
+		.lg\\:p-6 {
 			padding: 1rem !important;
 		}
-		
-		.p-3, .sm\\:p-4 {
+
+		.p-3,
+		.sm\\:p-4 {
 			padding: 1rem !important;
 		}
-		
+
 		/* Category buttons - 确保不超出 */
 		.gap-2.overflow-x-auto {
 			scrollbar-width: none;
 			-ms-overflow-style: none;
 			max-width: 100% !important;
 		}
-		
+
 		.gap-2.overflow-x-auto::-webkit-scrollbar {
 			display: none;
 		}

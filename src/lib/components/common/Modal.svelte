@@ -55,7 +55,7 @@
 			clearTimeout(timeoutId);
 			timeoutId = null;
 		}
-		
+
 		document.body.appendChild(modalElement);
 		// Add a small delay to ensure content is fully rendered before activating focus trap
 		timeoutId = setTimeout(() => {
@@ -63,11 +63,11 @@
 			if (!modalElement || !document.body.contains(modalElement) || !show) {
 				return;
 			}
-			
+
 			try {
 				// 先聚焦到modal容器本身，避免自动聚焦到输入框
 				modalElement.focus();
-				
+
 				if (!focusTrap) {
 					focusTrap = FocusTrap.createFocusTrap(modalElement, {
 						allowOutsideClick: true,
@@ -97,7 +97,7 @@
 			clearTimeout(timeoutId);
 			timeoutId = null;
 		}
-		
+
 		if (focusTrap) {
 			try {
 				focusTrap.deactivate();
@@ -115,13 +115,13 @@
 
 	onDestroy(() => {
 		show = false;
-		
+
 		// Clear any pending timeouts
 		if (timeoutId) {
 			clearTimeout(timeoutId);
 			timeoutId = null;
 		}
-		
+
 		if (focusTrap) {
 			try {
 				focusTrap.deactivate();

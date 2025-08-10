@@ -6,11 +6,11 @@
 	import Plus from '$lib/components/icons/Plus.svelte';
 	import Search from '$lib/components/icons/Search.svelte';
 	import MenuLines from '$lib/components/icons/MenuLines.svelte';
-	
+
 	// MidJourney APIs
-	import { 
-		generateImageWithPolling as mjGenerateImageWithPolling, 
-		getUserTasks as mjGetUserTasks, 
+	import {
+		generateImageWithPolling as mjGenerateImageWithPolling,
+		getUserTasks as mjGetUserTasks,
 		getMidJourneyConfig,
 		getUserCredits as mjGetUserCredits,
 		executeActionWithPolling,
@@ -42,13 +42,13 @@
 	let query = '';
 	let generating = false;
 	let prompt = '';
-	
+
 	// 服务选择
 	let selectedService = 'midjourney'; // 'midjourney' 或 'seedream'
 	let midJourneyConfig = null;
 	let seedreamConfig = null;
 	let userCredits = 0;
-	
+
 	// MidJourney 特有参数
 	let negativePrompt = '';
 	let selectedMode = 'fast';
@@ -65,7 +65,7 @@
 	let styleReferenceImages = [];
 	let fileInputRef;
 	let styleFileInputRef;
-	
+
 	// 即梦3.0 特有参数
 	let usePreLlm = false;
 	let seedreamSeed = -1;
@@ -79,31 +79,32 @@
 	let watermarkLanguage = 0;
 	let watermarkOpacity = 0.3;
 	let watermarkText = '';
-	
+
 	// 任务和历史
 	let imageHistory = [];
 	let currentTask = null;
 	let executingAction = false;
 	let selectedImageForAction = null;
-	
+
 	// 图片预览
 	let showImageModal = false;
 	let previewImage = null;
-	
+
 	let filteredImages = imageHistory;
 
 	$: {
-		filteredImages = query 
-			? imageHistory.filter(img => 
-				img.prompt.toLowerCase().includes(query.toLowerCase()) ||
-				img.service.toLowerCase().includes(query.toLowerCase())
-			)
+		filteredImages = query
+			? imageHistory.filter(
+					(img) =>
+						img.prompt.toLowerCase().includes(query.toLowerCase()) ||
+						img.service.toLowerCase().includes(query.toLowerCase())
+				)
 			: imageHistory;
 	}
 
 	// 根据选择的服务更新可用积分信息
 	$: serviceCredits = getServiceCredits();
-	
+
 	// 根据选择的尺寸更新宽高
 	$: {
 		if (selectedService === 'seedream' && !useCustomSize) {
@@ -132,7 +133,7 @@
 	// 加载配置
 	const loadConfigs = async () => {
 		if (!$user?.token) return;
-		
+
 		try {
 			// 并行加载两个服务的配置
 			const [mjConfig, seedreamConf, creditsData] = await Promise.allSettled([
@@ -143,14 +144,20 @@
 
 			if (mjConfig.status === 'fulfilled') {
 				midJourneyConfig = mjConfig.value;
-				console.log('MidJourney配置加载成功, 服务状态:', midJourneyConfig?.enabled ? '已启用' : '未启用');
+				console.log(
+					'MidJourney配置加载成功, 服务状态:',
+					midJourneyConfig?.enabled ? '已启用' : '未启用'
+				);
 			} else {
 				console.error('加载MidJourney配置失败:', mjConfig.reason);
 			}
 
 			if (seedreamConf.status === 'fulfilled') {
 				seedreamConfig = seedreamConf.value;
-				console.log('即梦3.0配置加载成功, 服务状态:', seedreamConfig?.enabled ? '已启用' : '未启用');
+				console.log(
+					'即梦3.0配置加载成功, 服务状态:',
+					seedreamConfig?.enabled ? '已启用' : '未启用'
+				);
 			} else {
 				console.error('加载即梦3.0配置失败:', seedreamConf.reason);
 			}
@@ -164,14 +171,21 @@
 			}
 
 			// 如果当前选择的服务未启用，自动切换到已启用的服务
-			if (selectedService === 'midjourney' && !midJourneyConfig?.enabled && seedreamConfig?.enabled) {
+			if (
+				selectedService === 'midjourney' &&
+				!midJourneyConfig?.enabled &&
+				seedreamConfig?.enabled
+			) {
 				selectedService = 'seedream';
 				toast.info('MidJourney服务未启用，已切换到即梦3.0');
-			} else if (selectedService === 'seedream' && !seedreamConfig?.enabled && midJourneyConfig?.enabled) {
+			} else if (
+				selectedService === 'seedream' &&
+				!seedreamConfig?.enabled &&
+				midJourneyConfig?.enabled
+			) {
 				selectedService = 'midjourney';
 				toast.info('即梦3.0服务未启用，已切换到MidJourney');
 			}
-
 		} catch (error) {
 			console.error('加载配置失败:', error);
 		}
@@ -180,7 +194,7 @@
 	// 加载用户任务历史
 	const loadUserTasks = async () => {
 		if (!$user?.token) return;
-		
+
 		try {
 			// 并行加载两个服务的任务历史
 			const [mjTasks, seedreamTasks] = await Promise.allSettled([
@@ -193,98 +207,108 @@
 			// 处理MidJourney任务 - 包括所有状态的任务
 			if (mjTasks.status === 'fulfilled') {
 				const mjTaskList = mjTasks.value.tasks || [];
-				const mjHistoryTasks = mjTaskList
-					.map(task => {
-						// 根据任务状态设置显示状态
-						let displayStatus = 'completed';
-						let displayMessage = '图像生成完成';
-						let displayProgress = 100;
-						let displayImage = task.image_url;
-						
-						if (task.status === MJ_TASK_STATUS.PROCESSING || task.status === MJ_TASK_STATUS.SUBMITTED) {
-							displayStatus = 'generating';
-							displayMessage = task.message || '正在生成图像...';
-							displayProgress = task.progress || 0;
-							displayImage = null;
-						} else if (task.status === MJ_TASK_STATUS.FAILED) {
-							displayStatus = 'failed';
-							displayMessage = task.message || '生成失败';
-							displayProgress = 0;
-							displayImage = null;
-						} else if (task.status === MJ_TASK_STATUS.CANCELLED) {
-							displayStatus = 'failed';
-							displayMessage = '任务已取消';
-							displayProgress = 0;
-							displayImage = null;
-						}
-						
-						return {
-							id: task.task_id,
-							prompt: task.prompt,
-							image: displayImage,
-							timestamp: task.completed_at ? new Date(task.completed_at * 1000) : new Date(task.created_at * 1000),
-							service: 'MidJourney',
-							model: `MidJourney (${task.mode})`,
-							task_id: task.task_id,
-							actions: task.actions || [],
-							seed: task.seed,
-							final_prompt: task.final_prompt,
-							aspect_ratio: task.aspect_ratio || '1:1',
-							status: displayStatus,
-							progress: displayProgress,
-							message: displayMessage
-						};
-					});
+				const mjHistoryTasks = mjTaskList.map((task) => {
+					// 根据任务状态设置显示状态
+					let displayStatus = 'completed';
+					let displayMessage = '图像生成完成';
+					let displayProgress = 100;
+					let displayImage = task.image_url;
+
+					if (
+						task.status === MJ_TASK_STATUS.PROCESSING ||
+						task.status === MJ_TASK_STATUS.SUBMITTED
+					) {
+						displayStatus = 'generating';
+						displayMessage = task.message || '正在生成图像...';
+						displayProgress = task.progress || 0;
+						displayImage = null;
+					} else if (task.status === MJ_TASK_STATUS.FAILED) {
+						displayStatus = 'failed';
+						displayMessage = task.message || '生成失败';
+						displayProgress = 0;
+						displayImage = null;
+					} else if (task.status === MJ_TASK_STATUS.CANCELLED) {
+						displayStatus = 'failed';
+						displayMessage = '任务已取消';
+						displayProgress = 0;
+						displayImage = null;
+					}
+
+					return {
+						id: task.task_id,
+						prompt: task.prompt,
+						image: displayImage,
+						timestamp: task.completed_at
+							? new Date(task.completed_at * 1000)
+							: new Date(task.created_at * 1000),
+						service: 'MidJourney',
+						model: `MidJourney (${task.mode})`,
+						task_id: task.task_id,
+						actions: task.actions || [],
+						seed: task.seed,
+						final_prompt: task.final_prompt,
+						aspect_ratio: task.aspect_ratio || '1:1',
+						status: displayStatus,
+						progress: displayProgress,
+						message: displayMessage
+					};
+				});
 				allTasks = [...allTasks, ...mjHistoryTasks];
 			}
 
 			// 处理即梦3.0任务 - 包括所有状态的任务
 			if (seedreamTasks.status === 'fulfilled') {
 				const seedreamTaskList = seedreamTasks.value.tasks || [];
-				const seedreamHistoryTasks = seedreamTaskList
-					.map(task => {
-						// 根据任务状态设置显示状态
-						let displayStatus = 'completed';
-						let displayMessage = '图像生成完成';
-						let displayProgress = 100;
-						let displayImage = task.image_url || (task.image_data ? `data:image/jpeg;base64,${task.image_data}` : null);
-						
-						if (task.status === SEEDREAM_TASK_STATUS.PROCESSING || task.status === SEEDREAM_TASK_STATUS.SUBMITTED) {
-							displayStatus = 'generating';
-							displayMessage = task.message || '正在生成图像...';
-							displayProgress = task.progress || 0;
-							displayImage = null;
-						} else if (task.status === SEEDREAM_TASK_STATUS.FAILED) {
-							displayStatus = 'failed';
-							displayMessage = task.message || '生成失败';
-							displayProgress = 0;
-							displayImage = null;
-						}
-						
-						return {
-							id: task.task_id,
-							prompt: task.prompt,
-							image: displayImage,
-							timestamp: task.completed_at ? new Date(task.completed_at * 1000) : new Date(task.created_at * 1000),
-							service: '即梦3.0',
-							model: `即梦3.0 (${task.width}×${task.height})`,
-							task_id: task.task_id,
-							width: task.width,
-							height: task.height,
-							scale: task.scale,
-							seed: task.seed,
-							status: displayStatus,
-							progress: displayProgress,
-							message: displayMessage
-						};
-					});
+				const seedreamHistoryTasks = seedreamTaskList.map((task) => {
+					// 根据任务状态设置显示状态
+					let displayStatus = 'completed';
+					let displayMessage = '图像生成完成';
+					let displayProgress = 100;
+					let displayImage =
+						task.image_url ||
+						(task.image_data ? `data:image/jpeg;base64,${task.image_data}` : null);
+
+					if (
+						task.status === SEEDREAM_TASK_STATUS.PROCESSING ||
+						task.status === SEEDREAM_TASK_STATUS.SUBMITTED
+					) {
+						displayStatus = 'generating';
+						displayMessage = task.message || '正在生成图像...';
+						displayProgress = task.progress || 0;
+						displayImage = null;
+					} else if (task.status === SEEDREAM_TASK_STATUS.FAILED) {
+						displayStatus = 'failed';
+						displayMessage = task.message || '生成失败';
+						displayProgress = 0;
+						displayImage = null;
+					}
+
+					return {
+						id: task.task_id,
+						prompt: task.prompt,
+						image: displayImage,
+						timestamp: task.completed_at
+							? new Date(task.completed_at * 1000)
+							: new Date(task.created_at * 1000),
+						service: '即梦3.0',
+						model: `即梦3.0 (${task.width}×${task.height})`,
+						task_id: task.task_id,
+						width: task.width,
+						height: task.height,
+						scale: task.scale,
+						seed: task.seed,
+						status: displayStatus,
+						progress: displayProgress,
+						message: displayMessage
+					};
+				});
 				allTasks = [...allTasks, ...seedreamHistoryTasks];
 			}
 
 			// 按时间排序
 			allTasks.sort((a, b) => b.timestamp - a.timestamp);
 			imageHistory = allTasks;
-			
+
 			if (allTasks.length > 0) {
 				console.log('加载了', allTasks.length, '个历史任务');
 			} else {
@@ -310,7 +334,9 @@
 		// 检查服务是否启用
 		const currentConfig = selectedService === 'midjourney' ? midJourneyConfig : seedreamConfig;
 		if (!currentConfig?.enabled) {
-			toast.error(`${selectedService === 'midjourney' ? 'MidJourney' : '即梦3.0'}服务未启用，请联系管理员配置`);
+			toast.error(
+				`${selectedService === 'midjourney' ? 'MidJourney' : '即梦3.0'}服务未启用，请联系管理员配置`
+			);
 			return;
 		}
 
@@ -340,15 +366,17 @@
 			toast.error('未知的图像生成服务');
 			return;
 		}
-		
+
 		if (userCredits < requiredCredits) {
-			toast.error(`${$creditName}余额不足，需要${requiredCredits}${$creditName}，当前余额：${userCredits.toFixed(2)}${$creditName}`);
+			toast.error(
+				`${$creditName}余额不足，需要${requiredCredits}${$creditName}，当前余额：${userCredits.toFixed(2)}${$creditName}`
+			);
 			return;
 		}
 
 		generating = true;
 		currentTask = null;
-		
+
 		try {
 			if (selectedService === 'midjourney') {
 				await generateMidJourneyImage();
@@ -424,15 +452,15 @@
 
 			// 替换临时任务
 			replaceTaskInHistory(tempTaskId, completedTask);
-			
+
 			// 更新积分余额
 			await loadConfigs();
-			
+
 			toast.success('MidJourney图像生成完成');
 		} catch (error) {
 			// 任务失败，更新状态
-			updateTaskInHistory(tempTaskId, { 
-				status: 'failed', 
+			updateTaskInHistory(tempTaskId, {
+				status: 'failed',
 				message: `生成失败: ${error.message}`,
 				progress: 0
 			});
@@ -442,13 +470,15 @@
 
 	// 即梦3.0图像生成
 	const generateSeedreamImage = async () => {
-		const logoInfo = addWatermark ? {
-			add_logo: true,
-			position: watermarkPosition,
-			language: watermarkLanguage,
-			opacity: watermarkOpacity,
-			logo_text_content: watermarkText || undefined
-		} : null;
+		const logoInfo = addWatermark
+			? {
+					add_logo: true,
+					position: watermarkPosition,
+					language: watermarkLanguage,
+					opacity: watermarkOpacity,
+					logo_text_content: watermarkText || undefined
+				}
+			: null;
 
 		const request = buildGenerateRequest({
 			prompt: prompt.trim(),
@@ -484,7 +514,9 @@
 			const completedTask = {
 				id: result.task_id,
 				prompt: prompt.trim(),
-				image: result.image_url || (result.image_data ? `data:image/jpeg;base64,${result.image_data}` : null),
+				image:
+					result.image_url ||
+					(result.image_data ? `data:image/jpeg;base64,${result.image_data}` : null),
 				timestamp: new Date(),
 				service: '即梦3.0',
 				model: `即梦3.0 (${customWidth}×${customHeight})`,
@@ -500,15 +532,15 @@
 
 			// 替换临时任务
 			replaceTaskInHistory(tempTaskId, completedTask);
-			
+
 			// 更新积分余额
 			await loadConfigs();
-			
+
 			toast.success('即梦3.0图像生成完成');
 		} catch (error) {
 			// 任务失败，更新状态
-			updateTaskInHistory(tempTaskId, { 
-				status: 'failed', 
+			updateTaskInHistory(tempTaskId, {
+				status: 'failed',
 				message: `生成失败: ${error.message}`,
 				progress: 0
 			});
@@ -518,20 +550,14 @@
 
 	// 更新历史中的任务状态
 	const updateTaskInHistory = (taskId, updates) => {
-		imageHistory = imageHistory.map(task => 
-			task.id === taskId || task.task_id === taskId 
-				? { ...task, ...updates }
-				: task
+		imageHistory = imageHistory.map((task) =>
+			task.id === taskId || task.task_id === taskId ? { ...task, ...updates } : task
 		);
 	};
 
 	// 替换历史中的任务
 	const replaceTaskInHistory = (tempTaskId, newTask) => {
-		imageHistory = imageHistory.map(task => 
-			task.id === tempTaskId 
-				? newTask
-				: task
-		);
+		imageHistory = imageHistory.map((task) => (task.id === tempTaskId ? newTask : task));
 	};
 
 	// 处理参考图片上传（MidJourney）
@@ -540,7 +566,7 @@
 		if (files.length === 0) return;
 
 		const targetArray = isStyle ? styleReferenceImages : referenceImages;
-		
+
 		for (const file of files) {
 			if (targetArray.length >= 5) {
 				toast.error('最多只能上传5张参考图片');
@@ -615,10 +641,10 @@
 			};
 
 			imageHistory = [newTask, ...imageHistory];
-			
+
 			// 更新积分余额
 			await loadConfigs();
-			
+
 			toast.success(`${result.action_type}操作完成`);
 		} catch (error) {
 			console.error('执行动作失败:', error);
@@ -668,18 +694,18 @@
 		try {
 			// 根据服务类型调用不同的删除API
 			if (image.service === 'MidJourney') {
-				await import('$lib/apis/midjourney.js').then(module => 
+				await import('$lib/apis/midjourney.js').then((module) =>
 					module.cancelTask($user.token, image.task_id)
 				);
 			} else if (image.service === '即梦3.0') {
-				await import('$lib/apis/seedream.js').then(module => 
+				await import('$lib/apis/seedream.js').then((module) =>
 					module.deleteTask($user.token, image.task_id)
 				);
 			}
 
 			// 从本地历史中移除任务
-			imageHistory = imageHistory.filter(task => task.id !== image.id);
-			
+			imageHistory = imageHistory.filter((task) => task.id !== image.id);
+
 			toast.success('任务已删除');
 		} catch (error) {
 			console.error('删除任务失败:', error);
@@ -712,11 +738,18 @@
 					<MenuLines />
 				</button>
 			</div>
-			
+
 			<div class="flex items-center space-x-2">
-				<div class="w-8 h-8 bg-pink-100 dark:bg-pink-900 rounded-lg flex items-center justify-center">
+				<div
+					class="w-8 h-8 bg-pink-100 dark:bg-pink-900 rounded-lg flex items-center justify-center"
+				>
 					<svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+						/>
 					</svg>
 				</div>
 				<h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">图像生成</h1>
@@ -725,7 +758,9 @@
 
 		<div class="flex items-center space-x-3">
 			<!-- 积分余额显示 -->
-			<div class="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+			<div
+				class="flex items-center space-x-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					viewBox="0 0 20 20"
@@ -737,7 +772,8 @@
 					/>
 				</svg>
 				<span class="text-sm font-medium text-blue-800 dark:text-blue-200">
-					{userCredits.toFixed(2)} {$creditName}
+					{userCredits.toFixed(2)}
+					{$creditName}
 				</span>
 			</div>
 		</div>
@@ -747,16 +783,19 @@
 
 	<div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
 		<!-- 左侧生成面板 -->
-		<div class="flex-none w-full lg:w-96 p-3 sm:p-4 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-850 overflow-y-auto max-h-[50vh] lg:max-h-none">
+		<div
+			class="flex-none w-full lg:w-96 p-3 sm:p-4 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-850 overflow-y-auto max-h-[50vh] lg:max-h-none"
+		>
 			<!-- 服务选择 -->
 			<div class="mb-6">
 				<label class="block text-sm font-medium mb-2">图像生成服务</label>
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
 					<button
-						class="p-2 sm:p-3 rounded-lg border transition-all text-sm sm:text-base {selectedService === 'midjourney'
+						class="p-2 sm:p-3 rounded-lg border transition-all text-sm sm:text-base {selectedService ===
+						'midjourney'
 							? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200'
 							: 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}"
-						on:click={() => selectedService = 'midjourney'}
+						on:click={() => (selectedService = 'midjourney')}
 						disabled={!midJourneyConfig?.enabled}
 					>
 						<div class="text-center">
@@ -770,7 +809,7 @@
 						class="p-3 rounded-lg border transition-all {selectedService === 'seedream'
 							? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200'
 							: 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}"
-						on:click={() => selectedService = 'seedream'}
+						on:click={() => (selectedService = 'seedream')}
 						disabled={!seedreamConfig?.enabled}
 					>
 						<div class="text-center">
@@ -786,7 +825,9 @@
 			<!-- 积分消耗提示 -->
 			<div class="mb-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
 				<div class="text-xs text-gray-600 dark:text-gray-400">
-					当前服务: <span class="font-medium">{selectedService === 'midjourney' ? 'MidJourney' : '即梦3.0'}</span>
+					当前服务: <span class="font-medium"
+						>{selectedService === 'midjourney' ? 'MidJourney' : '即梦3.0'}</span
+					>
 				</div>
 				<div class="text-xs text-gray-600 dark:text-gray-400">
 					消耗积分: <span class="font-medium text-blue-600 dark:text-blue-400">
@@ -833,9 +874,15 @@
 							bind:value={selectedMode}
 							class="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg"
 						>
-							<option value="fast">Fast (快速, {midJourneyConfig?.fast_credits || 10}{$creditName})</option>
-							<option value="relax">Relax (经济, {midJourneyConfig?.relax_credits || 5}{$creditName})</option>
-							<option value="turbo">Turbo (极速, {midJourneyConfig?.turbo_credits || 15}{$creditName})</option>
+							<option value="fast"
+								>Fast (快速, {midJourneyConfig?.fast_credits || 10}{$creditName})</option
+							>
+							<option value="relax"
+								>Relax (经济, {midJourneyConfig?.relax_credits || 5}{$creditName})</option
+							>
+							<option value="turbo"
+								>Turbo (极速, {midJourneyConfig?.turbo_credits || 15}{$creditName})</option
+							>
 						</select>
 					</div>
 
@@ -847,7 +894,7 @@
 							class="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg"
 						>
 							{#each Object.entries(ASPECT_RATIOS) as [label, value]}
-								<option value={value}>{label}</option>
+								<option {value}>{label}</option>
 							{/each}
 						</select>
 					</div>
@@ -868,7 +915,7 @@
 						<button
 							type="button"
 							class="flex items-center justify-between w-full text-sm font-medium py-2"
-							on:click={() => showAdvancedOptions = !showAdvancedOptions}
+							on:click={() => (showAdvancedOptions = !showAdvancedOptions)}
 						>
 							<span>高级选项</span>
 							<svg
@@ -877,10 +924,15 @@
 								stroke="currentColor"
 								viewBox="0 0 24 24"
 							>
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M19 9l-7 7-7-7"
+								/>
 							</svg>
 						</button>
-						
+
 						{#if showAdvancedOptions}
 							<div class="space-y-3 pt-2">
 								<!-- 混乱程度 -->
@@ -931,7 +983,7 @@
 									>
 										<option value={null}>默认版本</option>
 										{#each Object.entries(MJ_VERSIONS) as [label, value]}
-											<option value={value}>{label}</option>
+											<option {value}>{label}</option>
 										{/each}
 									</select>
 								</div>
@@ -968,12 +1020,7 @@
 
 								<!-- 平铺模式 -->
 								<div class="flex items-center space-x-2">
-									<input
-										type="checkbox"
-										bind:checked={tileMode}
-										id="tile-mode"
-										class="rounded"
-									/>
+									<input type="checkbox" bind:checked={tileMode} id="tile-mode" class="rounded" />
 									<label for="tile-mode" class="text-xs font-medium">平铺模式</label>
 								</div>
 							</div>
@@ -1048,14 +1095,7 @@
 					<!-- 文本影响程度 -->
 					<div>
 						<label class="block text-sm font-medium mb-2">文本影响程度 ({scale})</label>
-						<input
-							type="range"
-							bind:value={scale}
-							min="1"
-							max="10"
-							step="0.1"
-							class="w-full"
-						/>
+						<input type="range" bind:value={scale} min="1" max="10" step="0.1" class="w-full" />
 						<div class="flex justify-between text-xs text-gray-500">
 							<span>1.0</span>
 							<span>10.0</span>
@@ -1078,17 +1118,10 @@
 
 					<!-- 文本扩写 -->
 					<div class="flex items-center space-x-2">
-						<input
-							type="checkbox"
-							bind:checked={usePreLlm}
-							id="use-pre-llm"
-							class="rounded"
-						/>
+						<input type="checkbox" bind:checked={usePreLlm} id="use-pre-llm" class="rounded" />
 						<label for="use-pre-llm" class="text-sm font-medium">启用文本扩写</label>
 					</div>
-					<div class="text-xs text-gray-500">
-						适合较短的提示词，自动扩展和优化描述
-					</div>
+					<div class="text-xs text-gray-500">适合较短的提示词，自动扩展和优化描述</div>
 
 					<!-- 水印设置 -->
 					<div>
@@ -1101,7 +1134,7 @@
 							/>
 							<label for="add-watermark" class="text-sm font-medium">添加水印</label>
 						</div>
-						
+
 						{#if addWatermark}
 							<div class="space-y-2 pl-6">
 								<div>
@@ -1127,7 +1160,8 @@
 									</select>
 								</div>
 								<div>
-									<label class="block text-xs font-medium mb-1">不透明度 ({watermarkOpacity})</label>
+									<label class="block text-xs font-medium mb-1">不透明度 ({watermarkOpacity})</label
+									>
 									<input
 										type="range"
 										bind:value={watermarkOpacity}
@@ -1155,7 +1189,7 @@
 				{#if selectedService === 'midjourney'}
 					<div>
 						<label class="block text-sm font-medium mb-2">参考图片 (可选)</label>
-						
+
 						<!-- 普通参考图 -->
 						<div class="mb-3">
 							<div class="flex items-center justify-between mb-2">
@@ -1202,7 +1236,8 @@
 						<!-- 风格参考图 -->
 						<div>
 							<div class="flex items-center justify-between mb-2">
-								<span class="text-xs font-medium">风格参考图 ({styleReferenceImages.length}/5)</span>
+								<span class="text-xs font-medium">风格参考图 ({styleReferenceImages.length}/5)</span
+								>
 								<input
 									type="file"
 									multiple
@@ -1247,37 +1282,46 @@
 				<!-- 生成按钮 -->
 				<button
 					on:click={generateImage}
-					disabled={generating || !prompt.trim() || 
+					disabled={generating ||
+						!prompt.trim() ||
 						(selectedService === 'midjourney' && !midJourneyConfig) ||
 						(selectedService === 'seedream' && !seedreamConfig) ||
-						(selectedService === 'midjourney' && midJourneyConfig && userCredits < (
-							selectedMode === 'fast' ? (midJourneyConfig.fast_credits || 10) :
-							selectedMode === 'relax' ? (midJourneyConfig.relax_credits || 5) :
-							selectedMode === 'turbo' ? (midJourneyConfig.turbo_credits || 15) : 10
-						)) ||
-						(selectedService === 'seedream' && seedreamConfig && userCredits < (seedreamConfig.credits_per_generation || 1))
-					}
+						(selectedService === 'midjourney' &&
+							midJourneyConfig &&
+							userCredits <
+								(selectedMode === 'fast'
+									? midJourneyConfig.fast_credits || 10
+									: selectedMode === 'relax'
+										? midJourneyConfig.relax_credits || 5
+										: selectedMode === 'turbo'
+											? midJourneyConfig.turbo_credits || 15
+											: 10)) ||
+						(selectedService === 'seedream' &&
+							seedreamConfig &&
+							userCredits < (seedreamConfig.credits_per_generation || 1))}
 					class="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:from-pink-600 hover:to-purple-700 transition-all flex items-center justify-center space-x-2"
 				>
 					{#if generating}
 						<Spinner className="w-4 h-4" />
 						<span>生成中...</span>
 					{:else}
-						<span>生成图像 ({#if selectedService === 'midjourney' && midJourneyConfig}
-							{#if selectedMode === 'fast'}
-								{midJourneyConfig.fast_credits || 10}{$creditName}
-							{:else if selectedMode === 'relax'}
-								{midJourneyConfig.relax_credits || 5}{$creditName}
-							{:else if selectedMode === 'turbo'}
-								{midJourneyConfig.turbo_credits || 15}{$creditName}
+						<span
+							>生成图像 ({#if selectedService === 'midjourney' && midJourneyConfig}
+								{#if selectedMode === 'fast'}
+									{midJourneyConfig.fast_credits || 10}{$creditName}
+								{:else if selectedMode === 'relax'}
+									{midJourneyConfig.relax_credits || 5}{$creditName}
+								{:else if selectedMode === 'turbo'}
+									{midJourneyConfig.turbo_credits || 15}{$creditName}
+								{:else}
+									10{$creditName}
+								{/if}
+							{:else if selectedService === 'seedream' && seedreamConfig}
+								{seedreamConfig.credits_per_generation || 1}{$creditName}
 							{:else}
-								10{$creditName}
-							{/if}
-						{:else if selectedService === 'seedream' && seedreamConfig}
-							{seedreamConfig.credits_per_generation || 1}{$creditName}
-						{:else}
-							配置加载中...
-						{/if})</span>
+								配置加载中...
+							{/if})</span
+						>
 					{/if}
 				</button>
 			</div>
@@ -1289,7 +1333,9 @@
 			<div class="p-4 border-b border-gray-100 dark:border-gray-850">
 				<div class="flex items-center space-x-4">
 					<div class="flex-1 relative">
-						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+						<Search
+							className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"
+						/>
 						<input
 							bind:value={query}
 							placeholder="搜索图像历史..."
@@ -1326,11 +1372,15 @@
 				{:else}
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 						{#each filteredImages as image (image.id)}
-							<div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+							<div
+								class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+							>
 								<!-- 图像 -->
 								<div class="relative aspect-square">
 									{#if image.status === 'generating'}
-										<div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+										<div
+											class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
+										>
 											<div class="text-center">
 												<Spinner className="w-8 h-8 mx-auto mb-2" />
 												<div class="text-sm text-gray-600 dark:text-gray-400">
@@ -1344,7 +1394,9 @@
 											</div>
 										</div>
 									{:else if image.status === 'failed'}
-										<div class="w-full h-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+										<div
+											class="w-full h-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center"
+										>
 											<div class="text-center text-red-600 dark:text-red-400">
 												<svg
 													xmlns="http://www.w3.org/2000/svg"
@@ -1370,25 +1422,33 @@
 											on:click={() => openImageModal(image)}
 										/>
 									{:else}
-										<div class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+										<div
+											class="w-full h-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center"
+										>
 											<div class="text-gray-500">无图像</div>
 										</div>
 									{/if}
 
 									<!-- 服务标识 -->
 									<div class="absolute top-2 left-2">
-										<span class="px-2 py-1 text-xs font-medium rounded-full {image.service === 'MidJourney'
-											? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
-											: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'}">
+										<span
+											class="px-2 py-1 text-xs font-medium rounded-full {image.service ===
+											'MidJourney'
+												? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
+												: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'}"
+										>
 											{image.service}
 										</span>
 									</div>
 
 									<!-- 操作按钮 -->
 									{#if image.status === 'completed' && image.image}
-										<div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+										<div
+											class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+										>
 											<button
-												on:click|stopPropagation={() => downloadImage(image.image, `${image.service}_${image.id}.jpg`)}
+												on:click|stopPropagation={() =>
+													downloadImage(image.image, `${image.service}_${image.id}.jpg`)}
 												class="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors"
 												title="下载图像"
 											>
@@ -1408,7 +1468,9 @@
 											</button>
 										</div>
 									{:else if image.status === 'failed'}
-										<div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+										<div
+											class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity"
+										>
 											<button
 												on:click|stopPropagation={() => deleteFailedTask(image)}
 												class="p-1.5 bg-red-600/80 text-white rounded-full hover:bg-red-700/90 transition-colors"
@@ -1478,7 +1540,6 @@
 												删除任务
 											</button>
 										</div>
-
 									{/if}
 
 									<!-- MidJourney动作按钮 -->
@@ -1513,21 +1574,27 @@
 {#if showImageModal && previewImage}
 	<div
 		class="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
-		on:click={() => showImageModal = false}
+		on:click={() => (showImageModal = false)}
 	>
-		<div class="max-w-4xl max-h-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden" on:click|stopPropagation>
+		<div
+			class="max-w-4xl max-h-full bg-white dark:bg-gray-800 rounded-lg overflow-hidden"
+			on:click|stopPropagation
+		>
 			<div class="p-4 border-b border-gray-200 dark:border-gray-700">
 				<div class="flex items-center justify-between">
 					<div class="flex items-center space-x-3">
-						<span class="px-2 py-1 text-xs font-medium rounded-full {previewImage.service === 'MidJourney'
-							? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
-							: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'}">
+						<span
+							class="px-2 py-1 text-xs font-medium rounded-full {previewImage.service ===
+							'MidJourney'
+								? 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-200'
+								: 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-200'}"
+						>
 							{previewImage.service}
 						</span>
 						<span class="text-sm text-gray-600 dark:text-gray-400">{previewImage.model}</span>
 					</div>
 					<button
-						on:click={() => showImageModal = false}
+						on:click={() => (showImageModal = false)}
 						class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
 					>
 						<svg
@@ -1567,7 +1634,8 @@
 					</div>
 					<div class="mt-4 flex space-x-2">
 						<button
-							on:click={() => downloadImage(previewImage.image, `${previewImage.service}_${previewImage.id}.jpg`)}
+							on:click={() =>
+								downloadImage(previewImage.image, `${previewImage.service}_${previewImage.id}.jpg`)}
 							class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
 						>
 							下载图像

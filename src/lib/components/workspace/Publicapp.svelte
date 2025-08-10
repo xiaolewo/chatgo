@@ -12,7 +12,7 @@
 	import Search from '../icons/Search.svelte';
 	import ChevronRight from '../icons/ChevronRight.svelte';
 	import Spinner from '../common/Spinner.svelte';
-	
+
 	let loaded = false;
 	let tagsContainerElement;
 
@@ -26,29 +26,29 @@
 	// 模拟评分数据（实际项目中应该从API获取）
 	const getModelRating = (modelId) => {
 		const ratings = {
-			'default': 4.9,
-			'论文降重大师': 4.9,
-			'刑辩专家': 4.8,
-			'岩土工程助手': 4.7,
-			'无线通信专家': 4.9,
-			'眼科医生': 4.6,
-			'哲学剖析助手': 4.8,
-			'有机化学研究员': 4.9,
-			'美术论文顾问': 4.7
+			default: 4.9,
+			论文降重大师: 4.9,
+			刑辩专家: 4.8,
+			岩土工程助手: 4.7,
+			无线通信专家: 4.9,
+			眼科医生: 4.6,
+			哲学剖析助手: 4.8,
+			有机化学研究员: 4.9,
+			美术论文顾问: 4.7
 		};
 		return ratings[modelId] || (4.0 + Math.random() * 1.0).toFixed(1);
 	};
 
 	const getModelUsageCount = (modelId) => {
 		const usage = {
-			'论文降重大师': '2.1k',
-			'刑辩专家': '1.8k',
-			'岩土工程助手': '1.5k',
-			'无线通信专家': '2.3k',
-			'眼科医生': '1.2k',
-			'哲学剖析助手': '980',
-			'有机化学研究员': '1.6k',
-			'美术论文顾问': '890'
+			论文降重大师: '2.1k',
+			刑辩专家: '1.8k',
+			岩土工程助手: '1.5k',
+			无线通信专家: '2.3k',
+			眼科医生: '1.2k',
+			哲学剖析助手: '980',
+			有机化学研究员: '1.6k',
+			美术论文顾问: '890'
 		};
 		return usage[modelId] || `${Math.floor(Math.random() * 2000 + 100)}`;
 	};
@@ -62,7 +62,7 @@
 				const descMatch = item?.info?.meta?.description?.toLowerCase().includes(searchLower);
 				if (!nameMatch && !descMatch) return false;
 			}
-			
+
 			// 标签过滤
 			if (selectedTag === '') {
 				return true;
@@ -72,15 +72,21 @@
 
 		// 排序
 		if (sortBy === '评分') {
-			filtered = filtered.sort((a, b) => parseFloat(getModelRating(b.name)) - parseFloat(getModelRating(a.name)));
+			filtered = filtered.sort(
+				(a, b) => parseFloat(getModelRating(b.name)) - parseFloat(getModelRating(a.name))
+			);
 		} else if (sortBy === '使用量') {
 			filtered = filtered.sort((a, b) => {
-				const aCount = parseInt(getModelUsageCount(a.name).replace('k', '000').replace(/[^\d]/g, ''));
-				const bCount = parseInt(getModelUsageCount(b.name).replace('k', '000').replace(/[^\d]/g, ''));
+				const aCount = parseInt(
+					getModelUsageCount(a.name).replace('k', '000').replace(/[^\d]/g, '')
+				);
+				const bCount = parseInt(
+					getModelUsageCount(b.name).replace('k', '000').replace(/[^\d]/g, '')
+				);
 				return bCount - aCount;
 			});
 		}
-		
+
 		modelslist = filtered;
 	}
 
@@ -121,10 +127,10 @@
 					placeholder="搜索助手标题或内容..."
 				/>
 			</div>
-			
+
 			<!-- 筛选按钮 -->
 			<div class="relative">
-				<select 
+				<select
 					bind:value={sortBy}
 					class="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer"
 				>
@@ -165,7 +171,10 @@
 	</div>
 
 	<!-- 卡片网格 -->
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8" id="model-list">
+	<div
+		class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8"
+		id="model-list"
+	>
 		{#each modelslist as model}
 			<a
 				href={`/?models=${encodeURIComponent(model.id)}`}
@@ -175,7 +184,9 @@
 				<!-- 图标和标题 -->
 				<div class="flex items-start gap-3 mb-4">
 					<div class="flex-shrink-0">
-						<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center text-2xl">
+						<div
+							class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center text-2xl"
+						>
 							{#if model?.info?.meta?.profile_image_url}
 								<img
 									src={model.info.meta.profile_image_url}
@@ -204,17 +215,21 @@
 							{/if}
 						</div>
 					</div>
-					
+
 					<div class="flex-1 min-w-0">
-						<h3 class="font-semibold text-gray-900 dark:text-white text-base line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+						<h3
+							class="font-semibold text-gray-900 dark:text-white text-base line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
+						>
 							{model.name}
 						</h3>
-						
+
 						<!-- 评分和使用量 -->
 						<div class="flex items-center gap-3 mt-1">
 							<div class="flex items-center gap-1">
 								<span class="text-yellow-400">⭐</span>
-								<span class="text-sm font-medium text-gray-700 dark:text-gray-300">{getModelRating(model.name)}</span>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+									>{getModelRating(model.name)}</span
+								>
 							</div>
 							<div class="text-xs text-gray-500 dark:text-gray-400">
 								{getModelUsageCount(model.name)}使用
@@ -239,7 +254,9 @@
 					<div class="flex items-center justify-between">
 						<div class="flex flex-wrap gap-1">
 							{#each model.tags.slice(0, 2) as tag}
-								<span class="px-2 py-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md">
+								<span
+									class="px-2 py-1 text-xs font-medium bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md"
+								>
 									🏷️ {tag.name}
 								</span>
 							{/each}

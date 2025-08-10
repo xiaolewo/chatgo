@@ -9,27 +9,27 @@ import json
 import time
 from datetime import datetime
 
+
 async def test_frontend_api():
     """测试前端API调用流程"""
-    
+
     # OpenWebUI API配置
     OPENWEBUI_URL = "http://localhost:8080"
-    
+
     print("🔍 前端API调用测试")
     print("=" * 60)
     print(f"时间: {datetime.now()}")
-    
+
     async with httpx.AsyncClient() as client:
-        
+
         # 步骤1: 测试MidJourney配置端点
         print("\n📋 步骤1: 测试配置端点")
         try:
             config_response = await client.get(
-                f"{OPENWEBUI_URL}/api/v1/midjourney/config",
-                timeout=10
+                f"{OPENWEBUI_URL}/api/v1/midjourney/config", timeout=10
             )
             print(f"配置端点状态码: {config_response.status_code}")
-            
+
             if config_response.status_code == 403:
                 print("   ⚠️  需要认证，这是正常的")
             elif config_response.status_code == 404:
@@ -37,26 +37,23 @@ async def test_frontend_api():
                 return
             else:
                 print(f"   状态: {config_response.status_code}")
-                
+
         except Exception as e:
             print(f"   ❌ 配置端点测试失败: {str(e)}")
             return
 
         # 步骤2: 测试任务生成端点
         print("\n📋 步骤2: 测试任务生成端点")
-        test_payload = {
-            "prompt": "a simple test image",
-            "mode": "fast"
-        }
-        
+        test_payload = {"prompt": "a simple test image", "mode": "fast"}
+
         try:
             generate_response = await client.post(
                 f"{OPENWEBUI_URL}/api/v1/midjourney/generate",
                 json=test_payload,
-                timeout=10
+                timeout=10,
             )
             print(f"生成端点状态码: {generate_response.status_code}")
-            
+
             if generate_response.status_code == 403:
                 print("   ⚠️  需要认证，这是正常的")
                 # 我们无法继续测试，因为没有认证token
@@ -70,44 +67,49 @@ async def test_frontend_api():
                 print(f"   状态: {generate_response.status_code}")
                 if generate_response.status_code == 200:
                     result = generate_response.json()
-                    print(f"   结果: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                    
+                    print(
+                        f"   结果: {json.dumps(result, indent=2, ensure_ascii=False)}"
+                    )
+
                     # 如果成功，测试任务状态查询
                     if result.get("task_id"):
                         await test_task_status(client, OPENWEBUI_URL, result["task_id"])
-                        
+
         except Exception as e:
             print(f"   ❌ 生成端点测试失败: {str(e)}")
 
+
 async def test_task_status(client, base_url, task_id):
     """测试任务状态查询"""
-    
+
     print(f"\n📋 步骤3: 测试任务状态查询")
     print(f"任务ID: {task_id}")
-    
+
     try:
         status_response = await client.get(
-            f"{base_url}/api/v1/midjourney/task/{task_id}",
-            timeout=10
+            f"{base_url}/api/v1/midjourney/task/{task_id}", timeout=10
         )
         print(f"状态查询状态码: {status_response.status_code}")
-        
+
         if status_response.status_code == 200:
             status_result = status_response.json()
-            print(f"状态结果: {json.dumps(status_result, indent=2, ensure_ascii=False)}")
+            print(
+                f"状态结果: {json.dumps(status_result, indent=2, ensure_ascii=False)}"
+            )
         elif status_response.status_code == 403:
             print("   ⚠️  需要认证")
         elif status_response.status_code == 404:
             print("   ❌ 状态查询路由不存在！")
         else:
             print(f"   错误: {status_response.status_code} - {status_response.text}")
-            
+
     except Exception as e:
         print(f"   ❌ 状态查询失败: {str(e)}")
 
+
 def check_debug_steps():
     """提供调试步骤"""
-    
+
     print("\n" + "=" * 60)
     print("🔧 调试建议:")
     print()
@@ -133,6 +135,7 @@ def check_debug_steps():
     print("5. 验证前端配置:")
     print("   - 确认MIDJOURNEY_API_BASE_URL指向正确的端点")
     print("   - 检查认证token是否有效")
+
 
 if __name__ == "__main__":
     asyncio.run(test_frontend_api())

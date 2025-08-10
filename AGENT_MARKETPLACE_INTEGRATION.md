@@ -55,7 +55,7 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         sa.ForeignKeyConstraint(['created_by'], ['user.id'], )
     )
-    
+
     # 创建用户提交记录表
     op.create_table('agent_app_submission',
         sa.Column('id', sa.String(), nullable=False),
@@ -76,7 +76,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['app_id'], ['agent_app.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
     )
-    
+
     # 创建用户收藏表
     op.create_table('agent_app_favorite',
         sa.Column('id', sa.String(), nullable=False),
@@ -87,7 +87,7 @@ def upgrade():
         sa.ForeignKeyConstraint(['app_id'], ['agent_app.id'], ),
         sa.ForeignKeyConstraint(['user_id'], ['user.id'], )
     )
-    
+
     # 创建应用统计表
     op.create_table('agent_app_stats',
         sa.Column('id', sa.String(), nullable=False),
@@ -132,16 +132,16 @@ app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
 ```svelte
 <!-- src/routes/+layout.svelte 或相关布局文件 -->
 <script>
-  // 在现有导航项中添加
-  const navigationItems = [
-    // ... 现有项目
-    {
-      id: 'agents',
-      label: '智能体广场',
-      href: '/agents',
-      icon: '🤖'
-    }
-  ];
+	// 在现有导航项中添加
+	const navigationItems = [
+		// ... 现有项目
+		{
+			id: 'agents',
+			label: '智能体广场',
+			href: '/agents',
+			icon: '🤖'
+		}
+	];
 </script>
 ```
 
@@ -150,11 +150,11 @@ app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
 ```svelte
 <!-- src/routes/agents/+page.svelte -->
 <script>
-  import AgentMarketplace from '$lib/components/agents/AgentMarketplace.svelte';
+	import AgentMarketplace from '$lib/components/agents/AgentMarketplace.svelte';
 </script>
 
 <svelte:head>
-  <title>智能体广场 - OpenWebUI</title>
+	<title>智能体广场 - OpenWebUI</title>
 </svelte:head>
 
 <AgentMarketplace />
@@ -163,14 +163,14 @@ app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
 ```svelte
 <!-- src/routes/agents/[id]/+page.svelte -->
 <script>
-  import { page } from '$app/stores';
-  import AgentDetail from '$lib/components/agents/AgentDetail.svelte';
-  
-  $: appId = $page.params.id;
+	import { page } from '$app/stores';
+	import AgentDetail from '$lib/components/agents/AgentDetail.svelte';
+
+	$: appId = $page.params.id;
 </script>
 
 <svelte:head>
-  <title>智能体应用详情 - OpenWebUI</title>
+	<title>智能体应用详情 - OpenWebUI</title>
 </svelte:head>
 
 <AgentDetail {appId} />
@@ -179,29 +179,29 @@ app.include_router(agents.router, prefix="/api/v1/agents", tags=["agents"])
 ```svelte
 <!-- src/routes/admin/agents/+page.svelte -->
 <script>
-  import AgentAdmin from '$lib/components/agents/AgentAdmin.svelte';
-  import { user } from '$lib/stores';
-  import { goto } from '$app/navigation';
-  import { onMount } from 'svelte';
-  
-  onMount(() => {
-    if ($user?.role !== 'admin') {
-      goto('/');
-    }
-  });
+	import AgentAdmin from '$lib/components/agents/AgentAdmin.svelte';
+	import { user } from '$lib/stores';
+	import { goto } from '$app/navigation';
+	import { onMount } from 'svelte';
+
+	onMount(() => {
+		if ($user?.role !== 'admin') {
+			goto('/');
+		}
+	});
 </script>
 
 <svelte:head>
-  <title>智能体管理 - OpenWebUI</title>
+	<title>智能体管理 - OpenWebUI</title>
 </svelte:head>
 
 {#if $user?.role === 'admin'}
-  <AgentAdmin />
+	<AgentAdmin />
 {:else}
-  <div class="unauthorized">
-    <h1>访问被拒绝</h1>
-    <p>您需要管理员权限才能访问此页面。</p>
-  </div>
+	<div class="unauthorized">
+		<h1>访问被拒绝</h1>
+		<p>您需要管理员权限才能访问此页面。</p>
+	</div>
 {/if}
 ```
 
@@ -242,14 +242,14 @@ ENABLE_AGENT_MARKETPLACE = PersistentConfig(
 )
 
 AGENT_FILE_UPLOAD_DIR = PersistentConfig(
-    "AGENT_FILE_UPLOAD_DIR", 
+    "AGENT_FILE_UPLOAD_DIR",
     "open_webui.env.AGENT_FILE_UPLOAD_DIR",
     f"{DATA_DIR}/uploads/agents",
 )
 
 MAX_AGENT_FILE_SIZE = PersistentConfig(
     "MAX_AGENT_FILE_SIZE",
-    "open_webui.env.MAX_AGENT_FILE_SIZE", 
+    "open_webui.env.MAX_AGENT_FILE_SIZE",
     10 * 1024 * 1024,  # 10MB
 )
 ```
@@ -274,23 +274,23 @@ async def save_agent_file(file: UploadFile, user_id: str) -> dict:
         file_size = 0
         content = await file.read()
         file_size = len(content)
-        
+
         if file_size > MAX_AGENT_FILE_SIZE:
             raise ValueError(f"File size {file_size} exceeds maximum {MAX_AGENT_FILE_SIZE}")
-        
+
         # 生成文件名
         file_extension = os.path.splitext(file.filename)[1]
         unique_filename = f"{uuid.uuid4()}{file_extension}"
-        
+
         # 确保目录存在
         user_upload_dir = os.path.join(AGENT_FILE_UPLOAD_DIR, user_id)
         os.makedirs(user_upload_dir, exist_ok=True)
-        
+
         # 保存文件
         file_path = os.path.join(user_upload_dir, unique_filename)
         async with aiofiles.open(file_path, 'wb') as f:
             await f.write(content)
-        
+
         return {
             "id": str(uuid.uuid4()),
             "name": file.filename,
@@ -299,7 +299,7 @@ async def save_agent_file(file: UploadFile, user_id: str) -> dict:
             "url": f"/api/v1/files/agents/{user_id}/{unique_filename}",
             "path": file_path
         }
-        
+
     except Exception as e:
         raise ValueError(f"Failed to save file: {str(e)}")
 ```
@@ -323,20 +323,20 @@ async def process_agent_ai_request(
     """处理智能体AI请求"""
     try:
         ai_config = app_config.get('ai_config', {})
-        
+
         # 获取模型配置
         model_id = ai_config.get('model', 'gpt-3.5-turbo')
         model = Models.get_model_by_id(model_id)
-        
+
         if not model:
             raise ValueError(f"Model {model_id} not found")
-        
+
         # 构建系统提示
         system_prompt = ai_config.get('system_prompt', '')
-        
+
         # 构建用户消息
         user_message = build_user_message_from_form(form_data, files)
-        
+
         # 调用AI模型
         response = await generate_chat_completion({
             "model": model_id,
@@ -348,28 +348,28 @@ async def process_agent_ai_request(
             "max_tokens": ai_config.get('max_tokens', 2000),
             "stream": False
         })
-        
+
         return response.get('content', '')
-        
+
     except Exception as e:
         raise ValueError(f"AI processing failed: {str(e)}")
 
 def build_user_message_from_form(form_data: dict, files: list) -> str:
     """从表单数据构建用户消息"""
     message_parts = []
-    
+
     # 添加表单字段
     for key, value in form_data.items():
         if value:
             message_parts.append(f"{key}: {value}")
-    
+
     # 添加文件信息
     if files:
         file_info = []
         for file in files:
             file_info.append(f"文件: {file.get('name')}")
         message_parts.append("附件: " + ", ".join(file_info))
-    
+
     return "\n".join(message_parts)
 ```
 
@@ -387,14 +387,14 @@ import json
 async def test_agent_marketplace():
     """测试智能体广场集成"""
     base_url = "http://localhost:8080"
-    
+
     async with httpx.AsyncClient() as client:
         # 1. 测试获取应用列表
         print("Testing app list...")
         response = await client.get(f"{base_url}/api/v1/agents")
         assert response.status_code == 200
         print("✓ App list API working")
-        
+
         # 2. 测试创建应用（需要管理员权限）
         print("Testing app creation...")
         app_data = {
@@ -417,16 +417,16 @@ async def test_agent_marketplace():
                 "system_prompt": "你是一个测试助手"
             }
         }
-        
+
         # 注意：这需要有效的管理员token
         # response = await client.post(
-        #     f"{base_url}/api/v1/agents", 
+        #     f"{base_url}/api/v1/agents",
         #     json=app_data,
         #     headers={"Authorization": "Bearer YOUR_ADMIN_TOKEN"}
         # )
         # assert response.status_code == 200
         print("✓ App creation API ready")
-        
+
         print("All integration tests passed!")
 
 if __name__ == "__main__":
@@ -454,19 +454,19 @@ RUN chown -R user:user /app/backend/data/uploads/agents
 
 server {
     # ... 现有配置
-    
+
     # 智能体文件服务
     location /api/v1/files/agents/ {
         alias /app/backend/data/uploads/agents/;
-        
+
         # 安全配置
         add_header X-Content-Type-Options nosniff;
         add_header X-Frame-Options DENY;
-        
+
         # 文件大小限制
         client_max_body_size 10M;
     }
-    
+
     # 智能体API代理
     location /api/v1/agents/ {
         proxy_pass http://backend;
@@ -492,10 +492,10 @@ from open_webui.env import ENABLE_AGENT_MARKETPLACE
 
 class AgentConfig:
     """智能体系统配置类"""
-    
+
     # 系统启用状态
     ENABLED = ENABLE_AGENT_MARKETPLACE
-    
+
     # 默认分类
     DEFAULT_CATEGORIES = [
         {"id": "general", "name": "通用", "icon": "🤖"},
@@ -503,13 +503,13 @@ class AgentConfig:
         {"id": "creative", "name": "创意", "icon": "🎨"},
         {"id": "analysis", "name": "分析", "icon": "📊"}
     ]
-    
+
     # 表单字段类型
     FIELD_TYPES = [
-        "text", "select", "file", "switch", 
+        "text", "select", "file", "switch",
         "number", "date", "checkbox", "radio"
     ]
-    
+
     # 文件上传配置
     FILE_CONFIG = {
         "max_size": "10MB",
@@ -519,7 +519,7 @@ class AgentConfig:
             ".pdf", ".docx", ".txt", ".csv"
         ]
     }
-    
+
     # AI模型配置
     AI_CONFIG = {
         "default_model": "gpt-3.5-turbo",
@@ -535,16 +535,18 @@ agent_config = AgentConfig()
 ## 🚀 启用步骤
 
 1. **运行数据库迁移**
+
    ```bash
    cd backend
    alembic upgrade head
    ```
 
 2. **重启服务**
+
    ```bash
    # 重启后端服务
    python -m uvicorn open_webui.main:app --reload
-   
+
    # 重新构建前端
    cd ../
    npm run build

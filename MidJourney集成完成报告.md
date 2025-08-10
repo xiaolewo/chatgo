@@ -7,6 +7,7 @@
 ## ✅ 已完成功能
 
 ### 1. 后端API集成
+
 - **路径**: `backend/open_webui/routers/midjourney.py`
 - **功能**:
   - ✅ 6个完整的API端点
@@ -15,9 +16,10 @@
   - ✅ 数据模型和类型定义
 
 #### API端点列表:
+
 ```
 GET  /api/v1/midjourney/config       - 获取配置
-POST /api/v1/midjourney/config       - 更新配置  
+POST /api/v1/midjourney/config       - 更新配置
 POST /api/v1/midjourney/generate     - 提交生成任务
 GET  /api/v1/midjourney/task/{id}    - 查询任务状态
 GET  /api/v1/midjourney/tasks        - 获取任务列表
@@ -25,6 +27,7 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
 ```
 
 ### 2. 前端API客户端
+
 - **路径**: `src/lib/apis/midjourney.js`
 - **功能**:
   - ✅ 8个API调用函数
@@ -33,6 +36,7 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
   - ✅ 常量定义和类型支持
 
 #### 主要函数:
+
 - `getMidJourneyConfig()` - 获取配置
 - `updateMidJourneyConfig()` - 更新配置
 - `generateImage()` - 提交任务
@@ -41,6 +45,7 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
 - `generateImageWithPolling()` - 完整生成流程
 
 ### 3. 管理员配置面板
+
 - **路径**: `src/lib/components/admin/Settings/MidJourney.svelte`
 - **功能**:
   - ✅ 启用/禁用开关
@@ -50,7 +55,8 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
   - ✅ 与后端API完整集成
 
 ### 4. 图像生成界面
-- **路径**: `src/routes/(app)/image-generation/+page.svelte`  
+
+- **路径**: `src/routes/(app)/image-generation/+page.svelte`
 - **功能**:
   - ✅ MidJourney模式选择
   - ✅ 实时任务进度显示
@@ -59,6 +65,7 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
   - ✅ 错误处理和用户反馈
 
 ### 5. 系统集成
+
 - **主程序集成**: `backend/open_webui/main.py`
   - ✅ 路由正确导入和注册
   - ✅ API前缀配置(`/api/v1/midjourney`)
@@ -69,24 +76,28 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
 ## 🔧 技术特性
 
 ### 异步任务处理
+
 - 基于FastAPI的异步路由
 - 任务状态实时更新机制
 - 支持任务取消和错误恢复
 - 完整的任务生命周期管理
 
 ### 错误处理机制
+
 - 分层错误处理（前端+后端）
 - 友好的用户错误提示
 - 详细的服务器日志记录
 - 网络错误自动重试机制
 
 ### 安全性措施
+
 - 用户身份验证和授权
 - 管理员权限控制
 - 输入参数验证和清理
 - API密钥安全存储
 
 ### 用户体验优化
+
 - 实时进度条显示
 - 任务状态动态更新
 - 积分余额实时显示
@@ -95,17 +106,20 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
 ## 📊 测试验证
 
 ### 集成测试结果
+
 运行 `python test_integration_simple.py`:
+
 ```
 ✅ 通过: 5/5 项测试
 - 文件结构验证: 4/4 通过
 - 后端路由代码: 完整验证通过
-- 前端API客户端: 完整验证通过  
+- 前端API客户端: 完整验证通过
 - 主程序集成: 完整验证通过
 - 管理员设置: 完整验证通过
 ```
 
 ### 代码质量检查
+
 - 所有文件语法正确
 - 模块导入路径正确
 - 数据模型定义完整
@@ -114,12 +128,14 @@ DELETE /api/v1/midjourney/task/{id}  - 取消任务
 ## 🚀 部署指南
 
 ### 1. 启动后端服务
+
 ```bash
 cd backend
 python -m uvicorn open_webui.main:app --host 0.0.0.0 --port 8080
 ```
 
 ### 2. 启动前端开发服务器
+
 ```bash
 npm run dev
 # 或
@@ -127,12 +143,14 @@ pnpm dev
 ```
 
 ### 3. 配置MidJourney
+
 1. 以管理员身份登录
 2. 进入设置 → MidJourney
 3. 启用服务并配置API信息
 4. 设置积分消耗策略
 
 ### 4. 测试功能
+
 1. 进入图像生成页面
 2. 输入图像描述
 3. 选择生成模式
@@ -166,18 +184,21 @@ src/
 ## 🔄 下一步计划
 
 ### 短期优化 (1-2周)
+
 1. **真实API集成**: 替换模拟API调用为真实MidJourney API
 2. **积分系统完善**: 集成用户积分查询和扣除
 3. **图像存储**: 实现生成图像的本地存储或CDN集成
 4. **批量操作**: 支持批量生成和管理
 
 ### 中期扩展 (1个月)
+
 1. **高级参数**: 支持更多MidJourney参数(种子、权重等)
 2. **模板管理**: 预设提示词模板功能
 3. **用户收藏**: 图像收藏和分类功能
 4. **性能优化**: 任务队列和负载均衡
 
 ### 长期规划 (3个月)
+
 1. **多引擎支持**: 集成DALL-E、Stable Diffusion等
 2. **AI辅助**: 提示词优化和建议功能
 3. **社区功能**: 图像分享和评论系统
@@ -186,21 +207,25 @@ src/
 ## 💡 技术亮点
 
 ### 1. 渐进式集成策略
+
 - 从HMR错误中学习，采用稳定优化的集成方法
 - 先建立稳定基础，再逐步添加复杂功能
 - 确保每个步骤都经过完整测试验证
 
 ### 2. 完整的异步架构
+
 - 后端异步任务处理，避免请求阻塞
 - 前端轮询机制，实现实时状态更新
 - 任务生命周期完整管理
 
 ### 3. 企业级错误处理
+
 - 分层错误处理，从网络到业务逻辑
 - 用户友好的错误提示
 - 完整的日志记录便于调试
 
 ### 4. 模块化设计
+
 - 清晰的代码分层和模块划分
 - 易于维护和扩展的架构
 - 符合OpenWebUI现有代码规范
@@ -208,12 +233,14 @@ src/
 ## 📞 支持和维护
 
 ### 常见问题排查
+
 1. **配置加载失败**: 检查用户权限和API连接
 2. **任务提交失败**: 验证MidJourney配置和积分余额
 3. **进度不更新**: 检查轮询机制和网络连接
 4. **图像加载失败**: 验证图像URL和网络访问
 
 ### 监控和日志
+
 - 服务器日志: `backend/logs/`
 - 任务状态: `/api/v1/midjourney/tasks`
 - 配置状态: `/api/v1/midjourney/config`
@@ -223,6 +250,7 @@ src/
 MidJourney集成项目已成功完成，实现了从管理员配置到用户使用的完整功能链路。通过渐进式开发和全面测试，确保了代码的稳定性和功能的完整性。
 
 **主要成就**:
+
 - ✅ 完整的全栈集成 (后端API + 前端界面)
 - ✅ 企业级错误处理和用户体验
 - ✅ 模块化和可扩展的架构设计

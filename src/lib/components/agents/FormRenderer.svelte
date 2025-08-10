@@ -1,6 +1,6 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	// 导入表单字段组件
 	import TextInput from './fields/TextInput.svelte';
 	import SelectInput from './fields/SelectInput.svelte';
@@ -33,13 +33,13 @@
 	// 处理字段值变化
 	const handleFieldChange = (fieldName, value) => {
 		data = { ...data, [fieldName]: value };
-		
+
 		// 清除该字段的错误信息
 		if (errors[fieldName]) {
 			errors = { ...errors };
 			delete errors[fieldName];
 		}
-		
+
 		dispatch('change', { fieldName, value, data });
 	};
 
@@ -56,10 +56,10 @@
 	// 检查字段是否应该显示
 	const shouldShowField = (field) => {
 		if (!field.conditionalDisplay) return true;
-		
+
 		const { dependsOn, condition, value } = field.conditionalDisplay;
 		const dependentValue = data[dependsOn];
-		
+
 		switch (condition) {
 			case 'equals':
 				return dependentValue === value;
@@ -79,26 +79,26 @@
 	// 获取字段样式类
 	const getFieldClasses = (field) => {
 		let classes = ['form-field'];
-		
+
 		if (field.props?.width) {
 			classes.push(`field-width-${field.props.width}`);
 		}
-		
+
 		if (field.props?.alignment) {
 			classes.push(`field-align-${field.props.alignment}`);
 		}
-		
+
 		if (errors[field.name]) {
 			classes.push('field-error');
 		}
-		
+
 		return classes.join(' ');
 	};
 
 	// 响应式更新数据
 	$: if (config.fields) {
 		// 确保所有字段都有对应的数据项
-		config.fields.forEach(field => {
+		config.fields.forEach((field) => {
 			if (!(field.name in data) && field.default_value !== undefined) {
 				data = { ...data, [field.name]: field.default_value };
 			}
@@ -127,7 +127,7 @@
 							value={data[field.name]}
 							error={errors[field.name]}
 							{readonly}
-							on:change={e => handleFieldChange(field.name, e.detail)}
+							on:change={(e) => handleFieldChange(field.name, e.detail)}
 							on:focus={() => handleFieldFocus(field.name)}
 							on:blur={() => handleFieldBlur(field.name)}
 						/>

@@ -14,7 +14,7 @@
 
 	const submitHandler = async () => {
 		await setUsageConfig(localStorage.token, config);
-		
+
 		// Also save credit configuration
 		if (creditConfig) {
 			try {
@@ -22,11 +22,11 @@
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${localStorage.token}`
+						Authorization: `Bearer ${localStorage.token}`
 					},
 					body: JSON.stringify(creditConfig)
 				});
-				
+
 				if (!response.ok) {
 					console.error('Failed to save credit configuration');
 				}
@@ -42,15 +42,15 @@
 		if (res) {
 			config = res;
 		}
-		
+
 		// Load credit configuration
 		try {
 			const creditResponse = await fetch(`${WEBUI_API_BASE_URL}/credit/config`, {
 				headers: {
-					'Authorization': `Bearer ${localStorage.token}`
+					Authorization: `Bearer ${localStorage.token}`
 				}
 			});
-			
+
 			if (creditResponse.ok) {
 				creditConfig = await creditResponse.json();
 			} else {
@@ -85,7 +85,7 @@
 				<div class="mb-3">
 					<div class=" mb-2.5 text-base font-medium">积分配置</div>
 					<hr class=" border-gray-100 dark:border-gray-850 my-2" />
-					
+
 					<!-- 自定义积分名称 -->
 					<div class="flex w-full justify-between">
 						<div class=" self-center text-xs font-medium">积分名称</div>
@@ -101,7 +101,7 @@
 							required
 						/>
 					</div>
-					<br/>
+					<br />
 					<div class="flex w-full justify-between">
 						<div class=" self-center text-xs font-medium">{$i18n.t('No Credit Message')}</div>
 					</div>

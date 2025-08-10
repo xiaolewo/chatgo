@@ -54,7 +54,11 @@ class PptConfigTableOps:
         """获取PPT配置"""
         try:
             with get_db() as db:
-                config = db.query(PptConfigTable).filter(PptConfigTable.id == self.CONFIG_ID).first()
+                config = (
+                    db.query(PptConfigTable)
+                    .filter(PptConfigTable.id == self.CONFIG_ID)
+                    .first()
+                )
                 if config:
                     return PptConfigModel.model_validate(config)
                 return None
@@ -88,17 +92,21 @@ class PptConfigTableOps:
         try:
             # 确保配置存在
             self.get_or_create_config()
-            
+
             # 更新配置
             update_data = {**config_data, "updated_at": int(time.time())}
             with get_db() as db:
-                db.query(PptConfigTable).filter(PptConfigTable.id == self.CONFIG_ID).update(
-                    update_data, synchronize_session=False
-                )
+                db.query(PptConfigTable).filter(
+                    PptConfigTable.id == self.CONFIG_ID
+                ).update(update_data, synchronize_session=False)
                 db.commit()
-                
+
                 # 返回更新后的配置
-                updated_config = db.query(PptConfigTable).filter(PptConfigTable.id == self.CONFIG_ID).first()
+                updated_config = (
+                    db.query(PptConfigTable)
+                    .filter(PptConfigTable.id == self.CONFIG_ID)
+                    .first()
+                )
                 return PptConfigModel.model_validate(updated_config)
         except Exception as e:
             print(f"更新PPT配置失败: {e}")

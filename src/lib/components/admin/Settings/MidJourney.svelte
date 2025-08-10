@@ -22,7 +22,7 @@
 	// 加载配置
 	const loadConfig = async () => {
 		if (!$user?.token) return;
-		
+
 		loading = true;
 		try {
 			const response = await getMidJourneyConfig($user.token);

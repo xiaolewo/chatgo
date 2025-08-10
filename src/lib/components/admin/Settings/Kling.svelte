@@ -12,7 +12,7 @@
 	let saving = false;
 	let verifying = false;
 	let connectionStatus = null; // null, 'success', 'failed'
-	
+
 	let config = {
 		enabled: false,
 		api_url: '',
@@ -24,7 +24,7 @@
 	// 加载配置
 	const loadConfig = async () => {
 		if (!$user?.token) return;
-		
+
 		loading = true;
 		try {
 			const response = await getKlingConfig($user.token);
@@ -72,11 +72,11 @@
 
 		verifying = true;
 		connectionStatus = null;
-		
+
 		try {
 			const response = await verifyKlingConnection($user.token);
 			connectionStatus = response.status === 'success' ? 'success' : 'failed';
-			
+
 			if (connectionStatus === 'success') {
 				toast.success('连接验证成功');
 			} else {
@@ -99,11 +99,20 @@
 <div class="w-full max-w-2xl mx-auto">
 	<div class="space-y-6">
 		<!-- 服务概述 -->
-		<div class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-red-200 dark:border-red-800">
+		<div
+			class="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 p-6 rounded-xl border border-red-200 dark:border-red-800"
+		>
 			<div class="flex items-start gap-4">
-				<div class="w-12 h-12 rounded-lg bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center flex-shrink-0">
+				<div
+					class="w-12 h-12 rounded-lg bg-gradient-to-br from-red-500 to-orange-600 flex items-center justify-center flex-shrink-0"
+				>
 					<svg class="size-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+						/>
 					</svg>
 				</div>
 				<div class="flex-1 min-w-0">
@@ -141,13 +150,15 @@
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">基础配置</h3>
 				<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">配置可灵API连接信息</p>
 			</div>
-			
+
 			<div class="p-6 space-y-4">
 				<!-- 服务启用开关 -->
 				<div class="flex items-center justify-between">
 					<div>
 						<label class="text-sm font-medium text-gray-700 dark:text-gray-300">启用可灵服务</label>
-						<p class="text-xs text-gray-500 dark:text-gray-400">启用后用户可以使用可灵视频生成功能</p>
+						<p class="text-xs text-gray-500 dark:text-gray-400">
+							启用后用户可以使用可灵视频生成功能
+						</p>
 					</div>
 					<Switch bind:state={config.enabled} />
 				</div>
@@ -164,9 +175,7 @@
 						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
 						required
 					/>
-					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-						可灵API服务的基础URL地址
-					</p>
+					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">可灵API服务的基础URL地址</p>
 				</div>
 
 				<!-- API Key -->
@@ -181,9 +190,7 @@
 						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
 						required
 					/>
-					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-						从可灵服务提供商获取的API密钥
-					</p>
+					<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">从可灵服务提供商获取的API密钥</p>
 				</div>
 
 				<!-- 连接验证 -->
@@ -196,29 +203,55 @@
 					>
 						{#if verifying}
 							<svg class="animate-spin size-4" fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-								<path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+								<circle
+									class="opacity-25"
+									cx="12"
+									cy="12"
+									r="10"
+									stroke="currentColor"
+									stroke-width="4"
+								></circle>
+								<path
+									class="opacity-75"
+									fill="currentColor"
+									d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+								></path>
 							</svg>
 							<span>验证中...</span>
 						{:else}
 							<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
 							</svg>
 							<span>验证连接</span>
 						{/if}
 					</button>
-					
+
 					{#if connectionStatus === 'success'}
 						<div class="mt-2 flex items-center gap-2 text-green-600 dark:text-green-400">
 							<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+								/>
 							</svg>
 							<span class="text-sm">连接成功！API配置正确</span>
 						</div>
 					{:else if connectionStatus === 'failed'}
 						<div class="mt-2 flex items-center gap-2 text-red-600 dark:text-red-400">
 							<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+								/>
 							</svg>
 							<span class="text-sm">连接失败，请检查配置</span>
 						</div>
@@ -233,7 +266,7 @@
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">计费配置</h3>
 				<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">设置不同生成模式的积分消耗</p>
 			</div>
-			
+
 			<div class="p-6 space-y-4">
 				<!-- 标准模式积分 -->
 				<div>
@@ -276,7 +309,9 @@
 				</div>
 
 				<!-- 计费说明 -->
-				<div class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+				<div
+					class="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800"
+				>
 					<h4 class="text-sm font-medium text-amber-800 dark:text-amber-200 mb-2">计费说明</h4>
 					<ul class="text-xs text-amber-700 dark:text-amber-300 space-y-1">
 						<li>• 提交任务时预扣积分，任务失败时自动退还</li>
@@ -293,19 +328,28 @@
 			<div class="p-6 border-b border-gray-200 dark:border-gray-700">
 				<h3 class="text-lg font-semibold text-gray-900 dark:text-white">API使用说明</h3>
 			</div>
-			
+
 			<div class="p-6">
 				<div class="space-y-4 text-sm text-gray-600 dark:text-gray-400">
 					<div>
 						<h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">支持的模型版本</h4>
 						<ul class="space-y-1 ml-4">
-							<li>• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v1</code> - 基础版本</li>
-							<li>• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v1-6</code> - 增强版本</li>
-							<li>• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v2-master</code> - 专业版本</li>
-							<li>• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v2-1-master</code> - 最新版本</li>
+							<li>
+								• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v1</code> - 基础版本
+							</li>
+							<li>
+								• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v1-6</code> - 增强版本
+							</li>
+							<li>
+								• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v2-master</code> - 专业版本
+							</li>
+							<li>
+								• <code class="bg-gray-100 dark:bg-gray-700 px-1 rounded">kling-v2-1-master</code> -
+								最新版本
+							</li>
 						</ul>
 					</div>
-					
+
 					<div>
 						<h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">生成模式</h4>
 						<ul class="space-y-1 ml-4">
@@ -313,7 +357,7 @@
 							<li>• <strong>专家模式 (pro)</strong> - 高品质，生成质量更佳</li>
 						</ul>
 					</div>
-					
+
 					<div>
 						<h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">视频规格</h4>
 						<ul class="space-y-1 ml-4">
@@ -322,7 +366,7 @@
 							<li>• <strong>提示词长度</strong>: 最多2500个字符</li>
 						</ul>
 					</div>
-					
+
 					<div>
 						<h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">摄像机控制</h4>
 						<ul class="space-y-1 ml-4">
@@ -345,15 +389,25 @@
 			>
 				{#if saving}
 					<svg class="animate-spin size-4" fill="none" viewBox="0 0 24 24">
-						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-						<path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+						<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+						></circle>
+						<path
+							class="opacity-75"
+							fill="currentColor"
+							d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+						></path>
 					</svg>
 					<span>保存中...</span>
 				{:else if loading}
 					<span>加载中...</span>
 				{:else}
 					<svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							stroke-width="2"
+							d="M5 13l4 4L19 7"
+						/>
 					</svg>
 					<span>保存配置</span>
 				{/if}

@@ -655,7 +655,9 @@ class WeChatFollowService:
             async with ClientSession() as session:
                 async with session.get(token_url) as response:
                     token_data = await response.json()
-                    log.info(f"微信token接口响应状态: {response.status}, 包含access_token: {'access_token' in token_data}")
+                    log.info(
+                        f"微信token接口响应状态: {response.status}, 包含access_token: {'access_token' in token_data}"
+                    )
 
                     if "access_token" not in token_data:
                         error_msg = token_data.get("errmsg", "未知错误")
@@ -1683,7 +1685,9 @@ async def wechat_server_verification(request: Request):
         log.info(f"  - timestamp: {timestamp}")
         log.info(f"  - nonce: {nonce}")
         log.info(f"  - echostr: {echostr}")
-        log.info(f"  - 配置的token: {token[:4]}***" if token else "  - 配置的token: None")
+        log.info(
+            f"  - 配置的token: {token[:4]}***" if token else "  - 配置的token: None"
+        )
 
         if not token:
             log.error("微信TOKEN未配置")

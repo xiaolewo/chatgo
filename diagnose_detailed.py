@@ -8,20 +8,18 @@ import requests
 import json
 from datetime import datetime
 
+
 def diagnose_detailed():
     """详细诊断"""
-    
+
     print("🔍 MidJourney详细诊断")
     print("=" * 60)
     print(f"时间: {datetime.now()}")
-    
+
     # 检查1: 后端服务状态
     print("\n1️⃣ 检查后端服务状态")
-    openwebui_endpoints = [
-        "http://localhost:8080",
-        "http://127.0.0.1:8080"
-    ]
-    
+    openwebui_endpoints = ["http://localhost:8080", "http://127.0.0.1:8080"]
+
     working_endpoint = None
     for endpoint in openwebui_endpoints:
         try:
@@ -34,18 +32,18 @@ def diagnose_detailed():
                 print(f"   ❌ {endpoint} - HTTP {response.status_code}")
         except:
             print(f"   ❌ {endpoint} - 无法连接")
-    
+
     if not working_endpoint:
         print("\n❌ 后端服务未运行，请先启动OpenWebUI服务")
         return
-    
+
     # 检查2: MidJourney路由
     print(f"\n2️⃣ 检查MidJourney路由 ({working_endpoint})")
     midjourney_routes = [
         "/api/v1/midjourney/config",
         "/api/v1/midjourney/generate",
     ]
-    
+
     for route in midjourney_routes:
         try:
             response = requests.get(f"{working_endpoint}{route}", timeout=5)
@@ -57,7 +55,7 @@ def diagnose_detailed():
                 print(f"   ℹ️  {route} - HTTP {response.status_code}")
         except Exception as e:
             print(f"   ❌ {route} - 错误: {str(e)}")
-    
+
     # 检查3: 生成调试指南
     print(f"\n3️⃣ 前端调试指南")
     print("请按以下步骤在浏览器中调试：")
@@ -87,7 +85,7 @@ def diagnose_detailed():
     print("     → 记录HTTP状态码")
     print("     → 记录错误消息内容")
     print()
-    
+
     # 检查4: 常见问题解决方案
     print("4️⃣ 常见问题及解决方案")
     print()
@@ -111,7 +109,7 @@ def diagnose_detailed():
     print("   → 等待1-2分钟后再检查")
     print("   → 检查API配额是否充足")
     print()
-    
+
     # 检查5: 重启检查清单
     print("5️⃣ 重启检查清单")
     print()
@@ -122,12 +120,13 @@ def diagnose_detailed():
     print("□ 管理员面板中MidJourney配置已保存")
     print("□ API密钥已更新为: sk-9kOMUms2rhojGWiOE5239aB42bC947D5B501E4Dc2fB52c55")
     print()
-    
+
     print("=" * 60)
     print("📞 如果问题仍然存在：")
     print("1. 请提供浏览器Network标签中失败请求的详细信息")
     print("2. 请提供后端日志中的相关错误信息")
     print("3. 确认上述检查清单中的所有项目都已完成")
+
 
 if __name__ == "__main__":
     diagnose_detailed()

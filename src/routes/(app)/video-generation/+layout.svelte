@@ -13,9 +13,7 @@
 </svelte:head>
 
 <div class="h-screen max-h-[100dvh] w-full flex flex-col">
-	<div class="px-4 pt-3 mt-2">
-		
-	</div>
+	<div class="px-4 pt-3 mt-2"></div>
 
 	<div class="flex-1 overflow-auto">
 		<slot />

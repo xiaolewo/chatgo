@@ -931,7 +931,7 @@ app.state.config.IMAGE_SIZE = IMAGE_SIZE
 app.state.config.IMAGE_STEPS = IMAGE_STEPS
 
 ########################################
-#  
+#
 # MIDJOURNEY
 #
 ########################################
@@ -944,7 +944,7 @@ app.state.config.MIDJOURNEY_RELAX_CREDITS = MIDJOURNEY_RELAX_CREDITS
 app.state.config.MIDJOURNEY_TURBO_CREDITS = MIDJOURNEY_TURBO_CREDITS
 
 ########################################
-#  
+#
 # SEEDREAM (即梦3.0)
 #
 ########################################
@@ -955,7 +955,7 @@ app.state.config.SEEDREAM_API_KEY = SEEDREAM_API_KEY
 app.state.config.SEEDREAM_CREDITS = SEEDREAM_CREDITS
 
 ########################################
-#  
+#
 # KLING (可灵视频生成)
 #
 ########################################

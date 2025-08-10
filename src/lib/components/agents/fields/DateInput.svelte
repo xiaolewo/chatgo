@@ -1,8 +1,8 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	export let field = {};
 	export let value = '';
 	export let error = '';
@@ -37,22 +37,22 @@
 	// 格式化日期显示
 	const formatDate = (dateStr) => {
 		if (!dateStr) return '';
-		
+
 		try {
 			const date = new Date(dateStr);
 			if (isNaN(date.getTime())) return dateStr;
-			
+
 			const options = {
 				year: 'numeric',
 				month: '2-digit',
 				day: '2-digit'
 			};
-			
+
 			if (showTime) {
 				options.hour = '2-digit';
 				options.minute = '2-digit';
 			}
-			
+
 			return date.toLocaleDateString('zh-CN', options);
 		} catch {
 			return dateStr;
@@ -60,8 +60,7 @@
 	};
 
 	// 验证日期范围
-	$: isValid = !value || 
-		((!min || value >= min) && (!max || value <= max));
+	$: isValid = !value || ((!min || value >= min) && (!max || value <= max));
 </script>
 
 <div class="date-input-wrapper" class:error={!!error}>
@@ -237,7 +236,7 @@
 	}
 
 	/* Firefox日期输入框样式 */
-	.date-input[type="date"]::-moz-focus-inner {
+	.date-input[type='date']::-moz-focus-inner {
 		border: 0;
 		padding: 0;
 	}

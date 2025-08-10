@@ -341,9 +341,9 @@ export const getStatusColor = (status) => {
  */
 export const validateCameraConfig = (config) => {
 	if (!config) return true;
-	
+
 	// 检查是否只有一个参数不为0
-	const nonZeroCount = Object.values(config).filter(value => value !== 0).length;
+	const nonZeroCount = Object.values(config).filter((value) => value !== 0).length;
 	return nonZeroCount <= 1;
 };
 
@@ -361,7 +361,7 @@ export const downloadVideo = async (videoUrl, filename = 'kling-video.mp4') => {
 	try {
 		const response = await fetch(videoUrl);
 		const blob = await response.blob();
-		
+
 		const url = window.URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;

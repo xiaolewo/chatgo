@@ -220,7 +220,7 @@ export const pollTaskStatus = async (token, taskId, onUpdate = null) => {
 			try {
 				pollCount++;
 				const status = await getTaskStatus(token, taskId);
-				
+
 				// 调用更新回调
 				if (onUpdate) {
 					onUpdate(status);
@@ -261,7 +261,7 @@ export const generateImageWithPolling = async (token, request, onUpdate = null) 
 	try {
 		// 1. 构建请求对象
 		const validatedRequest = buildGenerateRequest(request);
-		
+
 		// 2. 提交任务
 		const submitResponse = await generateImage(token, validatedRequest);
 		const taskId = submitResponse.task_id;
@@ -286,7 +286,7 @@ export const executeActionWithPolling = async (token, taskId, actionButton, onUp
 	try {
 		// 1. 构建动作请求
 		const actionRequest = parseActionButton(actionButton);
-		
+
 		// 2. 执行动作
 		const submitResponse = await executeAction(token, taskId, actionRequest);
 		const newTaskId = submitResponse.task_id;
@@ -309,7 +309,7 @@ export const executeActionWithPolling = async (token, taskId, actionButton, onUp
 // 任务状态常量
 export const TASK_STATUS = {
 	SUBMITTED: 'submitted',
-	PROCESSING: 'processing', 
+	PROCESSING: 'processing',
 	COMPLETED: 'completed',
 	FAILED: 'failed',
 	CANCELLED: 'cancelled'
@@ -337,7 +337,7 @@ export const ASPECT_RATIOS = {
 export const MJ_VERSIONS = {
 	// MidJourney 写实版本
 	'MidJourney v5.2': '5.2',
-	'MidJourney v6': '6', 
+	'MidJourney v6': '6',
 	'MidJourney v6.1': '6.1',
 	'MidJourney v7': '7',
 	// Niji 动漫版本
@@ -372,7 +372,7 @@ export const fileToBase64 = (file) => {
 			const base64 = reader.result.split(',')[1];
 			resolve(base64);
 		};
-		reader.onerror = error => reject(error);
+		reader.onerror = (error) => reject(error);
 	});
 };
 
@@ -381,31 +381,31 @@ export const fileToBase64 = (file) => {
  */
 export const validateAdvancedParams = (params) => {
 	const errors = [];
-	
+
 	if (params.chaos !== undefined && (params.chaos < 0 || params.chaos > 100)) {
 		errors.push('混乱程度必须在0-100之间');
 	}
-	
+
 	if (params.stylize !== undefined && (params.stylize < 0 || params.stylize > 1000)) {
 		errors.push('风格化程度必须在0-1000之间');
 	}
-	
+
 	if (params.seed !== undefined && (params.seed < 0 || params.seed > 4294967295)) {
 		errors.push('种子值必须在0-4294967295之间');
 	}
-	
+
 	if (params.quality !== undefined && (params.quality < 0.25 || params.quality > 2.0)) {
 		errors.push('图像质量必须在0.25-2.0之间');
 	}
-	
+
 	if (params.weird !== undefined && (params.weird < 0 || params.weird > 3000)) {
 		errors.push('奇异程度必须在0-3000之间');
 	}
-	
+
 	if (params.version && !Object.values(MJ_VERSIONS).includes(params.version)) {
 		errors.push('不支持的MidJourney版本');
 	}
-	
+
 	return errors;
 };
 
@@ -424,16 +424,16 @@ export const buildGenerateRequest = ({
 	if (!prompt || prompt.trim().length < 3) {
 		throw new Error('图像描述至少需要3个字符');
 	}
-	
+
 	if (prompt.length > 2000) {
 		throw new Error('图像描述不能超过2000个字符');
 	}
-	
+
 	// 验证参考图片数量
 	if (reference_images.length > 5) {
 		throw new Error('最多只能上传5张参考图片');
 	}
-	
+
 	// 验证高级参数
 	if (advanced_params) {
 		const paramErrors = validateAdvancedParams(advanced_params);
@@ -441,7 +441,7 @@ export const buildGenerateRequest = ({
 			throw new Error(paramErrors.join(', '));
 		}
 	}
-	
+
 	return {
 		prompt: prompt.trim(),
 		mode,
@@ -457,7 +457,7 @@ export const buildGenerateRequest = ({
  */
 export const parseActionButton = (button) => {
 	const { label, custom_id, type } = button;
-	
+
 	// 解析按钮索引（如果适用）
 	let button_index = null;
 	if (type === 'upscale' || type === 'variation') {
@@ -466,7 +466,7 @@ export const parseActionButton = (button) => {
 			button_index = parseInt(match[2]) - 1; // 转换为0-based索引
 		}
 	}
-	
+
 	return {
 		action_type: type,
 		button_index,

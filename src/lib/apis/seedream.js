@@ -245,35 +245,35 @@ export const RECOMMENDED_SIZES = {
  */
 export const validateGenerateParams = (params) => {
 	const errors = [];
-	
+
 	// 验证提示词
 	if (!params.prompt || params.prompt.trim().length < 3) {
 		errors.push('图像描述至少需要3个字符');
 	}
-	
+
 	if (params.prompt && params.prompt.length > 2000) {
 		errors.push('图像描述不能超过2000个字符');
 	}
-	
+
 	// 验证尺寸
 	if (params.width && (params.width < 512 || params.width > 2048)) {
 		errors.push('图像宽度必须在512-2048之间');
 	}
-	
+
 	if (params.height && (params.height < 512 || params.height > 2048)) {
 		errors.push('图像高度必须在512-2048之间');
 	}
-	
+
 	// 验证scale参数
 	if (params.scale && (params.scale < 1.0 || params.scale > 10.0)) {
 		errors.push('文本影响程度必须在1.0-10.0之间');
 	}
-	
+
 	// 验证种子值
 	if (params.seed && params.seed !== -1 && (params.seed < 0 || params.seed > 2147483647)) {
 		errors.push('种子值必须在0-2147483647之间，或使用-1表示随机');
 	}
-	
+
 	return errors;
 };
 
@@ -295,7 +295,7 @@ export const buildGenerateRequest = ({
 	if (errors.length > 0) {
 		throw new Error(errors.join(', '));
 	}
-	
+
 	const request = {
 		prompt: prompt.trim(),
 		use_pre_llm,
@@ -305,12 +305,12 @@ export const buildGenerateRequest = ({
 		height,
 		return_url
 	};
-	
+
 	// 添加水印信息（如果提供）
 	if (logo_info) {
 		request.logo_info = logo_info;
 	}
-	
+
 	return request;
 };
 

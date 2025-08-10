@@ -42,17 +42,17 @@ async def get_config(request: Request):
 
 @router.post("/config")
 async def update_credit_config(
-    request: Request,
-    form_data: dict,
-    user: UserModel = Depends(get_admin_user)
+    request: Request, form_data: dict, user: UserModel = Depends(get_admin_user)
 ):
     """更新积分配置 (仅管理员)"""
     try:
         if "CREDIT_NAME" in form_data:
             request.app.state.config.CREDIT_NAME = form_data["CREDIT_NAME"]
         if "CREDIT_EXCHANGE_RATIO" in form_data:
-            request.app.state.config.CREDIT_EXCHANGE_RATIO = form_data["CREDIT_EXCHANGE_RATIO"]
-        
+            request.app.state.config.CREDIT_EXCHANGE_RATIO = form_data[
+                "CREDIT_EXCHANGE_RATIO"
+            ]
+
         return {
             "success": True,
             "message": "积分配置已更新",
@@ -60,31 +60,30 @@ async def update_credit_config(
                 "CREDIT_NAME": request.app.state.config.CREDIT_NAME,
                 "CREDIT_EXCHANGE_RATIO": request.app.state.config.CREDIT_EXCHANGE_RATIO,
                 "EZFP_PAY_PRIORITY": request.app.state.config.EZFP_PAY_PRIORITY,
-            }
+            },
         }
     except Exception as e:
         log.error(f"更新积分配置失败: {str(e)}")
-        return {
-            "success": False,
-            "message": f"更新配置失败: {str(e)}"
-        }
+        return {"success": False, "message": f"更新配置失败: {str(e)}"}
 
 
 @router.get("/status")
-async def get_credit_status(request: Request, user: UserModel = Depends(get_current_user)):
+async def get_credit_status(
+    request: Request, user: UserModel = Depends(get_current_user)
+):
     """获取用户积分状态"""
     try:
         user_credit = Credits.get_credit_by_user_id(user.id)
         if not user_credit:
             # 如果用户没有积分记录，初始化一个
             user_credit = Credits.init_credit_by_user_id(user.id)
-        
+
         credit_name = request.app.state.config.CREDIT_NAME
         return {
             "user_id": user.id,
             "credit": float(user_credit.credit),
             "credit_display": f"{user_credit.credit:.2f}",
-            "credit_name": credit_name
+            "credit_name": credit_name,
         }
     except Exception as e:
         log.error(f"获取用户积分失败: {str(e)}")
@@ -92,7 +91,7 @@ async def get_credit_status(request: Request, user: UserModel = Depends(get_curr
             "user_id": user.id,
             "credit": 0.0,
             "credit_display": "0.00",
-            "credit_name": "积分"  # 默认值
+            "credit_name": "积分",  # 默认值
         }
 
 

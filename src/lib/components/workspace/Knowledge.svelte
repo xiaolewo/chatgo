@@ -55,13 +55,13 @@
 	}
 
 	$: {
-		let filtered = query
-			? fuse?.search(query).map((e) => e.item) || []
-			: knowledgeBases;
+		let filtered = query ? fuse?.search(query).map((e) => e.item) || [] : knowledgeBases;
 
 		// 排序
 		if (sortBy === '评分') {
-			filtered = filtered.sort((a, b) => parseFloat(getKnowledgeRating(b.id)) - parseFloat(getKnowledgeRating(a.id)));
+			filtered = filtered.sort(
+				(a, b) => parseFloat(getKnowledgeRating(b.id)) - parseFloat(getKnowledgeRating(a.id))
+			);
 		} else if (sortBy === '使用量') {
 			filtered = filtered.sort((a, b) => {
 				const aCount = parseInt(getKnowledgeUsageCount(a.id));
@@ -69,7 +69,7 @@
 				return bCount - aCount;
 			});
 		}
-		
+
 		filteredItems = filtered;
 	}
 
@@ -111,11 +111,13 @@
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-3">
 				<h2 class="text-xl font-semibold text-gray-900 dark:text-white">知识库</h2>
-				<span class="px-3 py-1 text-sm font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full">
+				<span
+					class="px-3 py-1 text-sm font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full"
+				>
 					{filteredItems.length} 个知识库
 				</span>
 			</div>
-			
+
 			<!-- 创建按钮 -->
 			<button
 				class="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-xl transition-colors font-medium"
@@ -141,10 +143,10 @@
 					placeholder="搜索知识库标题或描述..."
 				/>
 			</div>
-			
+
 			<!-- 筛选按钮 -->
 			<div class="relative">
-				<select 
+				<select
 					bind:value={sortBy}
 					class="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
 				>
@@ -157,7 +159,10 @@
 	</div>
 
 	<!-- 卡片网格 -->
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8" id="knowledge-list">
+	<div
+		class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8"
+		id="knowledge-list"
+	>
 		{#each filteredItems as item}
 			<div
 				class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 cursor-pointer"
@@ -176,7 +181,9 @@
 				<!-- 图标和标题 -->
 				<div class="flex items-start gap-3 mb-4">
 					<div class="flex-shrink-0">
-						<div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 flex items-center justify-center text-2xl">
+						<div
+							class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900 dark:to-indigo-900 flex items-center justify-center text-2xl"
+						>
 							{#if item?.meta?.document}
 								📄
 							{:else}
@@ -184,17 +191,21 @@
 							{/if}
 						</div>
 					</div>
-					
+
 					<div class="flex-1 min-w-0">
-						<h3 class="font-semibold text-gray-900 dark:text-white text-base line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+						<h3
+							class="font-semibold text-gray-900 dark:text-white text-base line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
+						>
 							{item.name}
 						</h3>
-						
+
 						<!-- 评分和使用量 -->
 						<div class="flex items-center gap-3 mt-1">
 							<div class="flex items-center gap-1">
 								<span class="text-yellow-400">⭐</span>
-								<span class="text-sm font-medium text-gray-700 dark:text-gray-300">{getKnowledgeRating(item.id)}</span>
+								<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+									>{getKnowledgeRating(item.id)}</span
+								>
 							</div>
 							<div class="text-xs text-gray-500 dark:text-gray-400">
 								{getKnowledgeUsageCount(item.id)}使用
@@ -218,16 +229,20 @@
 				<div class="flex items-center justify-between">
 					<div class="flex items-center gap-2">
 						{#if item?.meta?.document}
-							<span class="px-2 py-1 text-xs font-medium bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md">
+							<span
+								class="px-2 py-1 text-xs font-medium bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md"
+							>
 								📄 文档
 							</span>
 						{:else}
-							<span class="px-2 py-1 text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md">
+							<span
+								class="px-2 py-1 text-xs font-medium bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-md"
+							>
 								📚 集合
 							</span>
 						{/if}
 					</div>
-					
+
 					<!-- 操作按钮 -->
 					<div class="flex items-center gap-1">
 						<ItemMenu
@@ -240,7 +255,9 @@
 				</div>
 
 				<!-- 底部信息 -->
-				<div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+				<div
+					class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700"
+				>
 					<div class="text-xs text-gray-500 dark:text-gray-400">
 						<Tooltip
 							content={item?.user?.email ?? $i18n.t('Deleted User')}

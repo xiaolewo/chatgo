@@ -3,7 +3,11 @@
 	import { createEventDispatcher, getContext, onMount } from 'svelte';
 	import { user } from '$lib/stores';
 	import Switch from '$lib/components/common/Switch.svelte';
-	import { getSeedreamConfig, updateSeedreamConfig, verifySeedreamConnection } from '$lib/apis/seedream.js';
+	import {
+		getSeedreamConfig,
+		updateSeedreamConfig,
+		verifySeedreamConnection
+	} from '$lib/apis/seedream.js';
 
 	const dispatch = createEventDispatcher();
 	const i18n = getContext('i18n');
@@ -12,7 +16,7 @@
 	let saving = false;
 	let verifying = false;
 	let connectionStatus = null; // null, 'success', 'failed'
-	
+
 	let config = {
 		enabled: false,
 		api_url: '',
@@ -23,7 +27,7 @@
 	// 加载配置
 	const loadConfig = async () => {
 		if (!$user?.token) return;
-		
+
 		loading = true;
 		try {
 			const response = await getSeedreamConfig($user.token);
@@ -61,17 +65,17 @@
 	// 验证连接
 	const verifyConnection = async () => {
 		if (!validateConfig()) return;
-		
+
 		verifying = true;
 		connectionStatus = null;
-		
+
 		try {
 			// 先保存配置
 			await updateSeedreamConfig($user.token, config);
-			
+
 			// 然后验证连接
 			const response = await verifySeedreamConnection($user.token);
-			
+
 			if (response.status === 'success') {
 				connectionStatus = 'success';
 				toast.success('连接验证成功！');
@@ -134,8 +138,10 @@
 
 		{#if config.enabled}
 			<hr class="border-gray-100 dark:border-gray-850" />
-			
-			<div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+
+			<div
+				class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3"
+			>
 				<div class="text-xs font-medium text-blue-800 dark:text-blue-200 mb-2">配置说明</div>
 				<div class="text-xs text-blue-700 dark:text-blue-300 space-y-1">
 					<div>• API URL：平台提供的Base_URL，例如 https://api.example.com</div>
@@ -164,9 +170,7 @@
 					bind:value={config.api_key}
 					placeholder="sk-xxxxxxx（Bearer token）"
 				/>
-				<div class="text-xs text-gray-500 mt-1">
-					请填写平台生成的API Key，格式通常为sk-开头
-				</div>
+				<div class="text-xs text-gray-500 mt-1">请填写平台生成的API Key，格式通常为sk-开头</div>
 			</div>
 
 			<div>
@@ -195,19 +199,25 @@
 						验证连接
 					{/if}
 				</button>
-				
+
 				{#if connectionStatus === 'success'}
-					<div class="flex items-center px-3 py-2 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 rounded-lg text-xs">
+					<div
+						class="flex items-center px-3 py-2 bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-300 rounded-lg text-xs"
+					>
 						✓ 连接成功
 					</div>
 				{:else if connectionStatus === 'failed'}
-					<div class="flex items-center px-3 py-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-lg text-xs">
+					<div
+						class="flex items-center px-3 py-2 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-lg text-xs"
+					>
 						✗ 连接失败
 					</div>
 				{/if}
 			</div>
 
-			<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+			<div
+				class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3"
+			>
 				<div class="text-xs font-medium text-amber-800 dark:text-amber-200 mb-2">功能特性</div>
 				<div class="text-xs text-amber-700 dark:text-amber-300 space-y-1">
 					<div>• 逼真人像质感：人像质感的真实重塑与情绪表达</div>

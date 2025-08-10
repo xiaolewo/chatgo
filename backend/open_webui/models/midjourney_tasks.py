@@ -18,41 +18,43 @@ log.setLevel(SRC_LOG_LEVELS["MODELS"])
 
 class MidJourneyTask(Base):
     __tablename__ = "midjourney_task"
-    
+
     # 任务标识
     task_id = Column(String, primary_key=True)
     user_id = Column(String, nullable=False)
     mj_task_id = Column(String, nullable=True)  # MidJourney API返回的任务ID
     parent_task_id = Column(String, nullable=True)  # 父任务ID（用于动作任务）
-    
+
     # 任务内容
     prompt = Column(Text, nullable=False)
     final_prompt = Column(Text, nullable=True)
     mode = Column(String, default="fast")  # fast, relax, turbo
     aspect_ratio = Column(String, default="1:1")
     negative_prompt = Column(Text, nullable=True)
-    
+
     # 任务状态
-    status = Column(String, default="submitted")  # submitted, processing, completed, failed, cancelled
+    status = Column(
+        String, default="submitted"
+    )  # submitted, processing, completed, failed, cancelled
     progress = Column(Integer, default=0)
     message = Column(Text, default="")
     error_message = Column(Text, nullable=True)
-    
+
     # 结果数据
     image_url = Column(Text, nullable=True)
     seed = Column(BigInteger, nullable=True)
     credits_used = Column(Integer, default=0)
-    
+
     # JSON字段存储复杂数据
     reference_images = Column(JSONField, nullable=True)  # 参考图片数据
-    advanced_params = Column(JSONField, nullable=True)   # 高级参数
-    actions = Column(JSONField, nullable=True)           # 可用动作按钮
-    
+    advanced_params = Column(JSONField, nullable=True)  # 高级参数
+    actions = Column(JSONField, nullable=True)  # 可用动作按钮
+
     # 动作任务相关
     action_type = Column(String, nullable=True)  # upscale, variation, reroll
     button_index = Column(Integer, nullable=True)
     custom_id = Column(String, nullable=True)
-    
+
     # 时间戳
     created_at = Column(BigInteger, nullable=False)
     completed_at = Column(BigInteger, nullable=True)
@@ -61,35 +63,35 @@ class MidJourneyTask(Base):
 
 class MidJourneyTaskModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     task_id: str
     user_id: str
     mj_task_id: Optional[str] = None
     parent_task_id: Optional[str] = None
-    
+
     prompt: str
     final_prompt: Optional[str] = None
     mode: str = "fast"
     aspect_ratio: str = "1:1"
     negative_prompt: Optional[str] = None
-    
+
     status: str = "submitted"
     progress: int = 0
     message: str = ""
     error_message: Optional[str] = None
-    
+
     image_url: Optional[str] = None
     seed: Optional[int] = None
     credits_used: int = 0
-    
+
     reference_images: Optional[List[Dict[str, Any]]] = None
     advanced_params: Optional[Dict[str, Any]] = None
     actions: Optional[List[Dict[str, Any]]] = None
-    
+
     action_type: Optional[str] = None
     button_index: Optional[int] = None
     custom_id: Optional[str] = None
-    
+
     created_at: int
     completed_at: Optional[int] = None
     updated_at: int
@@ -105,26 +107,26 @@ class MidJourneyTaskForm(BaseModel):
     user_id: str
     mj_task_id: Optional[str] = None
     parent_task_id: Optional[str] = None
-    
+
     prompt: str
     final_prompt: Optional[str] = None
     mode: str = "fast"
     aspect_ratio: str = "1:1"
     negative_prompt: Optional[str] = None
-    
+
     status: str = "submitted"
     progress: int = 0
     message: str = ""
     error_message: Optional[str] = None
-    
+
     image_url: Optional[str] = None
     seed: Optional[int] = None
     credits_used: int = 0
-    
+
     reference_images: Optional[List[Dict[str, Any]]] = None
     advanced_params: Optional[Dict[str, Any]] = None
     actions: Optional[List[Dict[str, Any]]] = None
-    
+
     action_type: Optional[str] = None
     button_index: Optional[int] = None
     custom_id: Optional[str] = None
@@ -152,7 +154,9 @@ class MidJourneyTasksTable:
             except Exception as e:
                 log.error(f"Failed to create MidJourney tasks table: {e}")
 
-    def insert_new_task(self, form_data: MidJourneyTaskForm) -> Optional[MidJourneyTaskModel]:
+    def insert_new_task(
+        self, form_data: MidJourneyTaskForm
+    ) -> Optional[MidJourneyTaskModel]:
         """插入新的MidJourney任务"""
         current_time = int(time.time())
         task = MidJourneyTaskModel(
@@ -162,14 +166,14 @@ class MidJourneyTasksTable:
                 "updated_at": current_time,
             }
         )
-        
+
         try:
             with get_db() as db:
                 result = MidJourneyTask(**task.model_dump())
                 db.add(result)
                 db.commit()
                 db.refresh(result)
-                
+
                 if result:
                     return MidJourneyTaskModel.model_validate(result)
                 else:
@@ -182,7 +186,11 @@ class MidJourneyTasksTable:
         """根据任务ID获取任务"""
         try:
             with get_db() as db:
-                task = db.query(MidJourneyTask).filter(MidJourneyTask.task_id == task_id).first()
+                task = (
+                    db.query(MidJourneyTask)
+                    .filter(MidJourneyTask.task_id == task_id)
+                    .first()
+                )
                 if task:
                     return MidJourneyTaskModel.model_validate(task)
                 return None
@@ -190,7 +198,9 @@ class MidJourneyTasksTable:
             log.exception(f"Failed to get task by id {task_id}: {e}")
             return None
 
-    def get_tasks_by_user_id(self, user_id: str, limit: int = 50) -> List[MidJourneyTaskModel]:
+    def get_tasks_by_user_id(
+        self, user_id: str, limit: int = 50
+    ) -> List[MidJourneyTaskModel]:
         """获取用户的任务列表"""
         try:
             with get_db() as db:
@@ -221,27 +231,33 @@ class MidJourneyTasksTable:
             log.exception(f"Failed to get all tasks: {e}")
             return []
 
-    def update_task_by_id(self, task_id: str, update_data: Dict[str, Any]) -> Optional[MidJourneyTaskModel]:
+    def update_task_by_id(
+        self, task_id: str, update_data: Dict[str, Any]
+    ) -> Optional[MidJourneyTaskModel]:
         """更新任务"""
         try:
             with get_db() as db:
                 # 添加更新时间戳
                 update_data["updated_at"] = int(time.time())
-                
+
                 # 更新任务
                 result = (
                     db.query(MidJourneyTask)
                     .filter(MidJourneyTask.task_id == task_id)
                     .update(update_data)
                 )
-                
+
                 if result > 0:
                     db.commit()
                     # 获取更新后的任务
-                    task = db.query(MidJourneyTask).filter(MidJourneyTask.task_id == task_id).first()
+                    task = (
+                        db.query(MidJourneyTask)
+                        .filter(MidJourneyTask.task_id == task_id)
+                        .first()
+                    )
                     if task:
                         return MidJourneyTaskModel.model_validate(task)
-                
+
                 return None
         except Exception as e:
             log.exception(f"Failed to update task {task_id}: {e}")
@@ -251,7 +267,11 @@ class MidJourneyTasksTable:
         """删除任务"""
         try:
             with get_db() as db:
-                result = db.query(MidJourneyTask).filter(MidJourneyTask.task_id == task_id).delete()
+                result = (
+                    db.query(MidJourneyTask)
+                    .filter(MidJourneyTask.task_id == task_id)
+                    .delete()
+                )
                 db.commit()
                 return result > 0
         except Exception as e:
@@ -262,14 +282,20 @@ class MidJourneyTasksTable:
         """删除用户的所有任务"""
         try:
             with get_db() as db:
-                result = db.query(MidJourneyTask).filter(MidJourneyTask.user_id == user_id).delete()
+                result = (
+                    db.query(MidJourneyTask)
+                    .filter(MidJourneyTask.user_id == user_id)
+                    .delete()
+                )
                 db.commit()
                 return result >= 0  # 即使删除0条记录也算成功
         except Exception as e:
             log.exception(f"Failed to delete tasks for user {user_id}: {e}")
             return False
 
-    def get_completed_tasks_by_user_id(self, user_id: str, limit: int = 50) -> List[MidJourneyTaskModel]:
+    def get_completed_tasks_by_user_id(
+        self, user_id: str, limit: int = 50
+    ) -> List[MidJourneyTaskModel]:
         """获取用户已完成的任务"""
         try:
             with get_db() as db:
@@ -278,7 +304,7 @@ class MidJourneyTasksTable:
                     .filter(
                         MidJourneyTask.user_id == user_id,
                         MidJourneyTask.status == "completed",
-                        MidJourneyTask.image_url.isnot(None)
+                        MidJourneyTask.image_url.isnot(None),
                     )
                     .order_by(MidJourneyTask.completed_at.desc())
                     .limit(limit)

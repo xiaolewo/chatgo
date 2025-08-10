@@ -1,8 +1,8 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	export let field = {};
 	export let value = false;
 	export let error = '';
@@ -33,11 +33,11 @@
 
 	// 获取开关尺寸
 	$: size = field.props?.size || 'default'; // small, default, large
-	
+
 	// 获取开关文本
 	$: checkedText = field.props?.checkedText || '';
 	$: uncheckedText = field.props?.uncheckedText || '';
-	
+
 	// 获取开关颜色
 	$: color = field.props?.color || 'primary'; // primary, success, warning, danger
 

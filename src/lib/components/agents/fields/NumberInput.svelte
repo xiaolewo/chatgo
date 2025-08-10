@@ -1,8 +1,8 @@
 <script>
 	import { createEventDispatcher } from 'svelte';
-	
+
 	const dispatch = createEventDispatcher();
-	
+
 	export let field = {};
 	export let value = null;
 	export let error = '';
@@ -13,7 +13,7 @@
 	// 处理值变化
 	const handleInput = (event) => {
 		const newValue = event.target.value;
-		
+
 		if (newValue === '') {
 			value = null;
 		} else {
@@ -22,28 +22,28 @@
 				value = numValue;
 			}
 		}
-		
+
 		dispatch('change', value);
 	};
 
 	// 处理步进按钮
 	const handleStep = (direction) => {
 		if (readonly) return;
-		
+
 		const step = field.validation?.step || 1;
 		const min = field.validation?.min;
 		const max = field.validation?.max;
-		
-		let newValue = (value || 0) + (direction * step);
-		
+
+		let newValue = (value || 0) + direction * step;
+
 		if (min !== undefined) newValue = Math.max(min, newValue);
 		if (max !== undefined) newValue = Math.min(max, newValue);
-		
+
 		// 处理精度
 		if (precision > 0) {
 			newValue = parseFloat(newValue.toFixed(precision));
 		}
-		
+
 		value = newValue;
 		dispatch('change', value);
 	};
@@ -59,7 +59,7 @@
 	// 键盘事件处理
 	const handleKeydown = (event) => {
 		if (readonly) return;
-		
+
 		switch (event.key) {
 			case 'ArrowUp':
 				event.preventDefault();
@@ -82,13 +82,18 @@
 	$: suffix = field.props?.suffix || '';
 
 	// 格式化显示值
-	$: displayValue = value !== null && value !== undefined ? 
-		(precision > 0 ? value.toFixed(precision) : value.toString()) : '';
+	$: displayValue =
+		value !== null && value !== undefined
+			? precision > 0
+				? value.toFixed(precision)
+				: value.toString()
+			: '';
 
 	// 输入验证
-	$: isValid = value === null || value === undefined || 
-		(min === undefined || value >= min) && 
-		(max === undefined || value <= max);
+	$: isValid =
+		value === null ||
+		value === undefined ||
+		((min === undefined || value >= min) && (max === undefined || value <= max));
 </script>
 
 <div class="number-input-wrapper" class:error={!!error}>
@@ -283,7 +288,7 @@
 		margin: 0;
 	}
 
-	.number-input[type=number] {
+	.number-input[type='number'] {
 		-moz-appearance: textfield;
 	}
 
