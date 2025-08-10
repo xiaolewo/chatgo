@@ -213,7 +213,7 @@ bower_components
 build/Release
 
 # 忽略 GitHub Actions 工作流配置文件夹
-.github/workflows/
+
 
 # Dependency directories
 node_modules/
