@@ -4,23 +4,23 @@ updates:
     directory: '/'
     schedule:
       interval: monthly
-    target-branch: 'dev'
+    target-branch: 'release'
 
   - package-ecosystem: pip
     directory: '/backend'
     schedule:
       interval: monthly
-    target-branch: 'dev'
+    target-branch: 'release'
 
   - package-ecosystem: npm
     directory: '/'
     schedule:
       interval: monthly
-    target-branch: 'dev'
+    target-branch: 'release'
 
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
       # Check for updates to GitHub Actions every week
       interval: monthly
-    target-branch: 'dev'
+    target-branch: 'release'
