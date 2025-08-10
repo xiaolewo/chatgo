@@ -1230,7 +1230,7 @@
 							</div>
 							{#if !['general', 'productivity', 'creative', 'analysis'].includes(category.value)}
 								<button
-									class="btn btn-sm btn-danger"
+									class="btn btn-sm niho btn-danger"
 									on:click={() => removeCategory(category.value)}
 								>
 									删除
