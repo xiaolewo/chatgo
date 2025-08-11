@@ -1,3 +1,11 @@
+import sys
+import os
+from pathlib import Path
+
+# 添加backend目录到Python路径，确保能找到open_webui模块
+backend_dir = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(backend_dir))
+
 from logging.config import fileConfig
 
 from alembic import context
@@ -22,7 +30,7 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = Auth.metadata
+# 注意：右边的错误覆盖已删除：target_metadata = Auth.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

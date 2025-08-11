@@ -94,6 +94,8 @@ authlib==1.4.1
 
 black==25.1.0
 langfuse==2.44.0
+typer
+beautifulsoup4
 youtube-transcript-api==1.0.3
 pytube==15.0.0
 alibabacloud_dysmsapi20170525
