@@ -9,6 +9,7 @@ on:
       - release
     tags:
       - v*
+      - V*
     paths-ignore:
       - '**.md'
       - 'docs/**'
