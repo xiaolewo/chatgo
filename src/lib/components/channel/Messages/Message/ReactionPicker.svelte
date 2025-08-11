@@ -10,7 +10,7 @@
 	export let onSubmit = (name) => {};
 	export let side = 'top';
 	export let align = 'start';
-	export let user = null;
+	// export let user = null; // 未使用的属性，已注释
 
 	let show = false;
 	let emojis = emojiShortCodes;

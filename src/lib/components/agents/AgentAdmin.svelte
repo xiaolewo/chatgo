@@ -1257,6 +1257,12 @@
 		margin: 0 auto;
 	}
 
+	@media (min-width: 640px) {
+		.agent-admin {
+			padding: 2rem;
+		}
+	}
+
 	.admin-header {
 		margin-bottom: 2rem;
 	}

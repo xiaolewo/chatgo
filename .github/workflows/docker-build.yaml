@@ -9,6 +9,12 @@ on:
       - release
     tags:
       - v*
+      - V*
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - 'README*'
+      - 'LICENSE'
 
 env:
   REGISTRY: ghcr.io
@@ -17,6 +23,8 @@ env:
 jobs:
   build-main-image:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     permissions:
       contents: read
       packages: write
@@ -50,6 +58,10 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
+            env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
 
       # Login to GHCR
       - name: Log in to GitHub Container Registry
@@ -114,7 +126,7 @@ jobs:
             latest=false
 
       - name: Build and push Docker image (latest)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         id: build
         if: steps.meta.outputs.tags != '' && steps.meta.outputs.tags != null
         with:
@@ -146,6 +158,8 @@ jobs:
 
   build-cuda-image:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     permissions:
       contents: read
       packages: write
@@ -179,6 +193,10 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
+            env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -243,7 +261,7 @@ jobs:
             latest=false
 
       - name: Build Docker image (cuda)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         id: build
         if: steps.meta.outputs.tags != '' && steps.meta.outputs.tags != null
         with:
@@ -276,6 +294,8 @@ jobs:
 
   build-ollama-image:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     permissions:
       contents: read
       packages: write
@@ -309,6 +329,10 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
+            env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -373,7 +397,7 @@ jobs:
             latest=false
 
       - name: Build Docker image (ollama)
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         id: build
         if: steps.meta.outputs.tags != '' && steps.meta.outputs.tags != null
         with:
@@ -419,7 +443,7 @@ jobs:
           IMAGE_NAME: '${{ github.repository }}'
 
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: digests-main-*
           path: /tmp/digests
@@ -499,7 +523,7 @@ jobs:
           IMAGE_NAME: '${{ github.repository }}'
 
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: digests-cuda-*
           path: /tmp/digests
@@ -580,7 +604,7 @@ jobs:
           IMAGE_NAME: '${{ github.repository }}'
 
       - name: Download digests
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: digests-ollama-*
           path: /tmp/digests
