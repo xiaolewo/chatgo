@@ -35,7 +35,20 @@ export default defineConfig({
 		APP_BUILD_HASH: JSON.stringify(process.env.APP_BUILD_HASH || 'dev-build')
 	},
 	build: {
-		sourcemap: true
+		sourcemap: true,
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					vendor: ['svelte', '@sveltejs/kit'],
+					ui: ['bits-ui', 'tippy.js', 'focus-trap'],
+					editor: ['@tiptap/core', '@tiptap/starter-kit', 'codemirror'],
+					charts: ['echarts', 'mermaid'],
+					ai: ['@huggingface/transformers', 'onnxruntime-web'],
+					pyodide: ['pyodide']
+				}
+			}
+		},
+		chunkSizeWarningLimit: 1600
 	},
 	worker: {
 		format: 'es'
