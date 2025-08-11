@@ -1252,9 +1252,15 @@
 
 <style>
 	.agent-admin {
-		padding: 1rem sm:2rem;
+		padding: 1rem;
 		max-width: 1400px;
 		margin: 0 auto;
+	}
+
+	@media (min-width: 640px) {
+		.agent-admin {
+			padding: 2rem;
+		}
 	}
 
 	.admin-header {
@@ -1457,13 +1463,17 @@
 		margin: 2rem auto;
 		background: white;
 		border-radius: 1rem;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		box-shadow:
+			0 20px 25px -5px rgba(0, 0, 0, 0.1),
+			0 10px 10px -5px rgba(0, 0, 0, 0.04);
 	}
 
 	:global(.dark) .modal-content {
 		background: #1f2937;
 		color: white;
-		box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+		box-shadow:
+			0 20px 25px -5px rgba(0, 0, 0, 0.3),
+			0 10px 10px -5px rgba(0, 0, 0, 0.2);
 	}
 
 	.form-grid {
