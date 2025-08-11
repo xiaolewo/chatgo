@@ -129,12 +129,7 @@
 	};
 </script>
 
-<div
-	class="flex flex-col text-sm"
-	on:submit|preventDefault={() => {
-		updatePasswordHandler();
-	}}
->
+<div class="flex flex-col text-sm">
 	<div class="flex justify-between items-center text-sm">
 		<div class="  font-medium">微信绑定</div>
 		<button class=" text-xs font-medium text-gray-500" type="button"

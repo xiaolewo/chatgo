@@ -38,13 +38,36 @@ export default defineConfig({
 		sourcemap: true,
 		rollupOptions: {
 			output: {
-				manualChunks: {
-					vendor: ['svelte', '@sveltejs/kit'],
-					ui: ['bits-ui', 'tippy.js', 'focus-trap'],
-					editor: ['@tiptap/core', '@tiptap/starter-kit', 'codemirror'],
-					charts: ['echarts', 'mermaid'],
-					ai: ['@huggingface/transformers', 'onnxruntime-web'],
-					pyodide: ['pyodide']
+				manualChunks: (id) => {
+					// 将 node_modules 中的包分组
+					if (id.includes('node_modules')) {
+						// AI 相关的大型库
+						if (id.includes('@huggingface/transformers') || id.includes('onnxruntime-web')) {
+							return 'ai';
+						}
+						// 图表库
+						if (id.includes('echarts') || id.includes('mermaid')) {
+							return 'charts';
+						}
+						// 编辑器相关
+						if (id.includes('@tiptap') || id.includes('codemirror')) {
+							return 'editor';
+						}
+						// Pyodide
+						if (id.includes('pyodide')) {
+							return 'pyodide';
+						}
+						// UI 组件库
+						if (id.includes('bits-ui') || id.includes('focus-trap')) {
+							return 'ui';
+						}
+						// Svelte 核心
+						if (id.includes('svelte') || id.includes('@sveltejs')) {
+							return 'vendor';
+						}
+						// 其他第三方库
+						return 'vendor';
+					}
 				}
 			}
 		},
