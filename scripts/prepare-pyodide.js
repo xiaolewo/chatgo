@@ -89,20 +89,23 @@ async function downloadPackages() {
 			const batchSize = 3;
 			for (let i = 0; i < packages.length; i += batchSize) {
 				const batch = packages.slice(i, i + batchSize);
-				console.log(`Installing batch ${Math.floor(i/batchSize) + 1}/${Math.ceil(packages.length/batchSize)}:`, batch);
-				
+				console.log(
+					`Installing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(packages.length / batchSize)}:`,
+					batch
+				);
+
 				for (const pkg of batch) {
 					console.log(`Installing package: ${pkg}`);
 					await micropip.install(pkg);
 				}
-				
+
 				// Force garbage collection between batches if available
 				if (global.gc) {
 					global.gc();
 				}
-				
+
 				// Small delay to allow memory cleanup
-				await new Promise(resolve => setTimeout(resolve, 100));
+				await new Promise((resolve) => setTimeout(resolve, 100));
 			}
 		} catch (err) {
 			console.error('Package installation failed:', err);
