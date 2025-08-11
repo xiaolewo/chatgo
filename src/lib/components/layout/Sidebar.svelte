@@ -511,7 +511,7 @@
 			<div class="flex items-center gap-2">
 				<img
 					crossorigin="anonymous"
-					src="{WEBUI_BASE_URL}/static/favicon.png"
+					src={$config?.CUSTOM_PNG}
 					class="size-6 rounded-full"
 					alt="logo"
 				/>

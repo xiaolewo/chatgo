@@ -3,7 +3,7 @@
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores';
 	import AgentMarketplace from '$lib/components/agents/AgentMarketplace.svelte';
-
+	import { WEBUI_NAME } from '$lib/stores';
 	onMount(() => {
 		// 检查用户是否已登录
 		if (!$user) {
@@ -14,7 +14,7 @@
 </script>
 
 <svelte:head>
-	<title>智能体广场 - OpenWebUI</title>
+	<title>智能体广场 - {`${$WEBUI_NAME}`}</title>
 	<meta name="description" content="发现和使用各种AI智能应用" />
 </svelte:head>
 

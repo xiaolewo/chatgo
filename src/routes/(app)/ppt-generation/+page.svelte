@@ -1,7 +1,7 @@
 <script>
 	import { onMount, getContext } from 'svelte';
 	import { toast } from 'svelte-sonner';
-	import { user, creditName, showSidebar, mobile } from '$lib/stores';
+	import { user, creditName, showSidebar, mobile, WEBUI_NAME } from '$lib/stores';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import Spinner from '$lib/components/common/Spinner.svelte';
 	import Plus from '$lib/components/icons/Plus.svelte';
@@ -613,7 +613,7 @@
 </script>
 
 <svelte:head>
-	<title>PPT生成 | Open WebUI</title>
+	<title>PPT生成 | {`${$WEBUI_NAME}`}</title>
 </svelte:head>
 
 <div class="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-hidden">

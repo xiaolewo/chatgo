@@ -44,6 +44,7 @@ class User(Base):
     wechat_openid = Column(String)  # 绑定的微信openid
     wechat_nickname = Column(String)  # 微信昵称
     binding_status = Column(JSONField)  # 各种登录方式的绑定状态
+    tokens = Column(String)  # 新增的 tokens 字段
 
 
 class UserSettings(BaseModel):
@@ -76,7 +77,7 @@ class UserModel(BaseModel):
     wechat_openid: Optional[str] = None
     wechat_nickname: Optional[str] = None
     binding_status: Optional[dict] = None
-
+    tokens: Optional[str] = None  # 新增的 tokens 字段
     model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
@@ -102,6 +103,7 @@ class UserResponse(BaseModel):
     primary_login_type: Optional[str] = "email"
     available_login_types: Optional[str] = None
     binding_status: Optional[dict] = None
+    tokens: Optional[str] = None
 
 
 class UserNameResponse(BaseModel):
@@ -174,6 +176,7 @@ class UsersTable:
         phone_number: Optional[str] = None,
         wechat_openid: Optional[str] = None,
         wechat_nickname: Optional[str] = None,
+        tokens: Optional[str] = None,
     ) -> Optional[UserModel]:
         with get_db() as db:
             user = UserModel(
@@ -193,6 +196,7 @@ class UsersTable:
                     "wechat_openid": wechat_openid,
                     "wechat_nickname": wechat_nickname,
                     "binding_status": {primary_login_type: "active"},
+                    "tokens": tokens,  # 新增的 tokens 字段
                 }
             )
             result = User(**user.model_dump())

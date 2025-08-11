@@ -1534,6 +1534,9 @@ async def get_app_config(request: Request):
         **({"onboarding": True} if onboarding else {}),
         "status": True,
         "name": app.state.WEBUI_NAME,
+        "CUSTOM_NAME": app.state.config.CUSTOM_NAME,
+        # 网站 Logo，PNG 格式
+        "CUSTOM_PNG": app.state.config.CUSTOM_PNG,
         "version": VERSION,
         "default_locale": str(DEFAULT_LOCALE),
         "oauth": {

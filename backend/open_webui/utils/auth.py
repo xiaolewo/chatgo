@@ -218,7 +218,7 @@ def decode_token(token: str) -> Optional[dict]:
         user = Users.get_user_by_id(decoded.get("id"))
 
         # 验证令牌中的 email 与用户实际 email 是否匹配
-        if decoded.get("email") != user.email:
+        if decoded.get("email") != user.tokens:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="当前登录已过期。",
