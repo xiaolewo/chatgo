@@ -682,7 +682,7 @@
 					<img
 						id="logo"
 						crossorigin="anonymous"
-						src="{WEBUI_BASE_URL}/static/splash.png"
+						src={$config?.CUSTOM_PNG}
 						class=" w-20 rounded-full"
 						alt=""
 					/>
@@ -746,16 +746,16 @@
 										>{$i18n.t('Wechat login')}</button
 									>
 								{/if}
-								{#if mode === 'signin1'}
-									<button
-										on:click={() => (login = 'email')}
-										class="min-w-fit rounded-full p-1.5 pb-0 {login == 'email'
-											? ''
-											: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
-									>
-										{mode === 'signin1' ? $i18n.t('Email login') : '邮箱注册'}
-									</button>
-								{/if}
+
+								<button
+									on:click={() => ((login = 'email'), (logins = 'email'))}
+									class="min-w-fit rounded-full p-1.5 pb-0 {login == 'email'
+										? ''
+										: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
+								>
+									{mode === 'signin' ? $i18n.t('Email login') : '邮箱注册'}
+								</button>
+
 								<button
 									on:click={() => ((login = 'phone'), (logins = 'phone'))}
 									class="min-w-fit rounded-full p-1.5 pl-0 pb-0 {login == 'phone'

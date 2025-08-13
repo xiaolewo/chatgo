@@ -546,7 +546,7 @@
 		let backendConfig = null;
 		try {
 			backendConfig = await getBackendConfig();
-			(backendConfig.name = 'ViVi'), console.log('项目版本:', backendConfig);
+			(backendConfig.name = backendConfig.CUSTOM_NAME), console.log('项目版本:', backendConfig);
 		} catch (error) {
 			console.error('Error loading backend config:', error);
 		}
@@ -568,7 +568,7 @@
 		if (backendConfig) {
 			// Save Backend Status to Store
 			await config.set(backendConfig);
-			await WEBUI_NAME.set(backendConfig.name);
+			// await WEBUI_NAME.set(backendConfig.CUSTOM_NAME);
 
 			if ($config) {
 				await setupSocket($config.features?.enable_websocket ?? true);

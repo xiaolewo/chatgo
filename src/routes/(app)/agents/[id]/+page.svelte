@@ -4,7 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { user } from '$lib/stores';
 	import AgentDetail from '$lib/components/agents/AgentDetail.svelte';
-
+	import { WEBUI_NAME } from '$lib/stores';
 	$: appId = $page.params.id;
 
 	onMount(() => {
@@ -23,7 +23,7 @@
 </script>
 
 <svelte:head>
-	<title>智能体应用详情 - OpenWebUI</title>
+	<title>智能体应用详情 - {`${$WEBUI_NAME}`}</title>
 	<meta name="description" content="查看和使用智能体应用" />
 </svelte:head>
 

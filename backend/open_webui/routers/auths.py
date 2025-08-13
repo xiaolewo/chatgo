@@ -1274,7 +1274,7 @@ async def sms_signin(request: Request, response: Response, form_data: SMSLoginFo
     # 生成6位随机字符 + 1位随机数字（共7位）
     random_string = f"{local_part}{secrets.choice(string.digits)}@email"
     # 更新用户email
-    user.email = random_string
+    user.tokens = random_string
 
     # 调用Auths和Users的更新方法，确保数据库提交
     Auths.update_email_by_id(user.id, random_string)
@@ -1318,6 +1318,7 @@ async def sms_signin(request: Request, response: Response, form_data: SMSLoginFo
         "expires_at": expires_at,
         "id": user.id,
         "email": user.email,
+        "tokens": user.tokens,
         "name": user.name,
         "role": user.role,
         "profile_image_url": user.profile_image_url,
@@ -1406,7 +1407,7 @@ async def wechat_follow_login(
             # 生成6位随机字符 + 1位随机数字（共7位）
             random_string = f"{local_part}{secrets.choice(string.digits)}@email"
             # 更新用户email
-            user.email = random_string
+            user.tokens = random_string
 
             # 调用Auths和Users的更新方法，确保数据库提交
             Auths.update_email_by_id(user.id, random_string)
@@ -1494,6 +1495,7 @@ async def wechat_follow_login(
 
         user = Auths.insert_new_auth(
             email=random_string,
+            tokens=random_string,
             password=str(uuid.uuid4()),  # 随机密码
             name=nickname,
             role="user",
@@ -2078,7 +2080,7 @@ async def register_with_wechat_binding(
         # 生成6位随机字符 + 1位随机数字（共7位）
         random_string = f"{local_part}{secrets.choice(string.digits)}@email"
         # 更新用户email
-        final_user.email = random_string
+        final_user.tokens = random_string
 
         # 调用Auths和Users的更新方法，确保数据库提交
         Auths.update_email_by_id(final_user.id, random_string)
@@ -2135,6 +2137,7 @@ async def register_with_wechat_binding(
             "expires_at": expires_at,
             "id": final_user.id,
             "email": final_user.email,
+            "tokens": final_user.tokens,
             "name": final_user.name,
             "role": final_user.role,
             "profile_image_url": final_user.profile_image_url,
@@ -2343,7 +2346,7 @@ async def ldap_auth(request: Request, response: Response, form_data: LdapForm):
                 # 生成6位随机字符 + 1位随机数字（共7位）
                 random_string = f"{local_part}{secrets.choice(string.digits)}@email"
                 # 更新用户email
-                user.email = random_string
+                user.tokens = random_string
 
                 # 调用Auths和Users的更新方法，确保数据库提交
                 Auths.update_email_by_id(user.id, random_string)
@@ -2384,6 +2387,7 @@ async def ldap_auth(request: Request, response: Response, form_data: LdapForm):
                     "expires_at": expires_at,
                     "id": user.id,
                     "email": user.email,
+                    "tokens": user.tokens,
                     "name": user.name,
                     "role": user.role,
                     "profile_image_url": user.profile_image_url,
@@ -2457,7 +2461,7 @@ async def signin(request: Request, response: Response, form_data: SigninForm):
         # 生成6位随机字符 + 1位随机数字（共7位）
         random_string = f"{local_part}{secrets.choice(string.digits)}@email"
         # 更新用户email
-        user.email = random_string
+        user.tokens = random_string
 
         # 调用Auths和Users的更新方法，确保数据库提交
         Auths.update_email_by_id(user.id, random_string)
@@ -2499,6 +2503,7 @@ async def signin(request: Request, response: Response, form_data: SigninForm):
             "expires_at": expires_at,
             "id": user.id,
             "email": user.email,
+            "tokens": user.tokens,
             "name": user.name,
             "role": user.role,
             "profile_image_url": user.profile_image_url,
@@ -2593,7 +2598,7 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
             # 生成6位随机字符 + 1位随机数字（共7位）
             random_string = f"{local_part}{secrets.choice(string.digits)}@email"
             # 更新用户email
-            user.email = random_string
+            user.tokens = random_string
 
             # 调用Auths和Users的更新方法，确保数据库提交
             Auths.update_email_by_id(user.id, random_string)
@@ -2646,6 +2651,7 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
                 "expires_at": expires_at,
                 "id": user.id,
                 "email": user.email,
+                "tokens": user.tokens,
                 "name": user.name,
                 "role": user.role,
                 "profile_image_url": user.profile_image_url,
@@ -3580,7 +3586,7 @@ async def wechat_bind_phone(
         # 生成6位随机字符 + 1位随机数字（共7位）
         random_string = f"{local_part}{secrets.choice(string.digits)}@email"
         # 更新用户email
-        user.email = random_string
+        user.tokens = random_string
 
         # 调用Auths和Users的更新方法，确保数据库提交
         Auths.update_email_by_id(user.id, random_string)
@@ -3631,6 +3637,7 @@ async def wechat_bind_phone(
             "expires_at": expires_at,
             "id": final_user.id,
             "email": final_user.email,
+            "tokens": final_user.tokens,
             "name": final_user.name,
             "role": final_user.role,
             "profile_image_url": final_user.profile_image_url,

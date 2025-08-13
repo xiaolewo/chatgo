@@ -2,13 +2,13 @@
 	import { onMount, getContext } from 'svelte';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores';
-
+	import { WEBUI_NAME } from '$lib/stores';
 	const i18n = getContext('i18n');
 </script>
 
 <svelte:head>
 	<title>
-		{$i18n.t('Video Generation')} • OpenWebUI
+		{$i18n.t('Video Generation')} • {`${$WEBUI_NAME}`}
 	</title>
 </svelte:head>
 

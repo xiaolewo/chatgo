@@ -34,8 +34,7 @@ RUN npm ci
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-# 关键修改：增加Node.js内存限制
-RUN export NODE_OPTIONS=--max-old-space-size=8192 && npm run build
+RUN npm run build
 
 ######## WebUI backend ########
 FROM python:3.11-slim-bookworm AS base

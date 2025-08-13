@@ -4,7 +4,7 @@
 	import { user } from '$lib/stores';
 	import { toast } from 'svelte-sonner';
 	import AgentAdmin from '$lib/components/agents/AgentAdmin.svelte';
-
+	import { WEBUI_NAME } from '$lib/stores';
 	let authorized = false;
 
 	onMount(() => {
@@ -26,7 +26,7 @@
 </script>
 
 <svelte:head>
-	<title>智能体管理 - OpenWebUI</title>
+	<title>智能体管理 - {`${$WEBUI_NAME}`}</title>
 	<meta name="description" content="管理智能体应用" />
 </svelte:head>
 

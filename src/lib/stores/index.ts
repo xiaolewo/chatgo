@@ -3,16 +3,16 @@ import { type Writable, writable } from 'svelte/store';
 import type { ModelConfig } from '$lib/apis';
 import type { Banner } from '$lib/types';
 import type { Socket } from 'socket.io-client';
+import { derived } from 'svelte/store';
 
 import emojiShortCodes from '$lib/emoji-shortcodes.json';
 
 // Backend
 
-export const WEBUI_NAME = writable(APP_NAME);
-
 export const config: Writable<Config | undefined> = writable(undefined);
 export const user: Writable<SessionUser | undefined> = writable(undefined);
 
+export const WEBUI_NAME = derived(config, ($config) => $config?.CUSTOM_NAME || APP_NAME);
 // Credit system
 export const creditName = writable('积分'); // Default credit name, will be updated from backend
 
@@ -200,6 +200,8 @@ type Document = {
 type Config = {
 	status: boolean;
 	name: string;
+	CUSTOM_NAME?: string;
+	CUSTOM_PNG?: string;
 	version: string;
 	default_locale: string;
 	default_models: string;
