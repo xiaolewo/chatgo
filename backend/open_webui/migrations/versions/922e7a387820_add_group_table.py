@@ -18,9 +18,10 @@ depends_on = None
 def upgrade():
     # 检查表是否已存在（防止Peewee/Alembic冲突）
     from sqlalchemy import inspect
+
     inspector = inspect(op.get_bind())
     existing_tables = inspector.get_table_names()
-    
+
     if "group" not in existing_tables:
         op.create_table(
             "group",
