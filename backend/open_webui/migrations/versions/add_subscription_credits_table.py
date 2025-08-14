@@ -8,7 +8,7 @@ from sqlalchemy import text
 
 # revision identifiers
 revision = "add_subscription_credits_table"
-down_revision = None  # 设置为上一个迁移的revision
+down_revision = "139e07da4429"  # 依赖订阅计划表创建
 branch_labels = None
 depends_on = None
 
