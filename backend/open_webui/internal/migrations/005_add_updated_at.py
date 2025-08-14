@@ -45,11 +45,18 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
 
 def migrate_sqlite(migrator: Migrator, database: pw.Database, *, fake=False):
     # Adding fields created_at and updated_at to the 'chat' table
-    migrator.add_fields(
-        "chat",
-        created_at=pw.DateTimeField(null=True),  # Allow null for transition
-        updated_at=pw.DateTimeField(null=True),  # Allow null for transition
-    )
+    try:
+        migrator.add_fields(
+            "chat",
+            created_at=pw.DateTimeField(null=True),  # Allow null for transition
+            updated_at=pw.DateTimeField(null=True),  # Allow null for transition
+        )
+        print("✅ SQLite: 成功添加 created_at, updated_at 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  SQLite: created_at/updated_at 字段已存在，跳过添加")
+        else:
+            raise e
 
     # Populate the new fields from an existing 'timestamp' field
     migrator.sql(
@@ -69,11 +76,18 @@ def migrate_sqlite(migrator: Migrator, database: pw.Database, *, fake=False):
 
 def migrate_external(migrator: Migrator, database: pw.Database, *, fake=False):
     # Adding fields created_at and updated_at to the 'chat' table
-    migrator.add_fields(
-        "chat",
-        created_at=pw.BigIntegerField(null=True),  # Allow null for transition
-        updated_at=pw.BigIntegerField(null=True),  # Allow null for transition
-    )
+    try:
+        migrator.add_fields(
+            "chat",
+            created_at=pw.BigIntegerField(null=True),  # Allow null for transition
+            updated_at=pw.BigIntegerField(null=True),  # Allow null for transition
+        )
+        print("✅ External DB: 成功添加 created_at, updated_at 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  External DB: created_at/updated_at 字段已存在，跳过添加")
+        else:
+            raise e
 
     # Populate the new fields from an existing 'timestamp' field
     migrator.sql(
@@ -102,7 +116,14 @@ def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
 
 def rollback_sqlite(migrator: Migrator, database: pw.Database, *, fake=False):
     # Recreate the timestamp field initially allowing null values for safe transition
-    migrator.add_fields("chat", timestamp=pw.DateTimeField(null=True))
+    try:
+        migrator.add_fields("chat", timestamp=pw.DateTimeField(null=True))
+        print("✅ SQLite Rollback: 成功添加 timestamp 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  SQLite Rollback: timestamp 字段已存在，跳过添加")
+        else:
+            raise e
 
     # Copy the earliest created_at date back into the new timestamp field
     # This assumes created_at was originally a copy of timestamp
@@ -117,7 +138,14 @@ def rollback_sqlite(migrator: Migrator, database: pw.Database, *, fake=False):
 
 def rollback_external(migrator: Migrator, database: pw.Database, *, fake=False):
     # Recreate the timestamp field initially allowing null values for safe transition
-    migrator.add_fields("chat", timestamp=pw.BigIntegerField(null=True))
+    try:
+        migrator.add_fields("chat", timestamp=pw.BigIntegerField(null=True))
+        print("✅ External Rollback: 成功添加 timestamp 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  External Rollback: timestamp 字段已存在，跳过添加")
+        else:
+            raise e
 
     # Copy the earliest created_at date back into the new timestamp field
     # This assumes created_at was originally a copy of timestamp

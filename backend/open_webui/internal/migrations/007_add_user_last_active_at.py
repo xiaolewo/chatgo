@@ -38,12 +38,19 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
 
     # Adding fields created_at and updated_at to the 'user' table
-    migrator.add_fields(
-        "user",
-        created_at=pw.BigIntegerField(null=True),  # Allow null for transition
-        updated_at=pw.BigIntegerField(null=True),  # Allow null for transition
-        last_active_at=pw.BigIntegerField(null=True),  # Allow null for transition
-    )
+    try:
+        migrator.add_fields(
+            "user",
+            created_at=pw.BigIntegerField(null=True),  # Allow null for transition
+            updated_at=pw.BigIntegerField(null=True),  # Allow null for transition
+            last_active_at=pw.BigIntegerField(null=True),  # Allow null for transition
+        )
+        print("✅ 成功添加 user 表的 created_at, updated_at, last_active_at 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  user 表的时间字段已存在，跳过添加")
+        else:
+            raise e
 
     # Populate the new fields from an existing 'timestamp' field
     migrator.sql(

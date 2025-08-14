@@ -37,9 +37,16 @@ with suppress(ImportError):
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
 
-    migrator.add_fields(
-        "user", api_key=pw.CharField(max_length=255, null=True, unique=True)
-    )
+    try:
+        migrator.add_fields(
+            "user", api_key=pw.CharField(max_length=255, null=True, unique=True)
+        )
+        print("✅ 成功添加 api_key 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  api_key 字段已存在，跳过添加")
+        else:
+            raise e
 
 
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):

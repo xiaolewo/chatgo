@@ -37,7 +37,14 @@ with suppress(ImportError):
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
 
-    migrator.add_fields("chat", archived=pw.BooleanField(default=False))
+    try:
+        migrator.add_fields("chat", archived=pw.BooleanField(default=False))
+        print("✅ 成功添加 archived 字段")
+    except Exception as e:
+        if "duplicate column" in str(e).lower():
+            print("⚠️  archived 字段已存在，跳过添加")
+        else:
+            raise e
 
 
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
