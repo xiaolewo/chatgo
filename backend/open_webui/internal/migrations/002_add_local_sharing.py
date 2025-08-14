@@ -36,7 +36,7 @@ with suppress(ImportError):
 
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
-    
+
     # 安全地添加 share_id 字段，如果已存在则跳过
     try:
         migrator.add_fields(
