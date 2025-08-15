@@ -50,18 +50,15 @@
 #### 执行内容
 
 1. **代码库结构分析**
-
    - 完成了整个项目的架构分析
    - 详细梳理了前后端目录结构
    - 识别了核心功能模块和技术栈
 
 2. **数据库模型分析**
-
    - 分析了用户、聊天、积分等核心数据模型
    - 了解了数据库关系和字段设计
 
 3. **API架构分析**
-
    - 梳理了主要的API路由结构
    - 分析了认证、聊天、积分等核心API功能
 
@@ -94,13 +91,11 @@
 #### 执行内容
 
 1. **需求分析**
-
    - 识别"应用广场"对应的是"Models"功能
    - 理解需求：将应用广场从工作台框架中分离，创建独立页面
    - 分析现有结构：应用广场在工作台内显示导航栏（Models、Knowledge、Prompts、Tools）
 
 2. **独立页面创建**
-
    - 创建独立路由结构：`src/routes/(app)/personalapp/`
    - 创建独立布局：`+layout.svelte` - 不显示工作台导航栏
    - 创建主页面：`+page.svelte` - 应用广场内容
@@ -154,12 +149,10 @@
 #### 执行内容
 
 1. **结构分析**
-
    - 原始Models组件包含两个tab：Publicapp（应用广场）和Personalapp（我的应用）
    - 独立页面缺少完整的tab导航结构
 
 2. **代码修复**
-
    - **修改文件**: `src/routes/(app)/personalapp/+page.svelte`
    - **添加导航**: 完整的tab导航系统
    - **导入组件**: 同时导入Publicapp和Personalapp组件
@@ -198,13 +191,11 @@
 #### 执行内容
 
 1. **需求分析**
-
    - 按照应用广场的模式，将知识库从工作台中独立出来
    - 在侧边栏添加知识库的直接入口
    - 保持所有原有功能的完整性
 
 2. **独立页面创建**
-
    - 创建独立路由结构：`src/routes/(app)/knowledge/`
    - 创建独立布局：`+layout.svelte` - 不显示工作台导航栏
    - 创建主页面：`+page.svelte` - 知识库列表
@@ -262,13 +253,11 @@
 #### 执行内容
 
 1. **需求背景**
-
    - 应用广场和知识库已经独立成单独的页面
    - 避免用户混淆，需要在工作台中移除这两个导航入口
    - 保持工作台专注于提示词(Prompts)和工具(Tools)功能
 
 2. **代码修改**
-
    - **工作台布局**: `src/routes/(app)/workspace/+layout.svelte` - 注释掉Models和Knowledge导航
    - **主页重定向**: `src/routes/(app)/workspace/+page.svelte` - 更新默认跳转逻辑
 
@@ -323,12 +312,10 @@
 #### 实施内容
 
 1. **创建备份文件**
-
    - 备份原始代码到 `Publicapp.svelte.backup`
    - 确保可随时回滚
 
 2. **极简卡片网格设计实现**
-
    - **搜索体验升级**: 大号搜索框，清晰的筛选选项
    - **分类标签重设计**: 圆角标签，蓝色高亮选中状态
    - **卡片设计全新升级**:
@@ -337,7 +324,6 @@
      - hover 状态增强交互反馈
 
 3. **信息架构优化**
-
    - **图标系统**: 根据分类智能显示不同 emoji 图标
    - **评分系统**: 星级评分 + 使用量数据
    - **标签系统**: 蓝色徽章式标签，最多显示2个
@@ -385,17 +371,14 @@
 #### 执行内容
 
 1. **创建备份文件**
-
    - 备份原始代码到 `Personalapp.svelte.backup`
    - 确保可随时回滚
 
 2. **设计风格统一**
-
    - 应用与"应用广场"相同的极简卡片网格设计
    - 保持视觉一致性和用户体验连续性
 
 3. **个性化定制**
-
    - **标题优化**: "我的应用" + 应用数量统计
    - **创建按钮**: 突出的蓝色创建按钮，提升转化率
    - **状态管理**: 显示启用/禁用状态，集成开关控件
@@ -454,17 +437,14 @@
 #### 执行内容
 
 1. **创建备份文件**
-
    - 备份原始代码到 `Knowledge.svelte.backup`
    - 确保可随时回滚
 
 2. **设计风格统一**
-
    - 应用与应用广场、我的应用相同的极简卡片网格设计
    - 保持整个系统的视觉一致性
 
 3. **知识库特色定制**
-
    - **标题优化**: "知识库" + 知识库数量统计
    - **紫色主题**: 紫色创建按钮和焦点颜色，体现知识管理的专业性
    - **类型标识**: 文档/集合类型的清晰区分和图标展示
@@ -511,12 +491,10 @@
 #### 执行内容
 
 1. **创建备份文件**
-
    - 备份原始代码到 `Sidebar.svelte.backup`
    - 确保可随时回滚到原始设计
 
 2. **极简分层式设计实现**
-
    - **顶部区域**: KKAI品牌标识 + 设置按钮，简洁专业
    - **新建对话**: 突出的蓝色按钮，提升用户操作效率
    - **核心功能**: 清晰分组（应用广场、知识库、工作台），层次分明
@@ -524,7 +502,6 @@
    - **底部区域**: 升级专业版 + 个人中心，视觉优化
 
 3. **设计特色**
-
    - **分层清晰**: 通过分割线和标题清晰划分功能区域
    - **视觉层次**: 不同功能区域使用不同的视觉权重
    - **交互优化**: hover效果和颜色反馈增强用户体验
@@ -609,14 +586,12 @@
 #### 执行内容
 
 1. **侧边栏集成完成**
-
    - 在 `src/lib/components/layout/Sidebar.svelte:581-597` 添加图像生成入口
    - 使用粉色主题配色与其他功能区分
    - 图标使用标准的图像/照片SVG图标
    - 链接指向 `/image-generation` 路由
 
 2. **独立页面创建完成**
-
    - 创建独立路由结构：`/src/routes/(app)/image-generation/`
    - 创建独立布局：`+layout.svelte` - 统一的页面头部和图标
    - 创建主页面：`+page.svelte` - 完整的图像生成界面
@@ -758,7 +733,6 @@ MidJourney API提供了完整的图像生成和编辑功能，采用异步任务
 
 - **新增组件**: `src/lib/components/admin/Settings/MidJourney.svelte`
 - **功能特色**:
-
   - MidJourney API基础配置 (URL、API密钥)
   - Fast/Relax模式的积分配置
   - 连接验证功能
@@ -773,7 +747,6 @@ MidJourney API提供了完整的图像生成和编辑功能，采用异步任务
 
 - **新增路由**: `backend/open_webui/routers/midjourney.py`
 - **API端点**:
-
   - `GET /api/v1/midjourney/config` - 获取配置
   - `POST /api/v1/midjourney/config/update` - 更新配置
   - `POST /api/v1/midjourney/config/verify` - 验证连接
@@ -798,7 +771,6 @@ MidJourney API提供了完整的图像生成和编辑功能，采用异步任务
 
 - **文件位置**: `src/routes/(app)/image-generation/+page.svelte`
 - **核心改进**:
-
   - 集成真实的MidJourney API调用
   - 实时积分余额显示
   - Fast/Relax模式选择和积分消耗提示
@@ -905,7 +877,6 @@ MidJourney API提供了完整的图像生成和编辑功能，采用异步任务
 
 - **新增路由**: `backend/open_webui/routers/seedream.py`
 - **API端点**:
-
   - `GET /api/v1/seedream/config` - 获取配置
   - `POST /api/v1/seedream/config` - 更新配置
   - `POST /api/v1/seedream/verify` - 验证连接
@@ -1554,7 +1525,6 @@ if (selectedService === 'midjourney') {
 ##### 4. 后端API架构开发
 
 - **数据模型**: `backend/open_webui/models/kling_tasks.py`
-
   - 支持可灵API的所有参数（model_name、prompt、camera_control、aspect_ratio、duration等）
   - 完整的任务状态管理（submitted、processing、succeed、failed）
   - 数据库CRUD操作和数据验证
@@ -1585,7 +1555,6 @@ if (selectedService === 'midjourney') {
 
 - **文件位置**: `src/routes/(app)/video-generation/+page.svelte`
 - **核心功能**:
-
   - 完整的视频生成参数控制界面
   - 智能摄像机运动控制 (简单运镜6选1模式、预设运镜)
   - 实时积分余额和消耗提示
@@ -1604,7 +1573,6 @@ if (selectedService === 'midjourney') {
 
 - **新增组件**: `src/lib/components/admin/Settings/Kling.svelte`
 - **配置功能**:
-
   - API URL和API Key配置
   - 标准模式和专家模式的积分消耗设置
   - 连接验证功能
@@ -1806,13 +1774,11 @@ kling_tasks:
 ### 代码规范
 
 1. **前端开发**
-
    - 使用TypeScript进行类型安全开发
    - 遵循Svelte组件开发规范
    - 使用Tailwind CSS进行样式开发
 
 2. **后端开发**
-
    - 使用FastAPI进行API开发
    - 遵循RESTful API设计原则
    - 使用SQLAlchemy进行数据库操作

@@ -546,7 +546,7 @@
 		let backendConfig = null;
 		try {
 			backendConfig = await getBackendConfig();
-			(backendConfig.name = backendConfig.CUSTOM_NAME), console.log('项目版本:', backendConfig);
+			((backendConfig.name = backendConfig.CUSTOM_NAME), console.log('项目版本:', backendConfig));
 		} catch (error) {
 			console.error('Error loading backend config:', error);
 		}

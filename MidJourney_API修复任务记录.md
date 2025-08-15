@@ -199,13 +199,11 @@ if "--fast" not in prompt and "--relax" not in prompt and "--turbo" not in promp
 #### 新增功能
 
 1. **添加Turbo模式支持**
-
    - 前端选择器：Fast模式 (10积分) | Relax模式 (5积分) | Turbo模式 (15积分)
    - 后端积分计算支持turbo模式
    - 配置界面新增turbo_credits字段
 
 2. **改进的模式识别**
-
    - 使用专用API模型名称，确保准确的模式控制
    - 保留prompt参数作为兼容性fallback
    - 避免重复添加模式参数
