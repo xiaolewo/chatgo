@@ -1,4 +1,4 @@
-fastapi==0.116.1
+fastapi==0.115.7
 uvicorn[standard]==0.34.0
 pydantic==2.10.6
 python-multipart==0.0.20
@@ -17,7 +17,7 @@ sqlalchemy==2.0.38
 alembic==1.14.0
 peewee==3.17.9
 peewee-migrate==1.12.2
-psycopg2-binary==2.9.10
+psycopg2-binary==2.9.9
 pgvector==0.4.0
 PyMySQL==1.1.1
 bcrypt==4.3.0
@@ -37,7 +37,7 @@ asgiref==3.8.1
 # AI libraries
 openai
 anthropic
-google-generativeai==0.8.5
+google-generativeai==0.8.4
 tiktoken
 
 langchain==0.3.24
@@ -65,7 +65,7 @@ fpdf2==2.8.2
 pymdown-extensions==10.14.2
 docx2txt==0.8
 python-pptx==1.0.0
-unstructured==0.18.13
+unstructured==0.16.17
 nltk==3.9.1
 Markdown==3.7
 pypandoc==1.15
@@ -81,7 +81,7 @@ azure-ai-documentintelligence==1.0.0
 
 pillow==11.1.0
 opencv-python-headless==4.11.0.86
-rapidocr-onnxruntime
+rapidocr-onnxruntime==1.4.4
 rank-bm25==0.2.2
 qrcode[pil]==8.2
 
@@ -111,7 +111,7 @@ google-auth-oauthlib
 
 ## Tests
 docker~=7.1.0
-pytest~=8.4.1
+pytest~=8.3.5
 pytest-docker~=3.1.1
 
 googleapis-common-protos==1.63.2
@@ -131,14 +131,14 @@ firecrawl-py==1.12.0
 tencentcloud-sdk-python==3.0.1336
 
 ## Trace
-opentelemetry-api==1.36.0
-opentelemetry-sdk==1.36.0
-opentelemetry-exporter-otlp==1.36.0
-opentelemetry-instrumentation==0.57b0
-opentelemetry-instrumentation-fastapi==0.57b0
-opentelemetry-instrumentation-sqlalchemy==0.57b0
-opentelemetry-instrumentation-redis==0.57b0
-opentelemetry-instrumentation-requests==0.57b0
-opentelemetry-instrumentation-logging==0.57b0
-opentelemetry-instrumentation-httpx==0.57b0
-opentelemetry-instrumentation-aiohttp-client==0.57b0
+opentelemetry-api==1.32.1
+opentelemetry-sdk==1.32.1
+opentelemetry-exporter-otlp==1.32.1
+opentelemetry-instrumentation==0.53b1
+opentelemetry-instrumentation-fastapi==0.53b1
+opentelemetry-instrumentation-sqlalchemy==0.53b1
+opentelemetry-instrumentation-redis==0.53b1
+opentelemetry-instrumentation-requests==0.53b1
+opentelemetry-instrumentation-logging==0.53b1
+opentelemetry-instrumentation-httpx==0.53b1
+opentelemetry-instrumentation-aiohttp-client==0.53b1

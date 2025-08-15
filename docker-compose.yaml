@@ -15,9 +15,9 @@ services:
     # image: ollama/ollama:0.1.41-rocm # 示例：AMD ROCm GPU 支持 (请替换为最新的或期望的 ROCm 版本标签)
 
   open-webui:
-    image: cnqsxdy/openwebui:latest # 标准版本 (推荐，使用外部 Ollama 服务)
-    # image: cnqsxdy/openwebui:${WEBUI_DOCKER_TAG_CUDA-latest-cuda} # CUDA 版 PyTorch (配合外部 GPU Ollama 服务)
-    # image: cnqsxdy/openwebui:${WEBUI_DOCKER_TAG_OLLAMA-latest-ollama} # Ollama 捆绑版 (实验性)
+    image: xiaolewo/chatgo:latest # 标准版本 (推荐，使用外部 Ollama 服务)
+    # image: xiaolewo/chatgo:${WEBUI_DOCKER_TAG_CUDA-latest-cuda} # CUDA 版 PyTorch (配合外部 GPU Ollama 服务)
+    # image: xiaolewo/chatgo:${WEBUI_DOCKER_TAG_OLLAMA-latest-ollama} # Ollama 捆绑版 (实验性)
     container_name: open-webui
     volumes:
       - open-webui:/app/backend/data
