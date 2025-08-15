@@ -1,4 +1,4 @@
-fastapi==0.116.1
+fastapi==0.115.7
 uvicorn[standard]==0.34.0
 pydantic==2.10.6
 python-multipart==0.0.20
@@ -37,7 +37,7 @@ asgiref==3.8.1
 # AI libraries
 openai
 anthropic
-google-generativeai==0.8.5
+google-generativeai==0.8.4
 tiktoken
 
 langchain==0.3.24
@@ -94,6 +94,8 @@ authlib==1.4.1
 
 black==25.1.0
 langfuse==2.44.0
+typer==0.16.0
+beautifulsoup4==4.13.4
 youtube-transcript-api==1.0.3
 pytube==15.0.0
 alibabacloud_dysmsapi20170525
@@ -109,7 +111,7 @@ google-auth-oauthlib
 
 ## Tests
 docker~=7.1.0
-pytest~=8.4.1
+pytest~=8.3.5
 pytest-docker~=3.1.1
 
 googleapis-common-protos==1.63.2
@@ -129,14 +131,14 @@ firecrawl-py==1.12.0
 tencentcloud-sdk-python==3.0.1336
 
 ## Trace
-opentelemetry-api==1.36.0
-opentelemetry-sdk==1.36.0
-opentelemetry-exporter-otlp==1.36.0
-opentelemetry-instrumentation==0.57b0
-opentelemetry-instrumentation-fastapi==0.57b0
-opentelemetry-instrumentation-sqlalchemy==0.57b0
-opentelemetry-instrumentation-redis==0.57b0
-opentelemetry-instrumentation-requests==0.57b0
-opentelemetry-instrumentation-logging==0.57b0
-opentelemetry-instrumentation-httpx==0.57b0
-opentelemetry-instrumentation-aiohttp-client==0.57b0
+opentelemetry-api==1.32.1
+opentelemetry-sdk==1.32.1
+opentelemetry-exporter-otlp==1.32.1
+opentelemetry-instrumentation==0.53b1
+opentelemetry-instrumentation-fastapi==0.53b1
+opentelemetry-instrumentation-sqlalchemy==0.53b1
+opentelemetry-instrumentation-redis==0.53b1
+opentelemetry-instrumentation-requests==0.53b1
+opentelemetry-instrumentation-logging==0.53b1
+opentelemetry-instrumentation-httpx==0.53b1
+opentelemetry-instrumentation-aiohttp-client==0.53b1

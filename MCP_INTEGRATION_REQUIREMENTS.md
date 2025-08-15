@@ -116,13 +116,11 @@ class MCPClientManager:
 #### 3.2.1 组件设计
 
 1. **MCP服务管理页面** (`/admin/mcp`)
-
    - MCP服务列表组件
    - MCP服务添加/编辑弹窗
    - MCP服务测试面板
 
 2. **用户端MCP选择器**
-
    - MCP服务选择下拉菜单
    - 已选择MCP服务标签展示
    - MCP工具快速访问面板

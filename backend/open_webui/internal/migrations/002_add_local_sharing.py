@@ -37,9 +37,19 @@ with suppress(ImportError):
 def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
 
-    migrator.add_fields(
-        "chat", share_id=pw.CharField(max_length=255, null=True, unique=True)
-    )
+    # 安全地添加 share_id 字段，如果已存在则跳过
+    try:
+        migrator.add_fields(
+            "chat", share_id=pw.CharField(max_length=255, null=True, unique=True)
+        )
+        print("✅ 成功添加 share_id 字段")
+    except Exception as e:
+        # 如果是重复字段错误，则跳过
+        if "duplicate column" in str(e).lower() or "already exists" in str(e).lower():
+            print("⚠️  share_id 字段已存在，跳过添加")
+        else:
+            # 其他错误需要抛出
+            raise e
 
 
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):

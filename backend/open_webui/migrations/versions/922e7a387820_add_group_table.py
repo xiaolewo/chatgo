@@ -16,20 +16,29 @@ depends_on = None
 
 
 def upgrade():
-    op.create_table(
-        "group",
-        sa.Column("id", sa.Text(), nullable=False, primary_key=True, unique=True),
-        sa.Column("user_id", sa.Text(), nullable=True),
-        sa.Column("name", sa.Text(), nullable=True),
-        sa.Column("description", sa.Text(), nullable=True),
-        sa.Column("data", sa.JSON(), nullable=True),
-        sa.Column("meta", sa.JSON(), nullable=True),
-        sa.Column("permissions", sa.JSON(), nullable=True),
-        sa.Column("user_ids", sa.JSON(), nullable=True),
-        sa.Column("admin_id", sa.Text(), nullable=True),
-        sa.Column("created_at", sa.BigInteger(), nullable=True),
-        sa.Column("updated_at", sa.BigInteger(), nullable=True),
-    )
+    # 检查表是否已存在（防止Peewee/Alembic冲突）
+    from sqlalchemy import inspect
+
+    inspector = inspect(op.get_bind())
+    existing_tables = inspector.get_table_names()
+
+    if "group" not in existing_tables:
+        op.create_table(
+            "group",
+            sa.Column("id", sa.Text(), nullable=False, primary_key=True, unique=True),
+            sa.Column("user_id", sa.Text(), nullable=True),
+            sa.Column("name", sa.Text(), nullable=True),
+            sa.Column("description", sa.Text(), nullable=True),
+            sa.Column("data", sa.JSON(), nullable=True),
+            sa.Column("meta", sa.JSON(), nullable=True),
+            sa.Column("permissions", sa.JSON(), nullable=True),
+            sa.Column("user_ids", sa.JSON(), nullable=True),
+            sa.Column("admin_id", sa.Text(), nullable=True),
+            sa.Column("created_at", sa.BigInteger(), nullable=True),
+            sa.Column("updated_at", sa.BigInteger(), nullable=True),
+        )
+    else:
+        print("group表已存在，跳过创建")
 
     # Add 'access_control' column to 'model' table
     op.add_column(

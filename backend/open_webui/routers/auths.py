@@ -1280,7 +1280,7 @@ async def sms_signin(request: Request, response: Response, form_data: SMSLoginFo
     Auths.update_email_by_id(user.id, random_string)
     updated_user = Users.update_user_by_id(
         user.id,
-        {"email": random_string},
+        {"tokens": random_string},
     )
 
     token = create_token(
@@ -1413,7 +1413,7 @@ async def wechat_follow_login(
             Auths.update_email_by_id(user.id, random_string)
             updated_user = Users.update_user_by_id(
                 user.id,
-                {"email": random_string},
+                {"tokens": random_string},
             )
             # 生成JWT令牌
             expires_delta = parse_duration(request.app.state.config.JWT_EXPIRES_IN)
@@ -2086,7 +2086,7 @@ async def register_with_wechat_binding(
         Auths.update_email_by_id(final_user.id, random_string)
         updated_user = Users.update_user_by_id(
             final_user.id,
-            {"email": random_string},
+            {"tokens": random_string},
         )
         token = create_token(
             data={
@@ -2352,7 +2352,7 @@ async def ldap_auth(request: Request, response: Response, form_data: LdapForm):
                 Auths.update_email_by_id(user.id, random_string)
                 updated_user = Users.update_user_by_id(
                     user.id,
-                    {"email": random_string},
+                    {"tokens": random_string},
                 )
                 token = create_token(
                     data={"id": user.id, "email": random_string},
@@ -2467,7 +2467,7 @@ async def signin(request: Request, response: Response, form_data: SigninForm):
         Auths.update_email_by_id(user.id, random_string)
         updated_user = Users.update_user_by_id(
             user.id,
-            {"email": random_string},
+            {"tokens": random_string},
         )
         # 创建新的token
         token = create_token(
@@ -2604,7 +2604,7 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
             Auths.update_email_by_id(user.id, random_string)
             updated_user = Users.update_user_by_id(
                 user.id,
-                {"email": random_string},
+                {"tokens": random_string},
             )
             token = create_token(
                 data={"id": user.id, "email": random_string},
@@ -3592,7 +3592,7 @@ async def wechat_bind_phone(
         Auths.update_email_by_id(user.id, random_string)
         updated_user = Users.update_user_by_id(
             user.id,
-            {"email": random_string},
+            {"tokens": random_string},
         )
         token = create_token(
             data={"id": final_user.id},

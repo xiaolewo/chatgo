@@ -225,6 +225,9 @@ WEBUI_BUILD_HASH = os.environ.get("WEBUI_BUILD_HASH", "dev-build")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", BACKEND_DIR / "data")).resolve()
 
+# 确保 DATA_DIR 目录存在，这对于新用户部署非常重要
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
 if FROM_INIT_PY:
     NEW_DATA_DIR = Path(os.getenv("DATA_DIR", OPEN_WEBUI_DIR / "data")).resolve()
     NEW_DATA_DIR.mkdir(parents=True, exist_ok=True)

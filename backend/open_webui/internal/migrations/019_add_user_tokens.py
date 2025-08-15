@@ -1,4 +1,4 @@
-"""Peewee migrations -- 002_add_local_sharing.py.
+"""Peewee migrations -- 019_add_user_tokens.py.
 
 Some examples (model - class or model name)::
 
@@ -38,13 +38,11 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your migrations here."""
 
     try:
-        migrator.add_fields(
-            "user", api_key=pw.CharField(max_length=255, null=True, unique=True)
-        )
-        print("✅ 成功添加 api_key 字段")
+        migrator.add_fields("user", tokens=pw.TextField(null=True))
+        print("✅ 成功添加 tokens 字段到 user 表")
     except Exception as e:
         if "duplicate column" in str(e).lower():
-            print("⚠️  api_key 字段已存在，跳过添加")
+            print("⚠️  tokens 字段已存在，跳过添加")
         else:
             raise e
 
@@ -52,4 +50,4 @@ def migrate(migrator: Migrator, database: pw.Database, *, fake=False):
 def rollback(migrator: Migrator, database: pw.Database, *, fake=False):
     """Write your rollback migrations here."""
 
-    migrator.remove_fields("user", "api_key")
+    migrator.remove_fields("user", "tokens")
