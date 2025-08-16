@@ -43,8 +43,8 @@
 	let phone = '';
 	let phonecode = '';
 	let password = '';
-	let login = 'wechat';
-	let logins = 'wechat';
+	let login = 'email';
+	let logins = 'email';
 	let logintetxt = false;
 	let ldapUsername = '';
 	let codetext = '发送验证码';
@@ -733,39 +733,40 @@
 							{/if}
 						</div>
 						<!-- {#if mode === 'signin'} -->
-						<div class=" flex w-full">
-							<div
-								class="flex gap-1 scrollbar-none w-fit text-center text-base font-medium rounded-full bg-transparent pt-1"
-							>
-								{#if mode === 'signin'}
+						{#if $config?.onboarding !== true}
+							<div class=" flex w-full">
+								<div
+									class="flex gap-1 scrollbar-none w-fit text-center text-base font-medium rounded-full bg-transparent pt-1"
+								>
+									{#if mode === 'signin'}
+										<button
+											on:click={() => ((login = 'wechat'), (logins = 'wechat'))}
+											class="min-w-fit rounded-full p-1.5 pl-0 pb-0 {login == 'wechat'
+												? ''
+												: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
+											>{$i18n.t('Wechat login')}</button
+										>
+									{/if}
+
 									<button
-										on:click={() => ((login = 'wechat'), (logins = 'wechat'))}
-										class="min-w-fit rounded-full p-1.5 pl-0 pb-0 {login == 'wechat'
+										on:click={() => ((login = 'email'), (logins = 'email'))}
+										class="min-w-fit rounded-full p-1.5 pb-0 {login == 'email'
 											? ''
 											: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
-										>{$i18n.t('Wechat login')}</button
 									>
-								{/if}
+										{mode === 'signin' ? $i18n.t('Email login') : '邮箱注册'}
+									</button>
 
-								<button
-									on:click={() => ((login = 'email'), (logins = 'email'))}
-									class="min-w-fit rounded-full p-1.5 pb-0 {login == 'email'
-										? ''
-										: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
-								>
-									{mode === 'signin' ? $i18n.t('Email login') : '邮箱注册'}
-								</button>
-
-								<button
-									on:click={() => ((login = 'phone'), (logins = 'phone'))}
-									class="min-w-fit rounded-full p-1.5 pl-0 pb-0 {login == 'phone'
-										? ''
-										: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
-									>{mode === 'signin' ? $i18n.t('Phone login') : '手机号注册'}</button
-								>
+									<button
+										on:click={() => ((login = 'phone'), (logins = 'phone'))}
+										class="min-w-fit rounded-full p-1.5 pl-0 pb-0 {login == 'phone'
+											? ''
+											: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
+										>{mode === 'signin' ? $i18n.t('Phone login') : '手机号注册'}</button
+									>
+								</div>
 							</div>
-						</div>
-
+						{/if}
 						<form
 							class=" flex flex-col justify-center"
 							on:submit={(e) => {
@@ -1311,7 +1312,7 @@
 				<div
 					class="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center max-w-xs leading-relaxed"
 				>
-					💡 请使用微信扫描上方二维码关注公众号，关注成功后即可完成注册
+					💡 公众号，关注成功后即可完成注册
 				</div>
 
 				{#if wechatPolling}

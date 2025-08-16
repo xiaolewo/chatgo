@@ -1276,8 +1276,7 @@ async def sms_signin(request: Request, response: Response, form_data: SMSLoginFo
     # 更新用户email
     user.tokens = random_string
 
-    # 调用Auths和Users的更新方法，确保数据库提交
-    Auths.update_email_by_id(user.id, random_string)
+    # 调用Users的更新方法，确保数据库提交
     updated_user = Users.update_user_by_id(
         user.id,
         {"tokens": random_string},
@@ -1410,7 +1409,7 @@ async def wechat_follow_login(
             user.tokens = random_string
 
             # 调用Auths和Users的更新方法，确保数据库提交
-            Auths.update_email_by_id(user.id, random_string)
+            # Auths.update_email_by_id(user.id, random_string)
             updated_user = Users.update_user_by_id(
                 user.id,
                 {"tokens": random_string},
@@ -1494,7 +1493,7 @@ async def wechat_follow_login(
             # 更新用户email
 
         user = Auths.insert_new_auth(
-            email=random_string,
+            email=None,
             tokens=random_string,
             password=str(uuid.uuid4()),  # 随机密码
             name=nickname,
@@ -2082,8 +2081,7 @@ async def register_with_wechat_binding(
         # 更新用户email
         final_user.tokens = random_string
 
-        # 调用Auths和Users的更新方法，确保数据库提交
-        Auths.update_email_by_id(final_user.id, random_string)
+        # 调用Users的更新方法，确保数据库提交
         updated_user = Users.update_user_by_id(
             final_user.id,
             {"tokens": random_string},
@@ -2348,8 +2346,7 @@ async def ldap_auth(request: Request, response: Response, form_data: LdapForm):
                 # 更新用户email
                 user.tokens = random_string
 
-                # 调用Auths和Users的更新方法，确保数据库提交
-                Auths.update_email_by_id(user.id, random_string)
+                # 调用Users的更新方法，确保数据库提交
                 updated_user = Users.update_user_by_id(
                     user.id,
                     {"tokens": random_string},
@@ -2463,8 +2460,7 @@ async def signin(request: Request, response: Response, form_data: SigninForm):
         # 更新用户email
         user.tokens = random_string
 
-        # 调用Auths和Users的更新方法，确保数据库提交
-        Auths.update_email_by_id(user.id, random_string)
+        # 调用Users的更新方法，确保数据库提交
         updated_user = Users.update_user_by_id(
             user.id,
             {"tokens": random_string},
@@ -2600,8 +2596,7 @@ async def signup(request: Request, response: Response, form_data: SignupForm):
             # 更新用户email
             user.tokens = random_string
 
-            # 调用Auths和Users的更新方法，确保数据库提交
-            Auths.update_email_by_id(user.id, random_string)
+            # 调用Users的更新方法，确保数据库提交
             updated_user = Users.update_user_by_id(
                 user.id,
                 {"tokens": random_string},
@@ -3588,8 +3583,7 @@ async def wechat_bind_phone(
         # 更新用户email
         user.tokens = random_string
 
-        # 调用Auths和Users的更新方法，确保数据库提交
-        Auths.update_email_by_id(user.id, random_string)
+        # 调用Users的更新方法，确保数据库提交
         updated_user = Users.update_user_by_id(
             user.id,
             {"tokens": random_string},
