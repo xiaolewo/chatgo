@@ -250,7 +250,7 @@
 	/>
 
 	<!-- 搜索和筛选栏 -->
-	<div class="flex flex-col gap-4 my-4">
+	<div class="flex flex-col gap-2 mb-2">
 		<!-- 标题和统计 -->
 		<div class="flex items-center justify-between">
 			<div class="flex items-center gap-3">

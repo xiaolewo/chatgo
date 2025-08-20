@@ -71,7 +71,7 @@ def override_static(path: str, content: str):
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
     r = requests.get(content, stream=True)
-    with open(path, "wb") as f:
+    with open(path, "r", encoding="utf-8") as f:  # 新增 encoding='utf-8'
         r.raw.decode_content = True
         shutil.copyfileobj(r.raw, f)
 

@@ -38,7 +38,7 @@
 
 {#if $models !== null}
 	<div class="w-full flex flex-col h-full">
-		<div class="flex gap-2 mb-4">
+		<div class="flex gap-2 mb-2">
 			{#each TABS as tab}
 				<button
 					on:click={() => setActiveTab(tab.label)}

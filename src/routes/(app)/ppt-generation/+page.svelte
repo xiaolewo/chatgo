@@ -619,19 +619,26 @@
 <div class="flex flex-col h-screen bg-white dark:bg-gray-900 overflow-hidden">
 	<!-- 头部 -->
 	<div
-		class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 dark:border-gray-700 space-y-2 sm:space-y-0"
+		class="flex flex-col sm:flex-row items-start sm:items-center justify-between px-2.5 py-2.5 border-b border-gray-200 dark:border-gray-700 space-y-2 sm:space-y-0"
 	>
 		<div class="flex items-center space-x-3">
 			<!-- 汉堡菜单按钮 (移动端显示) -->
-			<div class="{$showSidebar ? 'md:hidden' : ''} flex items-center">
+			<div
+				class="{$showSidebar
+					? 'md:hidden'
+					: ''} mr-1 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
+			>
 				<button
-					class="cursor-pointer p-2 flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition lg:hidden"
+					id="sidebar-toggle-button"
+					class="cursor-pointer px-2 py-2 flex rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 					on:click={() => {
 						showSidebar.set(!$showSidebar);
 					}}
 					aria-label="Toggle Sidebar"
 				>
-					<MenuLines />
+					<div class=" m-auto self-center">
+						<MenuLines />
+					</div>
 				</button>
 			</div>
 

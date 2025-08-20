@@ -186,6 +186,7 @@
 		await setEmbeddingConfig();
 
 		RAGConfig = await getRAGConfig(localStorage.token);
+		RAGConfig.BYPASS_EMBEDDING_AND_RETRIEVAL = false;
 	});
 </script>
 

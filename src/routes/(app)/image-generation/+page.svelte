@@ -724,18 +724,25 @@
 <!-- 页面内容 -->
 <div class="size-full flex flex-col">
 	<!-- 页面头部 -->
-	<div class="px-2.5 flex justify-between space-x-4 bg-white dark:bg-gray-900">
+	<div class="p-2.5 flex justify-between space-x-4 bg-white dark:bg-gray-900">
 		<div class="flex items-center space-x-2">
 			<!-- 汉堡菜单按钮 (移动端显示) -->
-			<div class="{$showSidebar ? 'md:hidden' : ''} flex items-center">
+			<div
+				class="{$showSidebar
+					? 'md:hidden'
+					: ''} mr-1 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
+			>
 				<button
-					class="cursor-pointer p-2 flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition lg:hidden"
+					id="sidebar-toggle-button"
+					class="cursor-pointer px-2 py-2 flex rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 					on:click={() => {
 						showSidebar.set(!$showSidebar);
 					}}
 					aria-label="Toggle Sidebar"
 				>
-					<MenuLines />
+					<div class=" m-auto self-center">
+						<MenuLines />
+					</div>
 				</button>
 			</div>
 

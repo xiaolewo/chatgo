@@ -231,15 +231,22 @@
 		>
 			<div class="flex items-start gap-4 flex-1 min-w-0">
 				<!-- 汉堡菜单按钮 (移动端显示) -->
-				<div class="{$showSidebar ? 'md:hidden' : ''} flex items-center">
+				<div
+					class="{$showSidebar
+						? 'md:hidden'
+						: ''} mr-1 self-start flex flex-none items-center text-gray-600 dark:text-gray-400"
+				>
 					<button
-						class="cursor-pointer p-2 flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition lg:hidden"
+						id="sidebar-toggle-button"
+						class="cursor-pointer px-2 py-2 flex rounded-xl hover:bg-gray-50 dark:hover:bg-gray-850 transition"
 						on:click={() => {
 							showSidebar.set(!$showSidebar);
 						}}
 						aria-label="Toggle Sidebar"
 					>
-						<MenuLines />
+						<div class=" m-auto self-center">
+							<MenuLines />
+						</div>
 					</button>
 				</div>
 
