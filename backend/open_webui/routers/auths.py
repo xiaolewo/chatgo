@@ -1495,7 +1495,6 @@ async def wechat_follow_login(
 
         user = Auths.insert_new_auth(
             email=random_string,
-            tokens=random_string,
             password=str(uuid.uuid4()),  # 随机密码
             name=nickname,
             role="user",
@@ -1512,6 +1511,10 @@ async def wechat_follow_login(
             )
             # 生成JWT令牌
         expires_delta = parse_duration(request.app.state.config.JWT_EXPIRES_IN)
+        updated_user = Users.update_user_by_id(
+            user.id,
+            {"tokens": random_string},
+        )
         token = create_token(
             data={"id": user.id, "email": random_string},
             expires_delta=expires_delta,

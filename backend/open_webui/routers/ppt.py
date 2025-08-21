@@ -86,6 +86,17 @@ async def get_ppt_config(user=Depends(get_admin_user)):
         raise HTTPException(status_code=500, detail=f"获取配置失败: {str(e)}")
 
 
+@router.get("/web/config")
+async def get_ppt_config(user=Depends(get_verified_user)):
+    """获取PPT配置"""
+    try:
+        config = PptConfigs.get_or_create_config()
+        return config.model_dump(exclude={"api_key", "api_url"})
+    except Exception as e:
+        log.error(f"获取PPT配置失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取配置失败: {str(e)}")
+
+
 @router.post("/config")
 async def update_ppt_config(config: PptConfigModel, user=Depends(get_admin_user)):
     """更新PPT配置 (仅管理员)"""

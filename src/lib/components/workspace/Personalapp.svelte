@@ -264,7 +264,7 @@
 
 			<!-- 创建按钮 -->
 			<a
-				href="/personalapp/create"
+				href="/workspace/models/create"
 				class="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors font-medium"
 			>
 				<Plus className="size-4" />
@@ -415,7 +415,7 @@
 								<Tooltip content="编辑">
 									<a
 										class="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-										href={`/personalapp/edit?id=${encodeURIComponent(model.id)}`}
+										href={`/workspace/models/edit?id=${encodeURIComponent(model.id)}`}
 									>
 										<svg
 											xmlns="http://www.w3.org/2000/svg"
@@ -479,7 +479,7 @@
 			<h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">还没有创建应用</h3>
 			<p class="text-gray-500 dark:text-gray-400 mb-4">开始创建你的第一个AI助手应用吧</p>
 			<a
-				href="/personalapp/create"
+				href="/workspace/models/create"
 				class="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-colors font-medium"
 			>
 				<Plus className="size-4" />

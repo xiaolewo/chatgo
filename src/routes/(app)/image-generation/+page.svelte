@@ -11,7 +11,7 @@
 	import {
 		generateImageWithPolling as mjGenerateImageWithPolling,
 		getUserTasks as mjGetUserTasks,
-		getMidJourneyConfig,
+		getMidJourneyConfigs,
 		getUserCredits as mjGetUserCredits,
 		executeActionWithPolling,
 		fileToBase64,
@@ -27,7 +27,7 @@
 	import {
 		generateImage as seedreamGenerateImage,
 		getUserTasks as seedreamGetUserTasks,
-		getSeedreamConfig,
+		getSeedreamConfigs,
 		getUserCredits as seedreamGetUserCredits,
 		TASK_STATUS as SEEDREAM_TASK_STATUS,
 		RECOMMENDED_SIZES,
@@ -137,8 +137,8 @@
 		try {
 			// 并行加载两个服务的配置
 			const [mjConfig, seedreamConf, creditsData] = await Promise.allSettled([
-				getMidJourneyConfig($user.token),
-				getSeedreamConfig($user.token),
+				getMidJourneyConfigs($user.token),
+				getSeedreamConfigs($user.token),
 				mjGetUserCredits($user.token) // 使用MidJourney的积分接口
 			]);
 

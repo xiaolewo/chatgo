@@ -94,6 +94,20 @@ async def get_kling_config(request: Request, user=Depends(get_admin_user)):
         raise HTTPException(status_code=500, detail="获取配置失败")
 
 
+@router.get("/web/config")
+async def get_kling_config(request: Request, user=Depends(get_verified_user)):
+    """获取可灵配置"""
+    try:
+        return {
+            "enabled": getattr(request.app.state.config, "KLING_ENABLED", False),
+            "std_credits": getattr(request.app.state.config, "KLING_STD_CREDITS", 5),
+            "pro_credits": getattr(request.app.state.config, "KLING_PRO_CREDITS", 10),
+        }
+    except Exception as e:
+        log.error(f"获取可灵配置失败: {e}")
+        raise HTTPException(status_code=500, detail="获取配置失败")
+
+
 @router.post("/config")
 async def update_kling_config(
     request: Request, config: KlingConfig, user=Depends(get_admin_user)

@@ -100,6 +100,17 @@ async def get_seedream_config(request: Request, user=Depends(get_admin_user)):
     }
 
 
+@router.get("/web/config")
+async def get_seedream_config(request: Request, user=Depends(get_verified_user)):
+    """获取即梦3.0配置"""
+    return {
+        "enabled": getattr(request.app.state.config, "SEEDREAM_ENABLED", False),
+        "credits_per_generation": getattr(
+            request.app.state.config, "SEEDREAM_CREDITS", 1
+        ),
+    }
+
+
 @router.post("/config")
 async def update_seedream_config(
     request: Request, config: SeedreamConfig, user=Depends(get_admin_user)

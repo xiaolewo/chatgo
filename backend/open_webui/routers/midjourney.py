@@ -155,6 +155,23 @@ async def get_midjourney_config(request: Request, user=Depends(get_admin_user)):
     }
 
 
+@router.get("/web/config")
+async def get_midjourney_config(request: Request, user=Depends(get_verified_user)):
+    """获取MidJourney配置"""
+    return {
+        "enabled": getattr(request.app.state.config, "MIDJOURNEY_ENABLED", False),
+        "fast_credits": getattr(
+            request.app.state.config, "MIDJOURNEY_FAST_CREDITS", 10
+        ),
+        "relax_credits": getattr(
+            request.app.state.config, "MIDJOURNEY_RELAX_CREDITS", 5
+        ),
+        "turbo_credits": getattr(
+            request.app.state.config, "MIDJOURNEY_TURBO_CREDITS", 15
+        ),
+    }
+
+
 @router.get("/credits")
 async def get_user_credits(user=Depends(get_verified_user)):
     """获取用户v豆余额"""

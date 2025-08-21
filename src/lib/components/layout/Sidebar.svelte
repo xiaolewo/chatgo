@@ -725,7 +725,7 @@
 					</div>
 					<span class="font-medium">视频生成</span>
 				</a> -->
-				<a
+				<!-- <a
 					class="flex items-center gap-3 px-3 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors group"
 					href="/ppt-generation"
 					on:click={() => {
@@ -751,9 +751,9 @@
 						</svg>
 					</div>
 					<span class="font-medium">PPT生成</span>
-				</a>
+				</a> -->
 				{#if $user?.role === 'admin' || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
-					<a
+					<!-- <a
 						class="flex items-center gap-3 px-3 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors group"
 						href="/workspace"
 						on:click={() => {
@@ -779,7 +779,7 @@
 							</svg>
 						</div>
 						<span class="font-medium">工作台</span>
-					</a>
+					</a> -->
 				{/if}
 			</nav>
 		</div>

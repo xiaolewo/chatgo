@@ -522,7 +522,7 @@
 
 			// 尝试获取更完整的配置信息（包括积分消耗）
 			try {
-				const configResponse = await fetch(`${WEBUI_API_BASE_URL}/ppt/config`, {
+				const configResponse = await fetch(`${WEBUI_API_BASE_URL}/ppt/web/config`, {
 					headers: {
 						Authorization: `Bearer ${$user.token}`
 					}

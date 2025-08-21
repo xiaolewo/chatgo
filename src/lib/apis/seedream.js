@@ -30,6 +30,29 @@ export const getSeedreamConfig = async (token) => {
 		throw error;
 	}
 };
+/**
+ * 获取即梦3.0配置
+ */
+export const getSeedreamConfigs = async (token) => {
+	try {
+		const res = await fetch(`${SEEDREAM_API_BASE_URL}/web/config`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				Authorization: `Bearer ${token}`
+			}
+		});
+
+		if (!res.ok) {
+			throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+		}
+
+		return await res.json();
+	} catch (error) {
+		console.error('获取即梦3.0配置失败:', error);
+		throw error;
+	}
+};
 
 /**
  * 更新即梦3.0配置

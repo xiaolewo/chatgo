@@ -12,7 +12,7 @@
 		generateVideo as klingGenerateVideo,
 		getTaskStatus as klingGetTaskStatus,
 		getUserTasks as klingGetUserTasks,
-		getKlingConfig,
+		getKlingConfigs,
 		getUserCredits as klingGetUserCredits,
 		deleteTask as klingDeleteTask,
 		TASK_STATUS as KLING_TASK_STATUS,
@@ -36,7 +36,7 @@
 		generateVideo as jimengGenerateVideo,
 		getTaskStatus as jimengGetTaskStatus,
 		getUserTasks as jimengGetUserTasks,
-		getJimengConfig,
+		getJimengConfigs,
 		getUserCredits as jimengGetUserCredits,
 		deleteTask as jimengDeleteTask,
 		TASK_STATUS as JIMENG_TASK_STATUS,
@@ -107,11 +107,11 @@
 			if ($user?.token) {
 				// 并行加载配置和积分
 				const [klingConfigResult, jimengConfigResult, creditsResult] = await Promise.all([
-					getKlingConfig($user.token).catch((e) => {
+					getKlingConfigs($user.token).catch((e) => {
 						console.error('加载可灵配置失败:', e);
 						return null;
 					}),
-					getJimengConfig($user.token).catch((e) => {
+					getJimengConfigs($user.token).catch((e) => {
 						console.error('加载即梦配置失败:', e);
 						return null;
 					}),

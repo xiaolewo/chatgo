@@ -41,7 +41,7 @@
 				)
 			);
 			toast.success($i18n.t('Model updated successfully'));
-			await goto('/workspace/models');
+			await goto('/personalapp');
 		}
 	};
 </script>

@@ -95,6 +95,20 @@ async def get_jimeng_config(request: Request, user=Depends(get_admin_user)):
         raise HTTPException(status_code=500, detail="获取配置失败")
 
 
+@router.get("/web/config")
+async def get_jimeng_config(request: Request, user=Depends(get_verified_user)):
+    """获取即梦配置"""
+    try:
+        return {
+            "enabled": JIMENG_ENABLED.value,
+            "credits_5s": JIMENG_CREDITS_5S.value,
+            "credits_10s": JIMENG_CREDITS_10S.value,
+        }
+    except Exception as e:
+        log.error(f"获取即梦配置失败: {e}")
+        raise HTTPException(status_code=500, detail="获取配置失败")
+
+
 @router.post("/config")
 async def update_jimeng_config(
     request: Request, config: JimengConfig, user=Depends(get_admin_user)
