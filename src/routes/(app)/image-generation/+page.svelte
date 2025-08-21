@@ -404,7 +404,7 @@
 				stylize: stylize !== null && stylize !== '' ? parseInt(stylize) : null,
 				seed: seed !== null && seed !== '' ? parseInt(seed) : null,
 				version: selectedVersion || null,
-				quality: quality !== 1.0 ? quality : null,
+				quality: quality,
 				weird: weird !== null && weird !== '' ? parseInt(weird) : null,
 				tile: tileMode
 			}

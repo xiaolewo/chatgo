@@ -747,14 +747,14 @@
 									>
 								{/if}
 
-								<button
+								<!-- <button
 									on:click={() => ((login = 'email'), (logins = 'email'))}
 									class="min-w-fit rounded-full p-1.5 pb-0 {login == 'email'
 										? ''
 										: 'text-gray-300 dark:text-gray-600 hover:text-gray-700 dark:hover:text-white'} transition"
 								>
 									{mode === 'signin' ? $i18n.t('Email login') : '邮箱注册'}
-								</button>
+								</button> -->
 
 								<button
 									on:click={() => ((login = 'phone'), (logins = 'phone'))}
