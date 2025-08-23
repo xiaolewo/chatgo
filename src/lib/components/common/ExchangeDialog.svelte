@@ -182,8 +182,7 @@
 					<div class="flex flex-col justify-between">
 						<div class="text-lg font-bold mb-2">套餐名称：{menu.name}</div>
 						<div class="text-lg font-bold mb-2">
-							套餐额度： <span class="text-[20px] font-bold"
-								>{menu.credits * menu.duration}积分</span
+							套餐额度： <span class="text-[20px] font-bold">{menu.credits * menu.duration}v豆</span
 							>
 						</div>
 					</div>

@@ -253,7 +253,9 @@
 								</div>
 							</div>
 							<div>
-								企业{$i18n.t('Credit')}： {group.admin_credit == '0E-12' ? 0 : group.admin_credit}
+								企业{$i18n.t('Credit')}： {group.admin_credit == '0E-12'
+									? 0
+									: Math.round(Number(group.admin_credit))}
 							</div>
 						</div>
 					{/each}
@@ -268,7 +270,7 @@
 					<div class="flex flex-col w-full">
 						<div class="mb-1 text-base font-medium">个人{$i18n.t('Credit')}</div>
 						<div class="flex items-center">
-							<div>{credit == '0E-12' ? 0 : credit}</div>
+							<div>{credit == '0E-12' ? 0 : Math.round(Number(credit))}</div>
 							<button class="ml-1" on:click={() => doInit()}>
 								<svg
 									viewBox="0 0 1024 1024"

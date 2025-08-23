@@ -312,7 +312,7 @@
 				id="model-item-{model.id}"
 			>
 				<!-- 图标和标题 -->
-				<div class="flex items-start gap-3 mb-4">
+				<div class="flex items-center gap-3 mb-4">
 					<div class="flex-shrink-0">
 						<div
 							class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-100 to-blue-100 dark:from-green-900 dark:to-blue-900 flex items-center justify-center text-2xl"
@@ -340,17 +340,19 @@
 						</a>
 
 						<!-- 评分和使用量 -->
-						<div class="flex items-center gap-3 mt-1">
-							<div class="flex items-center gap-1">
-								<span class="text-yellow-400">⭐</span>
-								<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
-									>{getModelRating(model.name)}</span
-								>
+						{#if false}
+							<div class="flex items-center gap-3 mt-1">
+								<div class="flex items-center gap-1">
+									<span class="text-yellow-400">⭐</span>
+									<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+										>{getModelRating(model.name)}</span
+									>
+								</div>
+								<div class="text-xs text-gray-500 dark:text-gray-400">
+									{getModelUsageCount(model.name)}使用
+								</div>
 							</div>
-							<div class="text-xs text-gray-500 dark:text-gray-400">
-								{getModelUsageCount(model.name)}使用
-							</div>
-						</div>
+						{/if}
 					</div>
 				</div>
 

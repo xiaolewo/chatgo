@@ -930,8 +930,8 @@
 												<div
 													class="flex items-center mt-4 text-sm text-gray-600 dark:text-gray-400"
 												>
-													<Spinner class="w-4 h-4 mr-2" />
-													<span class="animate-pulse">等待关注公众号中...</span>
+													<!-- <Spinner class="w-4 h-4 mr-2" />
+													<span class="animate-pulse">等待关注公众号中...</span> -->
 												</div>
 											{/if}
 										{:else if qrCodeExpired}
@@ -973,7 +973,7 @@
 										>
 											💡 请{logintetxt
 												? '长按'
-												: '使用微信扫描上方'}二维码关注公众号，关注成功后即可自动登录
+												: '使用微信扫描上方'}二维码，点击公众号，登录后返回即可使用
 										</div>
 
 										{#if wechatPolling}
@@ -1274,8 +1274,8 @@
 
 					{#if wechatPolling}
 						<div class="flex items-center mt-4 text-sm text-gray-600 dark:text-gray-400">
-							<Spinner class="w-4 h-4 mr-2" />
-							<span class="animate-pulse">等待关注公众号中...</span>
+							<!-- <Spinner class="w-4 h-4 mr-2" />
+							<span class="animate-pulse">等待关注公众号中...</span> -->
 						</div>
 					{/if}
 				{:else if qrCodeExpired}
@@ -1311,7 +1311,7 @@
 				<div
 					class="mt-4 text-xs text-gray-500 dark:text-gray-400 text-center max-w-xs leading-relaxed"
 				>
-					💡 请使用微信扫描上方二维码关注公众号，关注成功后即可完成注册
+					💡 请扫描二维码，点击公众号，关注成功后返回即可完成注册
 				</div>
 
 				{#if wechatPolling}
