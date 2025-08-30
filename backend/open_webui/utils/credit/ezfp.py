@@ -85,7 +85,7 @@ class EZFPClient:
             "name": f"{WEBUI_NAME} Credit",
             "money": "%.2f" % amount,
             "clientip": client_ip,
-            "device": self.get_device_from_ua(ua=ua),
+            "device": "pc",
         }
         payload = self.sign(payload)
         client = httpx.AsyncClient()
