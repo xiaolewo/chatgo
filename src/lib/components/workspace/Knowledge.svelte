@@ -192,25 +192,28 @@
 						</div>
 					</div>
 
-					<div class="flex-1 min-w-0">
+					<div class="flex-1 h-12 flex items-center min-w-0">
 						<h3
 							class="font-semibold text-gray-900 dark:text-white text-base line-clamp-1 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"
 						>
 							{item.name}
 						</h3>
 
-						<!-- 评分和使用量 -->
-						<div class="flex items-center gap-3 mt-1">
-							<div class="flex items-center gap-1">
-								<span class="text-yellow-400">⭐</span>
-								<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
-									>{getKnowledgeRating(item.id)}</span
-								>
+						<!-- 评分和使用量 - 已添加判断条件隐藏 -->
+						{#if false}
+							<!-- 条件设为false以始终隐藏这部分内容 -->
+							<div class="flex items-center gap-3 mt-1">
+								<div class="flex items-center gap-1">
+									<span class="text-yellow-400">⭐</span>
+									<span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+										>{getKnowledgeRating(item.id)}</span
+									>
+								</div>
+								<div class="text-xs text-gray-500 dark:text-gray-400">
+									{getKnowledgeUsageCount(item.id)}使用
+								</div>
 							</div>
-							<div class="text-xs text-gray-500 dark:text-gray-400">
-								{getKnowledgeUsageCount(item.id)}使用
-							</div>
-						</div>
+						{/if}
 					</div>
 				</div>
 
