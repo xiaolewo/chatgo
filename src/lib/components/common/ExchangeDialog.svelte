@@ -92,6 +92,20 @@
 						colorLight: '#ffffff',
 						correctLevel: QRCode.CorrectLevel.H
 					});
+					setTimeout(() => {
+						const qrCodeElement = document.getElementById('trade-qrcode');
+
+						const canvas = qrCodeElement.querySelector('canvas');
+						// console.log('qrCodeElement', canvas);
+						if (canvas) {
+							const img = document.createElement('img');
+							img.src = canvas.toDataURL('image/png');
+							img.style.width = '128px';
+							img.style.height = '128px';
+							qrCodeElement.innerHTML = '';
+							qrCodeElement.appendChild(img);
+						}
+					}, 100);
 				} else {
 					toast.error('未获取到支付链接，无法生成二维码');
 					qrCodeUrl.qrCodeUrl = '';
