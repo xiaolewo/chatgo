@@ -39,6 +39,8 @@
 	let mode = $config?.features.enable_ldap ? 'ldap' : 'signin';
 
 	let name = '';
+
+	let chckbox = true;
 	let email = '';
 	let phone = '';
 	let phonecode = '';
@@ -63,6 +65,9 @@
 	// 新增：手机号注册待绑定微信的状态
 	let pendingPhoneRegistration = null; // 存储待绑定微信的手机号注册信息
 	let showWeChatBindingModal = false; // 显示微信绑定弹窗
+	let showPrivacyPolicyModal = false; // 显示隐私政策弹窗
+	let olicyMtype = 'web';
+	let privacyPolicyContent = 'https://pay.xjrwith.cn/html/yinsi.htm'; // 存储隐私政策内容
 	const querystringValue = (key) => {
 		const querystring = window.location.search;
 		const urlParams = new URLSearchParams(querystring);
@@ -71,10 +76,18 @@
 
 	const setSessionUser = async (sessionUser) => {
 		if (sessionUser) {
+			if (!chckbox) {
+				toast.error('请先同意用户服务协议和隐私政策,网页即将刷新');
+				setTimeout(() => {
+					location.reload();
+				}, 2000);
+				return;
+			}
 			if (sessionUser.token) {
 				tokenUser = sessionUser;
 			}
-			console.log('检查是否需要绑定手机号', sessionUser);
+			console.log('检查是否需要绑定手机号2');
+
 			// 检查是否需要绑定手机号
 			if (login === 'wechat') {
 				if (sessionUser.user.phone_number == null) {
@@ -176,6 +189,10 @@
 		}
 	};
 	const smssignInHandler = async () => {
+		if (!chckbox) {
+			toast.error('请先同意用户服务协议和隐私政策');
+			return;
+		}
 		const sessionUser = await smsSignin(phone, phonecode).catch((error) => {
 			toast.error(`${error}`);
 			return null;
@@ -721,6 +738,96 @@
 								{:else}
 									{$i18n.t(`Sign up to {{WEBUI_NAME}}`, { WEBUI_NAME: $WEBUI_NAME })}
 								{/if}
+
+								<!-- 隐私政策弹窗 -->
+								{#if showPrivacyPolicyModal}
+									<div
+										class="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50"
+									>
+										<div
+											class="bg-white dark:bg-gray-800 rounded-lg p-4 w-[90vw] max-w-3xl h-[90vh] mx-4 shadow-2xl flex flex-col"
+										>
+											<div class="flex justify-between items-center border-b pb-3 mb-4">
+												<h2 class="text-xl font-semibold text-gray-900 dark:text-white">
+													{olicyMtype === 'web'
+														? '《vivi平台用户服务协议》'
+														: '《vivi平台隐私政策》'}
+												</h2>
+												<button
+													on:click={() => (showPrivacyPolicyModal = false)}
+													class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+												>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														class="h-6 w-6"
+														fill="none"
+														viewBox="0 0 24 24"
+														stroke="currentColor"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M6 18L18 6M6 6l12 12"
+														/>
+													</svg>
+												</button>
+											</div>
+											<div
+												class="overflow-y-auto flex-grow p-2"
+												style="max-height: calc(90vh - 120px);"
+											>
+												{#if privacyPolicyContent}
+													<iframe
+														src={privacyPolicyContent}
+														class="prose dark:prose-invert max-w-none w-full"
+														width="100%"
+														height="100%"
+														frameborder="0"
+														title="vivi平台"
+														scrolling="auto"
+														loading="lazy"
+													></iframe>
+												{:else}
+													<div class="flex items-center justify-center h-40">
+														<div class="text-center">
+															<Spinner class="w-8 h-8 mx-auto mb-2" />
+															<div class="text-sm text-gray-600 dark:text-gray-400">
+																正在加载{olicyMtype === 'web' ? '用户服务协议' : '平台隐私政策'}...
+															</div>
+														</div>
+													</div>
+												{/if}
+											</div>
+											<div class="border-t pt-3 mt-4 text-right">
+												<button
+													on:click={() => (showPrivacyPolicyModal = false)}
+													class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium text-sm transition"
+												>
+													关闭
+												</button>
+											</div>
+										</div>
+									</div>
+								{/if}
+
+								<script>
+									async function loadPrivacyPolicyContent() {
+										try {
+											// 直接读取文件内容
+											const response = await fetch('/src/routes/auth/yinsi.htm');
+											if (response.ok) {
+												privacyPolicyContent = await response.text();
+											} else {
+												privacyPolicyContent =
+													'<div class="text-center text-red-500">无法加载隐私政策内容</div>';
+											}
+										} catch (error) {
+											privacyPolicyContent =
+												'<div class="text-center text-red-500">加载隐私政策时发生错误</div>';
+										}
+									}
+								</script>
 							</div>
 
 							{#if $config?.onboarding ?? false}
@@ -1008,33 +1115,68 @@
 										{/if}
 										{#if $config?.features.enable_signup && !($config?.onboarding ?? false)}
 											<div class=" mt-4 text-sm text-center">
-												{#if login == 'email'}
-													{mode === 'signin'
-														? $i18n.t("Don't have an account?")
-														: $i18n.t('Already have an account?')}
-												{:else if login != 'email'}
-													{login === 'phone'
-														? mode === 'signin'
-															? '手机号获取验证码进行登录。没有账号？'
-															: '已经拥有账号了？'
-														: '已经拥有账号了？'}
-												{/if}
+												<div class="flex items-start mt-3 mb-2">
+													<div class="flex items-center h-5">
+														<input
+															id="agreement"
+															type="checkbox"
+															class="w-4 h-4 text-blue-600 bg-gray-100 rounded border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+															bind:checked={chckbox}
+														/>
+													</div>
+													<div class="ml-2 text-sm">
+														<label for="agreement" class="text-gray-500 dark:text-gray-300">
+															我已阅读并同意 <a
+																href="#"
+																on:click|stopPropagation={() => {
+																	privacyPolicyContent = 'https://pay.xjrwith.cn/html/yonghu.htm';
+																	olicyMtype = 'web';
+																	showPrivacyPolicyModal = true;
+																	loadPrivacyPolicyContent();
+																}}
+																class="text-blue-600 hover:underline">《vivi平台用户服务协议》</a
+															>
+															和
+															<a
+																href="#"
+																class="text-blue-600 hover:underline"
+																on:click|stopPropagation={() => {
+																	privacyPolicyContent = 'https://pay.xjrwith.cn/html/yinsi.htm';
+																	olicyMtype = 'bew';
+																	showPrivacyPolicyModal = true;
+																	loadPrivacyPolicyContent();
+																}}>《vivi平台隐私政策》</a
+															>
+														</label>
+														{#if login == 'email'}
+															{mode === 'signin'
+																? $i18n.t("Don't have an account?")
+																: $i18n.t('Already have an account?')}
+														{:else if login != 'email'}
+															{login === 'phone'
+																? mode === 'signin'
+																	? '手机号获取验证码进行登录。没有账号？'
+																	: '已经拥有账号了？'
+																: '没有账号？'}
+														{/if}
 
-												<button
-													class=" font-medium underline"
-													type="button"
-													on:click={() => {
-														if (mode === 'signin') {
-															mode = 'signup';
-															login = 'phone';
-															logins = 'phone';
-														} else {
-															mode = 'signin';
-														}
-													}}
-												>
-													{mode === 'signin' ? $i18n.t('Sign up') : $i18n.t('Sign in')}
-												</button>
+														<button
+															class=" font-medium underline"
+															type="button"
+															on:click={() => {
+																if (mode === 'signin') {
+																	mode = 'signup';
+																	login = 'phone';
+																	logins = 'phone';
+																} else {
+																	mode = 'signin';
+																}
+															}}
+														>
+															{mode === 'signin' ? $i18n.t('Sign up') : $i18n.t('Sign in')}
+														</button>
+													</div>
+												</div>
 											</div>
 										{/if}
 									{/if}
