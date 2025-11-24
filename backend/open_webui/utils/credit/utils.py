@@ -140,7 +140,7 @@ def check_credit_by_user_id(user_id: str, form_data: dict) -> None:
 
     # load credit
     metadata = form_data.get("metadata") or form_data
-    credit = Credits.init_credit_by_user_id(user_id=user_id_to_check)
+    credit = Credits.get_credit_by_user_id(user_id)
 
     # 获取套餐积分
     subscription_credits = SubscriptionCredits.get_total_active_credits(
