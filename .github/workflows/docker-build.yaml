@@ -53,6 +53,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: 清理磁盘空间
+        run: |
+          # 清理不必要的文件
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get autoremove -y
+          sudo apt-get clean -y
+          sudo rm -rf /var/lib/apt/lists/*
+          # 清理Docker缓存
+          docker system prune -af || true
+          docker builder prune -af || true
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -62,6 +73,7 @@ jobs:
           driver-opts: |
             env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
             env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
+            env.BUILDKIT_TMPDIR=/tmp/buildkit
 
       # Login to GHCR
       - name: Log in to GitHub Container Registry
@@ -188,6 +200,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: 清理磁盘空间
+        run: |
+          # 清理不必要的文件
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get autoremove -y
+          sudo apt-get clean -y
+          sudo rm -rf /var/lib/apt/lists/*
+          # 清理Docker缓存
+          docker system prune -af || true
+          docker builder prune -af || true
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -197,6 +220,7 @@ jobs:
           driver-opts: |
             env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
             env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
+            env.BUILDKIT_TMPDIR=/tmp/buildkit
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -324,6 +348,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: 清理磁盘空间
+        run: |
+          # 清理不必要的文件
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo apt-get autoremove -y
+          sudo apt-get clean -y
+          sudo rm -rf /var/lib/apt/lists/*
+          # 清理Docker缓存
+          docker system prune -af || true
+          docker builder prune -af || true
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -333,6 +368,7 @@ jobs:
           driver-opts: |
             env.BUILDKIT_STEP_LOG_MAX_SIZE=50000000
             env.BUILDKIT_STEP_LOG_MAX_SPEED=10000000
+            env.BUILDKIT_TMPDIR=/tmp/buildkit
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3

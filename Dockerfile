@@ -26,12 +26,17 @@ ARG BUILD_HASH
 
 WORKDIR /app
 
+# 优化npm配置，减少缓存
+RUN npm config set cache /tmp/npm-cache --global
+RUN npm config set progress false --global
+RUN npm config set fund false --global
+
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --no-progress && rm -rf /tmp/npm-cache
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
-RUN npm run build
+RUN npm run build && rm -rf node_modules
 
 ######## WebUI backend ########
 FROM python:3.11-slim-bookworm AS base
@@ -108,50 +113,44 @@ RUN mkdir -p /app/backend/data/
 # Make sure the user has access to the app and root directory
 RUN chown -R $UID:$GID /app $HOME
 
-RUN if [ "$USE_OLLAMA" = "true" ]; then \
-    apt-get update && \
+# 优化apt-get安装，减少缓存
+RUN apt-get update && \
+    if [ "$USE_OLLAMA" = "true" ]; then \
     # Install pandoc and netcat
-    apt-get install -y --no-install-recommends git build-essential pandoc netcat-openbsd curl && \
-    apt-get install -y --no-install-recommends gcc python3-dev && \
-    # for RAG OCR
-    apt-get install -y --no-install-recommends ffmpeg libsm6 libxext6 && \
-    # install helper tools
-    apt-get install -y --no-install-recommends curl jq && \
+    apt-get install -y --no-install-recommends git build-essential pandoc netcat-openbsd curl gcc python3-dev ffmpeg libsm6 libxext6 jq && \
     # install ollama
-    curl -fsSL https://ollama.com/install.sh | sh && \
-    # cleanup
-    rm -rf /var/lib/apt/lists/*; \
+    curl -fsSL https://ollama.com/install.sh | sh; \
     else \
-    apt-get update && \
     # Install pandoc, netcat and gcc
-    apt-get install -y --no-install-recommends git build-essential pandoc gcc netcat-openbsd curl jq && \
-    apt-get install -y --no-install-recommends gcc python3-dev && \
-    # for RAG OCR
-    apt-get install -y --no-install-recommends ffmpeg libsm6 libxext6 && \
-    # cleanup
-    rm -rf /var/lib/apt/lists/*; \
-    fi
+    apt-get install -y --no-install-recommends git build-essential pandoc gcc netcat-openbsd curl jq python3-dev ffmpeg libsm6 libxext6; \
+    fi && \
+    # 清理apt缓存
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # install python dependencies
 COPY --chown=$UID:$GID ./backend/requirements.txt ./requirements.txt
 
-# 清理缓存并使用pip替代uv安装依赖，解决opentelemetry版本冲突
+# 优化pip安装，减少磁盘空间占用
 RUN pip3 cache purge && rm -rf /root/.cache/pip/ && \
+    # 设置pip配置，减少缓存
+    pip3 config set global.cache-dir /tmp/pip-cache && \
+    pip3 config set global.no-cache-dir true && \
     pip3 install --no-cache-dir pipdeptree && \
     if [ "$USE_CUDA" = "true" ]; then \
-    # If you use CUDA the whisper and embedding model will be downloaded on first use
+    # 安装CUDA版本的PyTorch
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/$USE_CUDA_DOCKER_VER --no-cache-dir && \
-    pip3 install --no-cache-dir --force-reinstall -r requirements.txt && \
-    python -c "import os; from sentence_transformers import SentenceTransformer; SentenceTransformer(os.environ['RAG_EMBEDDING_MODEL'], device='cpu')" && \
-    python -c "import os; from faster_whisper import WhisperModel; WhisperModel(os.environ['WHISPER_MODEL'], device='cpu', compute_type='int8', download_root=os.environ['WHISPER_MODEL_DIR'])"; \
-    python -c "import os; import tiktoken; tiktoken.get_encoding(os.environ['TIKTOKEN_ENCODING_NAME'])"; \
+    pip3 install --no-cache-dir --force-reinstall -r requirements.txt; \
     else \
+    # 安装CPU版本的PyTorch
     pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu --no-cache-dir && \
-    pip3 install --no-cache-dir --force-reinstall -r requirements.txt && \
-    python -c "import os; from sentence_transformers import SentenceTransformer; SentenceTransformer(os.environ['RAG_EMBEDDING_MODEL'], device='cpu')" && \
-    python -c "import os; from faster_whisper import WhisperModel; WhisperModel(os.environ['WHISPER_MODEL'], device='cpu', compute_type='int8', download_root=os.environ['WHISPER_MODEL_DIR'])"; \
-    python -c "import os; import tiktoken; tiktoken.get_encoding(os.environ['TIKTOKEN_ENCODING_NAME'])"; \
-    fi; \
+    pip3 install --no-cache-dir --force-reinstall -r requirements.txt; \
+    fi && \
+    # 延迟模型下载，改为在首次运行时下载，减少构建时磁盘占用
+    # 只下载tiktoken编码，因为它比较小
+    python -c "import os; import tiktoken; tiktoken.get_encoding(os.environ['TIKTOKEN_ENCODING_NAME'])" && \
+    # 清理pip缓存和临时文件
+    rm -rf /tmp/pip-cache /tmp/* /var/tmp/* && \
     chown -R $UID:$GID /app/backend/data/
 
 # copy built frontend files
