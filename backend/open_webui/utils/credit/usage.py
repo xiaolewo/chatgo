@@ -187,25 +187,48 @@ class CreditDeduct:
         user_id_to_deduct = self.user.id
         desc = f"updated by {self.__class__.__name__}"
         selected_group = None
+        total_price = int(self.total_price)
+        remaining_cost = total_price
 
-        # 按加入时间顺序查找有足够积分的管理员
+        # 1. 首先尝试使用权限组管理员的积分，按加入时间顺序
         for group in groups:
-            # 跳过用户自己是管理员的组
+            # 跳过无效的组或没有管理员的组
             if not group.admin_id or group.admin_id == self.user.id:
                 continue
 
-            # 获取管理员的积分
-            admin_credit = Credits.get_credit_by_user_id(group.admin_id)
+            try:
+                # 获取管理员的积分
+                admin_credit = Credits.get_credit_by_user_id(group.admin_id)
+                if admin_credit:
+                    # 计算管理员的总可用积分（普通积分 + 套餐积分）
+                    admin_subscription_credits = (
+                        SubscriptionCredits.get_total_active_credits(group.admin_id)
+                    )
+                    admin_total_credits = (
+                        float(admin_credit.credit if admin_credit else 0)
+                        + admin_subscription_credits
+                    )
 
-            # 检查管理员的总积分是否足够
-            if admin_credit and float(admin_credit.credit) >= self.total_price:
-                user_id_to_deduct = group.admin_id
-                selected_group = group
-                desc = f"{desc} (代用户 {self.user.id} 支付, 企业: {group.name})"
-                break
+                    # 检查管理员的总积分是否足够支付剩余费用
+                    if admin_total_credits >= remaining_cost:
+                        user_id_to_deduct = group.admin_id
+                        selected_group = group
+                        desc = (
+                            f"{desc} (代用户 {self.user.id} 支付, 企业: {group.name})"
+                        )
+                        # 跳出循环，使用该管理员的积分
+                        break
+            except Exception as e:
+                # 记录错误但继续检查下一个管理员
+                print(f"处理权限组积分时出错: {e}")
+                continue
 
-        # 优先消费套餐积分
-        remaining_cost = int(self.total_price)
+        # 2. 如果没有找到合适的管理员，使用用户自己的积分
+        if not selected_group:
+            user_id_to_deduct = self.user.id
+
+        # 优先消费套餐积分，使用正确的剩余费用
+        remaining_cost = total_price
 
         # 先尝试消费套餐积分
         if remaining_cost > 0:

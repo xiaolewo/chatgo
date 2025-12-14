@@ -296,7 +296,9 @@ class GroupTable:
                 # 获取对应的组信息
                 groups = []
                 for membership in memberships:
+                    # print("所在的所有权限组user_id:", user_id) 习惯测试
                     group = self.get_group_by_id(membership.group_id)
+                    # print("所在的所有权限组group:", group)  习惯测试
                     if group:
                         groups.append(group)
 
@@ -310,6 +312,13 @@ class GroupTable:
         groups = self.get_user_groups_ordered(user_id)
         if groups:
             return groups[0]  # 返回最早加入的组
+        return None
+
+    def get_user_grouplist(self, user_id: str) -> Optional[list[GroupModel]]:
+        """获取用户最早加入的权限组（向后兼容）"""
+        groups = self.get_user_groups_ordered(user_id)
+        if groups:
+            return groups  # 返回最早加入的组
         return None
 
     def add_user_to_group(self, user_id: str, group_id: str) -> bool:
@@ -375,7 +384,7 @@ class GroupTable:
                         UserGroupMembership.is_active == True,
                     )
                 ).update({"is_active": False, "updated_at": int(time.time())})
-
+                # print("开始执行user_id:",user_id,"开始执行group_id:",group_id)  习惯测试
                 # 同时更新组的 user_ids 字段（向后兼容）
                 group = self.get_group_by_id(group_id)
                 if group and user_id in group.user_ids:

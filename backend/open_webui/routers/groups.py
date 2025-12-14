@@ -211,16 +211,51 @@ async def update_group_by_id(
     id: str, form_data: GroupUpdateForm, user=Depends(get_admin_user)
 ):
     try:
-        if form_data.user_ids:
-            form_data.user_ids = Users.get_valid_user_ids(form_data.user_ids)
+        # 1. 查询当前组信息，获取当前用户列表
+        current_group = Groups.get_group_by_id(id)
+        if not current_group:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=ERROR_MESSAGES.DEFAULT("Group not found"),
+            )
 
-            # 将每个用户添加到这个组内（允许多组）
-            for user_id in form_data.user_ids:
+        # 获取当前组的用户列表
+        current_user_ids = (
+            current_group.user_ids if hasattr(current_group, "user_ids") else []
+        )
+        # print("当前组的用户列表:",current_group, current_user_ids)   习惯测试
+        # print("当前组xiug修改的用户列表:", form_data.user_ids)    习惯测试
+        # 2. 处理用户列表更新
+        if form_data.user_ids is not None:
+            # 获取有效的用户ID列表
+            new_user_ids = Users.get_valid_user_ids(form_data.user_ids)
+
+            # 3. 计算需要新增和移除的用户
+            # 需要新增的用户：新列表中有但当前列表中没有的
+            users_to_add = [
+                user_id for user_id in new_user_ids if user_id not in current_user_ids
+            ]
+
+            # 需要移除的用户：当前列表中有但新列表中没有的
+            users_to_remove = [
+                user_id for user_id in current_user_ids if user_id not in new_user_ids
+            ]
+
+            # 4. 执行新增操作
+            for user_id in users_to_add:
                 Groups.add_user_to_group(user_id, id)
 
-        group = Groups.update_group_by_id(id, form_data)
-        if group:
-            return group
+            # 5. 执行移除操作
+            for user_id in users_to_remove:
+                Groups.remove_user_from_group(user_id, id)
+
+            # 更新form_data中的user_ids，确保使用有效的用户ID列表
+            form_data.user_ids = new_user_ids
+
+        # 6. 更新组信息
+        updated_group = Groups.update_group_by_id(id, form_data)
+        if updated_group:
+            return updated_group
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
