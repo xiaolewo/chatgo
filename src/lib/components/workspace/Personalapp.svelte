@@ -47,6 +47,12 @@
 	let selectedModel = null;
 
 	let showModelDeleteConfirm = false;
+	let showBatchUpdateDialog = false;
+	let selectedModels = [];
+	let batchUpdateForm = {
+		base_model_id: ''
+	};
+	let selectedModelIds = new Set(); // 存储选中的模型ID
 
 	let group_ids = [];
 	let searchValue = '';
@@ -186,6 +192,94 @@
 		models = await getWorkspaceModels(localStorage.token);
 	};
 
+	// 批量修改基础模型
+	const batchUpdateBaseModel = async () => {
+		let loading = true;
+
+		if (!batchUpdateForm.base_model_id) {
+			toast.error('请选择要修改的基础模型');
+			loading = false;
+			return;
+		}
+
+		if (selectedModels.length === 0) {
+			toast.error('请先选择要修改的模型');
+			loading = false;
+			return;
+		}
+
+		try {
+			// 批量更新选中模型的基础模型
+			for (const model of selectedModels) {
+				await updateModelById(localStorage.token, model.id, {
+					...model,
+					base_model_id: batchUpdateForm.base_model_id
+				});
+			}
+
+			await _models.set(
+				await getModels(
+					localStorage.token,
+					$config?.features?.enable_direct_connections && ($settings?.directConnections ?? null)
+				)
+			);
+			models = await getWorkspaceModels(localStorage.token);
+
+			// 关闭弹窗并重置表单
+			showBatchUpdateDialog = false;
+			selectedModels = [];
+			batchUpdateForm = {
+				base_model_id: ''
+			};
+			selectedModelIds = new Set();
+
+			toast.success('批量修改基础模型成功');
+		} catch (error) {
+			console.error('批量修改基础模型失败:', error);
+			toast.error('批量修改基础模型失败，请重试');
+		} finally {
+			loading = false;
+		}
+	};
+
+	// 打开批量修改弹窗
+	const openBatchUpdateDialog = () => {
+		// 根据选中的模型ID过滤出要修改的模型
+		selectedModels = filteredModels.filter((model) => selectedModelIds.has(model.id));
+
+		// 如果没有选择任何模型，显示提示
+		if (selectedModels.length === 0) {
+			toast.error('请先选择要修改的模型');
+			return;
+		}
+
+		showBatchUpdateDialog = true;
+	};
+
+	// 切换模型选择状态
+	const toggleModelSelection = (modelId) => {
+		const newSelectedModelIds = new Set(selectedModelIds);
+		if (newSelectedModelIds.has(modelId)) {
+			newSelectedModelIds.delete(modelId);
+		} else {
+			newSelectedModelIds.add(modelId);
+		}
+		selectedModelIds = newSelectedModelIds;
+	};
+
+	// 全选/取消全选
+	const toggleSelectAll = () => {
+		const newSelectedModelIds = new Set();
+		if (selectedModelIds.size === filteredModels.length) {
+			// 取消全选
+			// 保持 newSelectedModelIds 为空
+		} else {
+			// 全选
+			filteredModels.forEach((model) => newSelectedModelIds.add(model.id));
+		}
+		selectedModelIds = newSelectedModelIds;
+	};
+
 	const downloadModels = async (models) => {
 		let blob = new Blob([JSON.stringify(models)], {
 			type: 'application/json'
@@ -249,6 +343,83 @@
 		}}
 	/>
 
+	<!-- 批量修改基础模型弹窗 -->
+	{#if showBatchUpdateDialog}
+		<div
+			style="background: rgba(255,255,255,0.5);"
+			class="fixed inset-0 bg-white bg-opacity-10 z-50 flex items-center justify-center"
+		>
+			<div class="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl">
+				<div class="flex items-center justify-between mb-4">
+					<h3 class="text-lg font-semibold text-gray-900 dark:text-white">批量修改基础模型</h3>
+					<button
+						class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+						on:click={() => {
+							showBatchUpdateDialog = false;
+							selectedModels = [];
+							batchUpdateForm = {
+								base_model_id: ''
+							};
+						}}
+					>
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="w-5 h-5"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+
+				<div class="mb-4">
+					<p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+						选中了 {selectedModels.length} 个模型，将批量修改它们的基础模型。
+					</p>
+					<label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+						基础模型 (From)
+					</label>
+					<select
+						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+						bind:value={batchUpdateForm.base_model_id}
+						required
+					>
+						<option value={null} class="text-gray-900"> 选择基础模型 </option>
+						{#each $_models.filter((m) => !m?.preset && m?.owned_by !== 'arena') as model}
+							<option value={model.id} class="text-gray-900">
+								{model.name}
+							</option>
+						{/each}
+					</select>
+				</div>
+
+				<div class="flex items-center justify-end gap-2">
+					<button
+						class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+						on:click={() => {
+							showBatchUpdateDialog = false;
+							selectedModels = [];
+							batchUpdateForm = {
+								base_model_id: ''
+							};
+						}}
+					>
+						取消
+					</button>
+					<button
+						class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+						on:click={batchUpdateBaseModel}
+					>
+						确认修改
+					</button>
+				</div>
+			</div>
+		</div>
+	{/if}
+
 	<!-- 搜索和筛选栏 -->
 	<div class="flex flex-col gap-2 mb-2">
 		<!-- 标题和统计 -->
@@ -284,7 +455,25 @@
 					placeholder="搜索我的应用..."
 				/>
 			</div>
+			<div class="flex items-center gap-2">
+				<!-- 全选/取消全选按钮 -->
+				<button
+					class="px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+					on:click={toggleSelectAll}
+					disabled={filteredModels.length === 0}
+				>
+					{selectedModelIds.size === filteredModels.length ? '取消全选' : '全选'}
+				</button>
 
+				<!-- 批量修改按钮 -->
+				<button
+					class="px-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+					on:click={openBatchUpdateDialog}
+					disabled={selectedModelIds.size === 0}
+				>
+					批量修改 ({selectedModelIds.size})
+				</button>
+			</div>
 			<!-- 筛选按钮 -->
 			<div class="relative">
 				<select
@@ -306,11 +495,23 @@
 	>
 		{#each filteredModels as model}
 			<div
-				class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 {model.is_active
-					? ''
-					: 'opacity-75'}"
+				class="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all duration-200 {selectedModelIds.has(
+					model.id
+				)
+					? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/10'
+					: ''} {model.is_active ? '' : 'opacity-75'}"
 				id="model-item-{model.id}"
+				style="position: relative"
 			>
+				<!-- 选择框 -->
+				<div class="absolute top-3 right-3">
+					<input
+						type="checkbox"
+						checked={selectedModelIds.has(model.id)}
+						on:change={() => toggleModelSelection(model.id)}
+						class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+					/>
+				</div>
 				<!-- 图标和标题 -->
 				<div class="flex items-center gap-3 mb-4">
 					<div class="flex-shrink-0">
