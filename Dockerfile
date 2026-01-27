@@ -5,7 +5,7 @@ ARG USE_CUDA=false
 ARG USE_OLLAMA=false
 # Tested with cu117 for CUDA 11 and cu121 for CUDA 12 (default)
 ARG USE_CUDA_VER=cu128
-# any sentence transformer model; models to use can be found at https://huggingface.co/models?library=sentence-transformers
+# any sentence transformer model; models to use can be found atface.co/models? https://hugginglibrary=sentence-transformers
 # Leaderboard: https://huggingface.co/spaces/mteb/leaderboard 
 # for better performance and multilangauge support use "intfloat/multilingual-e5-large" (~2.5GB) or "intfloat/multilingual-e5-base" (~1.5GB)
 # IMPORTANT: If you change the embedding model (sentence-transformers/all-MiniLM-L6-v2) and vice versa, you aren't able to use RAG Chat with your previous documents loaded in the WebUI! You need to re-embed them.
@@ -116,8 +116,8 @@ RUN chown -R $UID:$GID /app $HOME
 # 优化apt-get安装，减少缓存
 RUN apt-get update && \
     if [ "$USE_OLLAMA" = "true" ]; then \
-    # Install pandoc and netcat
-    apt-get install -y --no-install-recommends git build-essential pandoc netcat-openbsd curl gcc python3-dev ffmpeg libsm6 libxext6 jq && \
+    # Install pandoc, netcat and zstd (required for Ollama extraction)
+    apt-get install -y --no-install-recommends git build-essential pandoc netcat-openbsd curl gcc python3-dev ffmpeg libsm6 libxext6 jq zstd && \
     # install ollama
     curl -fsSL https://ollama.com/install.sh | sh; \
     else \
