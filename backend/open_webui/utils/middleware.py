@@ -582,7 +582,7 @@ async def chat_completion_files_handler(
             queries = [get_last_user_message(body["messages"])]
 
         try:
-            # Offload get_sources_from_files to a separate thread
+            # Offload get_sources_from_files to a separate thread to avoid blocking the event loop
             loop = asyncio.get_running_loop()
             with ThreadPoolExecutor() as executor:
                 sources = await loop.run_in_executor(
