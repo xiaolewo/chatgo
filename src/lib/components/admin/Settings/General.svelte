@@ -1,6 +1,6 @@
 <script lang="ts">
 	import DOMPurify from 'dompurify';
-
+	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import { getVersionUpdates, getWebhookUrl, updateWebhookUrl } from '$lib/apis';
 	import {
 		getAdminConfig,
@@ -816,7 +816,45 @@
 
 						<Switch bind:state={adminConfig.ENABLE_COMMUNITY_SHARING} />
 					</div> -->
+					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
+						<div class=" self-center text-xs font-medium">应用缓存</div>
+						<button
+							type="button"
+							class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+							on:click={async () => {
+								try {
+									console.log('开始刷新模型缓存');
+									console.log('Token:', localStorage.token ? '存在' : '不存在');
 
+									const response = await fetch(`${WEBUI_API_BASE_URL}/utils/refreshmodels`, {
+										method: 'POST',
+										headers: {
+											Authorization: `Bearer ${localStorage.token}`,
+											'Content-Type': 'application/json'
+										}
+									});
+
+									console.log('响应状态:', response.status);
+									console.log('响应状态文本:', response.statusText);
+
+									if (response.ok) {
+										const data = await response.json();
+										console.log('响应数据:', data);
+										toast.success('模型缓存刷新成功');
+									} else {
+										const errorData = await response.json().catch(() => ({}));
+										console.log('错误响应:', errorData);
+										toast.error(`模型缓存刷新失败: ${errorData.detail || '未知错误'}`);
+									}
+								} catch (error) {
+									console.error('API调用错误:', error);
+									toast.error(`模型缓存刷新失败: ${error.message || '网络错误'}`);
+								}
+							}}
+						>
+							刷新缓存
+						</button>
+					</div>
 					<div class="mb-2.5 flex w-full items-center justify-between pr-2">
 						<div class=" self-center text-xs font-medium">{$i18n.t('Enable Message Rating')}</div>
 

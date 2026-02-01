@@ -16,6 +16,10 @@ from open_webui.utils.auth import get_admin_user, get_verified_user
 from open_webui.utils.code_interpreter import execute_code_jupyter
 from open_webui.env import SRC_LOG_LEVELS
 
+# 导入缓存和模型相关模块
+from aiocache import Cache
+from open_webui.utils.models import get_all_models
+
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
@@ -133,3 +137,15 @@ async def download_litellm_config_yaml(user=Depends(get_admin_user)):
         media_type="application/octet-stream",
         filename="config.yaml",
     )
+
+
+@router.post("/refreshmodels")
+async def refresh_models_cache(request: Request, user=Depends(get_admin_user)):
+    # 清除缓存
+    cache = Cache()
+    await cache.clear()
+
+    # 重新加载模型
+    await get_all_models(request, user=user)
+
+    return {"status": "success", "message": "Models cache refreshed successfully"}
