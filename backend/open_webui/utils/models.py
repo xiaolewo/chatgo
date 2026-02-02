@@ -31,38 +31,95 @@ logger = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MAIN"])
 
 
+import asyncio
+
+
 async def get_all_base_models(request: Request, user: UserModel = None):
     function_models = []
     openai_models = []
     ollama_models = []
 
+    # 并行执行所有模型加载任务
+    tasks = []
+    task_names = []
+
     if request.app.state.config.ENABLE_OPENAI_API:
-        openai_models = await openai.get_all_models(request, user=user)
-        openai_models = openai_models["data"]
+        tasks.append(openai.get_all_models(request, user=user))
+        task_names.append("openai")
 
     if request.app.state.config.ENABLE_OLLAMA_API:
-        ollama_models = await ollama.get_all_models(request, user=user)
-        ollama_models = [
-            {
-                "id": model["model"],
-                "name": model["name"],
-                "object": "model",
-                "created": int(time.time()),
-                "owned_by": "ollama",
-                "ollama": model,
-                "tags": model.get("tags", []),
-            }
-            for model in ollama_models["models"]
-        ]
+        tasks.append(ollama.get_all_models(request, user=user))
+        task_names.append("ollama")
 
-    function_models = await get_function_models(request)
+    tasks.append(get_function_models(request))
+    task_names.append("function")
+
+    # 并行执行所有任务
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    # 处理结果
+    for i, result in enumerate(results):
+        task_name = task_names[i]
+        try:
+            if task_name == "openai" and not isinstance(result, Exception):
+                openai_models = result["data"]
+                logger.debug(f"Loaded {len(openai_models)} OpenAI models")
+            elif task_name == "ollama" and not isinstance(result, Exception):
+                ollama_data = result
+                ollama_models = [
+                    {
+                        "id": model["model"],
+                        "name": model["name"],
+                        "object": "model",
+                        "created": int(time.time()),
+                        "owned_by": "ollama",
+                        "ollama": model,
+                        "tags": model.get("tags", []),
+                    }
+                    for model in ollama_data["models"]
+                ]
+                logger.debug(f"Loaded {len(ollama_models)} Ollama models")
+            elif task_name == "function" and not isinstance(result, Exception):
+                function_models = result
+                logger.debug(f"Loaded {len(function_models)} function models")
+            elif isinstance(result, Exception):
+                logger.error(f"Error in {task_name} models: {result}")
+        except Exception as e:
+            logger.error(f"Error processing {task_name} results: {e}")
+
     models = function_models + openai_models + ollama_models
-
+    logger.debug(f"get_all_base_models() returned {len(models)} models")
     return models
 
 
-@cached(ttl=3600)  # 缓存 1 小时
+# 移除缓存装饰器，直接实现缓存逻辑
+from aiocache import Cache
+
+# 创建全局缓存实例，确保所有操作共享同一个缓存
+from aiocache.backends.memory import SimpleMemoryCache
+
+# 使用SimpleMemoryCache确保缓存操作可靠
+MODEL_CACHE = SimpleMemoryCache()
+
+
 async def get_all_models(request, user: UserModel = None):
+    # 使用固定缓存键，确保缓存稳定
+    cache_key = "all_models"
+    logger.debug(f"get_all_models() using cache key: {cache_key}")
+
+    # 尝试从缓存获取
+    try:
+        cached_models = await MODEL_CACHE.get(cache_key)
+        logger.debug(f"get_all_models() cache get result: {cached_models is not None}")
+        if cached_models:
+            logger.debug(
+                f"get_all_models() returned {len(cached_models)} models from cache"
+            )
+            request.app.state.MODELS = {model["id"]: model for model in cached_models}
+            return cached_models
+    except Exception as e:
+        logger.error(f"Error getting from cache: {e}")
+
     # 1. 获取基础模型，无数据直接返回空列表
     models = await get_all_base_models(request, user=user)
     if len(models) == 0:
@@ -113,59 +170,69 @@ async def get_all_models(request, user: UserModel = None):
     ]
     enabled_action_set = set(enabled_action_ids)  # O(1) 查寻替代 O(n)
 
-    # 4. 处理自定义模型（修复遍历删除索引异常，优化匹配逻辑）
+    # 4. 处理自定义模型（使用字典映射优化性能）
     OLLAMA_OWNED_BY = "ollama"
     OPENAI_DEFAULT_OWNED_BY = "openai"
     UNKNOWN_OWNED_BY = "unknown owner"
     custom_models = Models.get_all_models()
     models_to_remove = []  # 标记待删除模型，避免遍历中修改列表
 
+    # 构建模型ID映射，优化查找性能
+    model_id_map = {}
+    ollama_model_map = {}
+    for idx, model in enumerate(models):
+        model_id_map[model["id"]] = idx
+        if model.get("owned_by") == OLLAMA_OWNED_BY:
+            ollama_model_map[model["id"].split(":", 1)[0]] = idx
+
+    # 构建现有模型ID集合，用于快速判断
+    existing_model_ids = {m["id"] for m in models}
+
     for custom_model in custom_models:
         if custom_model.base_model_id is None:
-            # 匹配现有模型并更新/标记删除
-            for idx, model in enumerate(models):
-                model_id = model["id"]
-                custom_id = custom_model.id
-                # 优化Ollama匹配，split仅分割1次，匹配到即处理
-                is_match = custom_id == model_id or (
-                    model.get("owned_by") == OLLAMA_OWNED_BY
-                    and custom_id == model_id.split(":", 1)[0]
-                )
-                if is_match:
-                    if custom_model.is_active:
-                        model["name"] = custom_model.name
-                        model["info"] = custom_model.model_dump()
-                        # 安全提取actionIds，避免空值报错
-                        model["action_ids"] = (
-                            model["info"].get("meta", {}).get("actionIds", [])
-                        )
-                    else:
-                        models_to_remove.append(idx)
+            # 使用字典映射快速查找匹配模型
+            match_idx = model_id_map.get(custom_model.id)
+            if not match_idx:
+                match_idx = ollama_model_map.get(custom_model.id)
+
+            if match_idx is not None:
+                if custom_model.is_active:
+                    model = models[match_idx]
+                    model["name"] = custom_model.name
+                    model["info"] = custom_model.model_dump()
+                    # 安全提取actionIds，避免空值报错
+                    model["action_ids"] = (
+                        model["info"].get("meta", {}).get("actionIds", [])
+                    )
+                else:
+                    models_to_remove.append(match_idx)
+
             # 倒序删除标记模型，防止索引偏移
-            for idx in reversed(models_to_remove):
-                models.pop(idx)
+            for idx in reversed(sorted(models_to_remove)):
+                if idx < len(models):
+                    models.pop(idx)
             models_to_remove.clear()  # 清空标记列表
 
         # 追加激活的新自定义模型（未存在于现有列表时）
-        elif custom_model.is_active and custom_model.id not in {
-            m["id"] for m in models
-        }:
+        elif custom_model.is_active and custom_model.id not in existing_model_ids:
             owned_by = OPENAI_DEFAULT_OWNED_BY
             pipe = None
-            # 匹配基础模型，找到后立即终止循环
-            for model in models:
-                if (
-                    custom_model.base_model_id == model["id"]
-                    or custom_model.base_model_id == model["id"].split(":", 1)[0]
-                ):
-                    owned_by = model.get("owned_by", UNKNOWN_OWNED_BY)
-                    pipe = model.get("pipe")
-                    break
+            # 使用映射快速查找基础模型
+            base_match = None
+            if custom_model.base_model_id in model_id_map:
+                base_match = models[model_id_map[custom_model.base_model_id]]
+            elif custom_model.base_model_id in ollama_model_map:
+                base_match = models[ollama_model_map[custom_model.base_model_id]]
+
+            if base_match:
+                owned_by = base_match.get("owned_by", UNKNOWN_OWNED_BY)
+                pipe = base_match.get("pipe")
+
             # 安全提取元数据中的actionIds
             action_ids = []
             if custom_model.meta:
                 action_ids = custom_model.meta.model_dump().get("actionIds", [])
-            # 构建自定义模型1
+            # 构建自定义模型
             custom_model_dict = {
                 "id": f"{custom_model.id}",
                 "name": custom_model.name,
@@ -179,6 +246,7 @@ async def get_all_models(request, user: UserModel = None):
             if pipe is not None:
                 custom_model_dict["pipe"] = pipe
             models.append(custom_model_dict)
+            existing_model_ids.add(custom_model.id)
 
     # 5. 处理模型动作（优化异常提示，缓存函数模块）
     def get_action_items_from_module(function, module):
@@ -232,7 +300,23 @@ async def get_all_models(request, user: UserModel = None):
 
     # 6. 缓存模型到应用状态，记录日志
     request.app.state.MODELS = {model["id"]: model for model in models}
-    logger.debug(f"get_all_models() returned {len(models)} models")
+
+    # 缓存到aiocache
+    cache_key = "all_models"
+    try:
+        await MODEL_CACHE.set(cache_key, models, ttl=3600)
+        logger.debug(
+            f"get_all_models() cached {len(models)} models with key: {cache_key}"
+        )
+        # 验证缓存是否设置成功
+        verify_cache = await MODEL_CACHE.get(cache_key)
+        logger.debug(f"get_all_models() cache verify: {verify_cache is not None}")
+        if verify_cache:
+            logger.debug(f"get_all_models() cache verify count: {len(verify_cache)}")
+    except Exception as e:
+        logger.error(f"Error setting cache: {e}")
+
+    logger.debug(f"get_all_models() returned {len(models)} models and cached")
     return models
 
 

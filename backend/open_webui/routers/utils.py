@@ -141,11 +141,38 @@ async def download_litellm_config_yaml(user=Depends(get_admin_user)):
 
 @router.post("/refreshmodels")
 async def refresh_models_cache(request: Request, user=Depends(get_admin_user)):
+    # 清除模型缓存
+    from open_webui.utils.models import MODEL_CACHE
+    import time
+
+    # 记录开始时间
+    start_time = time.time()
+
     # 清除缓存
-    cache = Cache()
-    await cache.clear()
+    await MODEL_CACHE.clear()  # 清除所有缓存，确保彻底
 
-    # 重新加载模型
-    await get_all_models(request, user=user)
+    # 强制重新加载模型
+    models = await get_all_models(request, user=user)
 
-    return {"status": "success", "message": "Models cache refreshed successfully"}
+    # 计算加载时间
+    load_time = time.time() - start_time
+    log.info(f"Model reload took {load_time:.2f} seconds, loaded {len(models)} models")
+
+    # 验证模型是否成功加载
+    if not models:
+        log.warning("Failed to reload models")
+        return {
+            "status": "warning",
+            "message": "Models cache refreshed but no models loaded",
+        }
+
+    # 验证缓存是否已重新生成
+    current_cache_key = f"all_models:{int(time.time() // 300)}"
+    cached_data_after = await MODEL_CACHE.get(current_cache_key)
+    if cached_data_after is None:
+        log.warning(f"Failed to regenerate models cache for key: {current_cache_key}")
+
+    return {
+        "status": "success",
+        "message": f"Models cache refreshed successfully. Loaded {len(models)} models in {load_time:.2f}s",
+    }

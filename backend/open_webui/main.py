@@ -553,6 +553,28 @@ async def lifespan(app: FastAPI):
         limiter = anyio.to_thread.current_default_thread_limiter()
         limiter.total_tokens = THREAD_POOL_SIZE
 
+    # 启动时清除模型缓存
+    try:
+        from aiocache import Cache
+
+        cache = Cache()
+        await cache.clear()
+        log.info("Model cache cleared on startup")
+    except Exception as e:
+        log.warning(f"Failed to clear cache on startup: {e}")
+
+    # 启动时预热缓存
+    try:
+        from open_webui.utils.models import get_all_models
+        from fastapi import Request
+
+        mock_request = Request(scope={"type": "http"})
+        mock_request.app = app
+        await get_all_models(mock_request)
+        log.info("Model cache prewarmed on startup")
+    except Exception as e:
+        log.warning(f"Failed to prewarm cache on startup: {e}")
+
     asyncio.create_task(periodic_usage_pool_cleanup())
 
     # 启动任务调度器
