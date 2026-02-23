@@ -559,7 +559,7 @@
 
 		await tick();
 		if (buttonsContainerElement) {
-			console.log(buttonsContainerElement);
+			// console.log(buttonsContainerElement);
 			buttonsContainerElement.addEventListener('wheel', function (event) {
 				// console.log(event.deltaY);
 
@@ -845,15 +845,15 @@
 								{/if}
 
 								{#if message?.error}
-									<Error content={message?.error?.content ?? message.content} />
+									1 <Error content={message?.error?.content ?? message.content} />
 								{/if}
 
 								{#if (message?.sources || message?.citations) && (model?.info?.meta?.capabilities?.citations ?? true)}
-									<Citations id={message?.id} sources={message?.sources ?? message?.citations} />
+									2<Citations id={message?.id} sources={message?.sources ?? message?.citations} />
 								{/if}
 
 								{#if message.code_executions}
-									<CodeExecutions codeExecutions={message.code_executions} />
+									3<CodeExecutions codeExecutions={message.code_executions} />
 								{/if}
 							</div>
 						{/if}
