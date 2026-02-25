@@ -10,7 +10,6 @@ from sqlalchemy import JSON, BigInteger, Column, Numeric, String
 from open_webui.config import CREDIT_EXCHANGE_RATIO
 from open_webui.internal.db import Base, get_db
 
-
 ####################
 # User Credit DB Schema
 ####################

@@ -3,6 +3,7 @@
 测试可灵视频生成API调用修复
 验证 KlingGenerateRequest 模型的 callback_url 属性问题
 """
+
 import sys
 from pathlib import Path
 

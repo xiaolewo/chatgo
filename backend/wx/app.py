@@ -48,8 +48,7 @@ async def wechat_login():
     )
 
     # 返回一个包含iframe的页面模拟扫码效果
-    return HTMLResponse(
-        f"""
+    return HTMLResponse(f"""
     <!DOCTYPE html>
     <html>
     <head>
@@ -75,8 +74,7 @@ async def wechat_login():
         </div>
     </body>
     </html>
-    """
-    )
+    """)
 
 
 @app.get("/callback")

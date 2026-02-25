@@ -12,7 +12,6 @@ from alembic import op
 import sqlalchemy as sa
 import open_webui.internal.db
 
-
 # revision identifiers, used by Alembic.
 revision: str = "ccbe9bd211b3"
 down_revision: Union[str, None] = ("add_subscription_credits_table", "ca00a851d4d9")

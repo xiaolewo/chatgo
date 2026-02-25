@@ -3,6 +3,7 @@
 测试积分扣除功能修复
 验证Credits.update_credit_by_user_id方法是否正常工作
 """
+
 import sys
 from pathlib import Path
 from decimal import Decimal

@@ -23,7 +23,6 @@ from sqlalchemy import (
     and_,
 )
 
-
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
 

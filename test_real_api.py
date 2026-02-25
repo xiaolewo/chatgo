@@ -2,6 +2,7 @@
 """
 测试真实的MidJourney API调用
 """
+
 import asyncio
 import httpx
 import json

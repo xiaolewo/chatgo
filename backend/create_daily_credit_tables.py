@@ -23,14 +23,10 @@ def check_table_exists(table_name):
     """检查表是否存在"""
     try:
         with engine.connect() as conn:
-            result = conn.execute(
-                text(
-                    f"""
+            result = conn.execute(text(f"""
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name='{table_name}'
-            """
-                )
-            )
+            """))
             return result.fetchone() is not None
     except Exception:
         return False
@@ -94,9 +90,7 @@ def create_daily_credit_tables():
             # 尝试手动创建表
             print("🔧 尝试手动创建表...")
             with engine.connect() as conn:
-                conn.execute(
-                    text(
-                        """
+                conn.execute(text("""
                     CREATE TABLE IF NOT EXISTS subscription_daily_credit_grants (
                         id VARCHAR PRIMARY KEY,
                         user_id VARCHAR NOT NULL,
@@ -108,9 +102,7 @@ def create_daily_credit_tables():
                         FOREIGN KEY(subscription_id) REFERENCES subscription_subscriptions (id),
                         FOREIGN KEY(plan_id) REFERENCES subscription_plans (id)
                     )
-                """
-                    )
-                )
+                """))
                 conn.execute(
                     text(
                         "CREATE INDEX IF NOT EXISTS ix_subscription_daily_credit_grants_user_id ON subscription_daily_credit_grants (user_id)"

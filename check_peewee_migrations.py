@@ -164,8 +164,7 @@ class PeeweeMigrationChecker:
             print("   1. 在add_fields调用外添加try-except处理")
             print("   2. 捕获'duplicate column'错误并忽略")
             print("   3. 示例代码:")
-            print(
-                """
+            print("""
    try:
        migrator.add_fields(
            "{}", {}=pw.SomeField(...)
@@ -175,10 +174,7 @@ class PeeweeMigrationChecker:
            print("⚠️  字段已存在，跳过添加")
        else:
            raise e
-""".format(
-                    table, field
-                )
-            )
+""".format(table, field))
 
     def run_full_check(self) -> None:
         """运行完整检查"""

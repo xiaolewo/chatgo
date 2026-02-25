@@ -45,7 +45,6 @@ from open_webui.env import (
     ENABLE_FORWARD_USER_INFO_HEADERS,
 )
 
-
 router = APIRouter()
 
 # Constants

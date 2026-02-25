@@ -2,6 +2,7 @@
 """
 Test script for JiMeng configuration
 """
+
 import os
 import sys
 from pathlib import Path

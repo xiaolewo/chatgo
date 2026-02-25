@@ -43,14 +43,10 @@ def init_database():
 
         # 验证关键表是否存在
         with engine.connect() as conn:
-            result = conn.execute(
-                text(
-                    """
+            result = conn.execute(text("""
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name='subscription_daily_credit_grants'
-            """
-                )
-            )
+            """))
             table_exists = result.fetchone() is not None
 
             if table_exists:

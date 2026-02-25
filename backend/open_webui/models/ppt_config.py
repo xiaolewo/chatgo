@@ -7,7 +7,6 @@ from sqlalchemy import BigInteger, Boolean, Column, Integer, String
 
 from open_webui.internal.db import Base, get_db
 
-
 ####################
 # PPT Config DB Schema
 ####################

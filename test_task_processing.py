@@ -2,6 +2,7 @@
 """
 Test script for MidJourney task processing logic
 """
+
 import asyncio
 import sys
 import uuid

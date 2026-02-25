@@ -32,14 +32,10 @@ def migrate_group_memberships():
     try:
         with get_db() as db:
             # 检查新表是否存在
-            result = db.execute(
-                text(
-                    """
+            result = db.execute(text("""
                 SELECT name FROM sqlite_master 
                 WHERE type='table' AND name='user_group_membership'
-            """
-                )
-            ).fetchone()
+            """)).fetchone()
 
             if not result:
                 print("错误：user_group_membership 表不存在，请先运行数据库迁移")

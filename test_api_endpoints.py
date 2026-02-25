@@ -2,6 +2,7 @@
 """
 Test MidJourney API endpoints functionality
 """
+
 import sys
 
 sys.path.append("./backend")
