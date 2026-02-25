@@ -671,7 +671,7 @@
 					</div>
 					<span class="font-medium">智能体广场</span>
 				</a> -->
-				<a
+				<!-- <a
 					class="flex items-center gap-3 px-3 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors group"
 					href="/image-generation"
 					on:click={() => {
@@ -697,7 +697,7 @@
 						</svg>
 					</div>
 					<span class="font-medium">图像生成</span>
-				</a>
+				</a> -->
 				<!-- <a
 					class="flex items-center gap-3 px-3 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white rounded-lg transition-colors group"
 					href="/video-generation"

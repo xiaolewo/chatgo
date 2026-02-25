@@ -3,13 +3,13 @@
 </script>
 
 <!-- 整体居中 + 文字两侧圆点布局 -->
-<div class="w-full mt-2 mb-2 flex items-center justify-center gap-2 py-1">
+<div class="w-full mt-2 mb-2 flex items-center justify-start gap-2 py-1">
 	<div class="flex gap-1.5">
 		<div class="dot"></div>
 		<div class="dot"></div>
 		<div class="dot"></div>
 	</div>
-	<span class="text-sm text-gray-500 dark:text-gray-400">正在思考</span>
+	<span class="text-sm text-gray-500 dark:text-gray-400">让vivi思考一下</span>
 	<div class="flex gap-1.5">
 		<div class="dot"></div>
 		<div class="dot"></div>

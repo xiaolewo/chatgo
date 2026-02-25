@@ -15,6 +15,8 @@ import aiohttp
 import anyio.to_thread
 import requests
 
+from redis import asyncio as aioredis
+
 from fastapi import (
     Depends,
     FastAPI,
@@ -1249,7 +1251,9 @@ if audit_level != AuditLevel.NONE:
 
 
 @app.get("/api/models")
-async def get_models(request: Request, user=Depends(get_verified_user)):
+async def get_models(
+    request: Request, user=Depends(get_verified_user), refresh: bool = False
+):
     def get_filtered_models(models, user):
         filtered_models = []
         for model in models:
@@ -1283,6 +1287,20 @@ async def get_models(request: Request, user=Depends(get_verified_user)):
                 continue
             model["info"]["price"] = base_model.price
         return models
+
+    # 生成缓存键
+    cache_key = f"models:{user.id}:{user.role}"
+
+    # 尝试从 Redis 缓存获取
+    if not refresh and REDIS_URL:
+        try:
+            redis_client = aioredis.from_url(REDIS_URL, decode_responses=True)
+            cached_data = await redis_client.get(cache_key)
+            if cached_data:
+                log.debug(f"从 Redis 缓存获取模型列表: {cache_key}")
+                return json.loads(cached_data)
+        except Exception as e:
+            log.warning(f"Redis 缓存读取失败: {e}")
 
     all_models = await get_all_models(request, user=user)
 
@@ -1320,16 +1338,57 @@ async def get_models(request: Request, user=Depends(get_verified_user)):
     if user.role == "user" and not BYPASS_MODEL_ACCESS_CONTROL:
         models = get_filtered_models(models, user)
 
+    result = {"data": change_preset_model_price(models)}
+
+    # 存入 Redis 缓存（30分钟）
+    if REDIS_URL:
+        try:
+            redis_client = aioredis.from_url(REDIS_URL, decode_responses=True)
+            await redis_client.setex(
+                cache_key, 1800, json.dumps(result)  # 30分钟 = 1800秒
+            )
+            log.debug(f"模型列表已存入 Redis 缓存: {cache_key}")
+        except Exception as e:
+            log.warning(f"Redis 缓存写入失败: {e}")
+
     log.debug(
         f"/api/models returned filtered models accessible to the user: {json.dumps([model['id'] for model in models])}"
     )
-    return {"data": change_preset_model_price(models)}
+    return result
 
 
 @app.get("/api/models/base")
 async def get_base_models(request: Request, user=Depends(get_admin_user)):
     models = await get_all_base_models(request, user=user)
     return {"data": models}
+
+
+@app.post("/api/models/cache/clear")
+async def clear_models_cache(request: Request, user=Depends(get_admin_user)):
+    """
+    清除模型列表缓存（管理员权限）
+    """
+    if not REDIS_URL:
+        raise HTTPException(status_code=503, detail="Redis 未配置")
+
+    try:
+        redis_client = aioredis.from_url(REDIS_URL, decode_responses=True)
+
+        # 查找所有模型缓存键
+        pattern = "models:*"
+        keys = []
+        async for key in redis_client.scan_iter(match=pattern):
+            keys.append(key)
+
+        if keys:
+            await redis_client.delete(*keys)
+            return {"message": f"成功清除 {len(keys)} 个缓存键", "keys": keys}
+        else:
+            return {"message": "没有找到缓存键"}
+
+    except Exception as e:
+        log.error(f"清除缓存失败: {e}")
+        raise HTTPException(status_code=500, detail=f"清除缓存失败: {str(e)}")
 
 
 @app.post("/api/chat/completions")
